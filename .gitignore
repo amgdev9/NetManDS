@@ -21,6 +21,7 @@
 *.3dsx
 *.elf
 *.smdh
+*.cia
 
 # Eclipse stuff
 .cproject

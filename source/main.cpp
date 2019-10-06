@@ -3,27 +3,17 @@
 #include <string.h>
 #include <3ds.h>
 
-int main(int argc, char* argv[])
-{
-	gfxInitDefault();
-	consoleInit(GFX_TOP, NULL);
+#include "Application.h"
 
-	printf("Hello, world!\n");
+using namespace NetMan;
 
-	// Main loop
-	while (aptMainLoop())
-	{
-		gspWaitForVBlank();
-		gfxSwapBuffers();
-		hidScanInput();
+int main(int argc, char **argv) {
 
-		// Your code goes here
-		u32 kDown = hidKeysDown();
-		if (kDown & KEY_START)
-			break; // break in order to return to hbmenu
-	}
+	Application *app = Application::getInstance();
 
-	gfxExit();
+	app->initialize();
+
+	app->run();
+
 	return 0;
 }
-

@@ -19,25 +19,17 @@ export PATH := $(PORTLIBS_PATH)/3ds/bin:$(PATH)
 
 CTRULIB	?=	$(DEVKITPRO)/libctru
 
-ifeq ($(strip $(APP_TITLE)),)
-APP_TITLE	:=	NetManDS
-endif
-
-ifeq ($(strip $(APP_DESCRIPTION)),)
-APP_DESCRIPTION	:=	Manage networks with your 3DS
-endif
-
-ifeq ($(strip $(APP_AUTHOR)),)
-APP_AUTHOR	:=	(CC) Andrés Martínez
-endif
-
-ifeq ($(strip $(APP_ICON)),)
-APP_ICON	:=	$(CURDIR)/icon.png
-endif
-
 #---------------------------------------------------------------------------------
 %.smdh: $(APP_ICON) $(MAKEFILE_LIST)
 	@smdhtool --create "$(APP_TITLE)" "$(APP_DESCRIPTION)" "$(APP_AUTHOR)" $(APP_ICON) $@
+
+#---------------------------------------------------------------------------------
+%.bnr: $(BANNER_IMAGE) $(BANNER_AUDIO)
+	@bannertool makebanner $(BANNER_IMAGE_ARG) $(BANNER_IMAGE) $(BANNER_AUDIO_ARG) $(BANNER_AUDIO) -o $@ #> /dev/null
+
+#---------------------------------------------------------------------------------
+%.icn: $(ICON)
+	@bannertool makesmdh -s "$(APP_TITLE)" -l "$(APP_TITLE) - $(APP_DESCRIPTION)" -p "$(APP_AUTHOR)" -i $(ICON) $(ICON_FLAGS) -o $@ #> /dev/null
 
 #---------------------------------------------------------------------------------
 %.3dsx: %.elf
@@ -49,6 +41,12 @@ endif
 	@echo linking $(notdir $@)
 	@$(LD) $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
 	@$(NM) -CSn $@ > $(notdir $*.lst)
+
+#---------------------------------------------------------------------------------
+%.cia: %.elf banner.bnr icon.icn
+	@echo building $(notdir $@)
+	@makerom -f cia -o $@ -elf $< -DAPP_ENCRYPTED=false -rsf $(RSF) -target t -exefslogo -icon icon.icn -banner banner.bnr -major $(VERSION_MAJOR) -minor $(VERSION_MINOR) -micro $(VERSION_MICRO) -DAPP_TITLE="$(APP_TITLE)" -DAPP_PRODUCT_CODE="$(PRODUCT_CODE)" -DAPP_UNIQUE_ID="$(UNIQUE_ID)" -DAPP_SYSTEM_MODE="$(SYSTEM_MODE)" -DAPP_SYSTEM_MODE_EXT="$(SYSTEM_MODE_EXT)" -DAPP_CATEGORY="$(CATEGORY)" -DAPP_USE_ON_SD="$(USE_ON_SD)" -DAPP_MEMORY_TYPE="$(MEMORY_TYPE)" -DAPP_CPU_SPEED="$(CPU_SPEED)" -DAPP_ENABLE_L2_CACHE="$(ENABLE_L2_CACHE)" -DAPP_VERSION_MAJOR="$(VERSION_MAJOR)" -DAPP_ROMFS="$(ROMFS)" -logo $(LOGO)
+	@rm banner.bnr icon.icn
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -82,6 +80,32 @@ GRAPHICS	:=	gfx
 ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 RELEASE		:=	release
+
+# Project attributes
+APP_TITLE	:=	NetManDS
+APP_DESCRIPTION	:=	Manage networks
+APP_AUTHOR	:=	(CC) Andrés Martínez
+META		:=	meta
+RSF		:=	$(META)/app.rsf
+LOGO		:=	$(META)/logo.bcma.lz
+ICON		:=	$(META)/icon.png
+ICONFLAGS	:=	
+BANNER_AUDIO 	:= 	$(META)/audio.wav
+BANNER_AUDIO_ARG:=	-a			#-ca for CWAV
+BANNER_IMAGE 	:= 	$(META)/banner.png
+BANNER_IMAGE_ARG:=	-i			#-ci for CGFX
+PRODUCT_CODE 	:= 	CTR-P-TEMP
+UNIQUE_ID 	:= 	0xF8000
+VERSION_MAJOR 	:= 	0
+VERSION_MINOR 	:= 	0
+VERSION_MICRO 	:= 	0
+CATEGORY 	:= 	Application
+USE_ON_SD 	:= 	true
+MEMORY_TYPE 	:=	Application
+SYSTEM_MODE 	:=	64MB
+SYSTEM_MODE_EXT := 	Legacy
+CPU_SPEED 	:=	268MHz
+ENABLE_L2_CACHE :=	false
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -222,7 +246,10 @@ endif
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(RELEASE)/$(TARGET).3dsx $(OUTPUT).smdh $(RELEASE)/$(TARGET).elf $(GFXBUILD)
+	@rm -fr $(BUILD) $(RELEASE)/$(TARGET).3dsx $(OUTPUT).smdh $(OUTPUT).cia $(RELEASE)/$(TARGET).elf $(GFXBUILD)
+
+#---------------------------------------------------------------------------------
+cia:	all $(OUTPUT).cia
 
 #---------------------------------------------------------------------------------
 $(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s
