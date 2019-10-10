@@ -72,7 +72,7 @@ CTRULIB	?=	$(DEVKITPRO)/libctru
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source source/asn1
 DATA		:=	data
 INCLUDES	:=	include
 GRAPHICS	:=	gfx

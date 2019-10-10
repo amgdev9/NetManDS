@@ -6,6 +6,7 @@
 // Includes C/C++
 #include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
 
 // Includes 3DS
 #include <3ds.h>
@@ -36,7 +37,19 @@ void Application::initialize() {
 	// Initialize RomFS
 	Result rc = romfsInit();
 	if(rc) {
-		this->fatalError("\n Could not initialize RomFS\n\n Error code 0x%lX\n\n Press any key to exit", (u32)rc);
+		this->fatalError("Could not initialize RomFS", (u32)rc);
+	}
+
+	// Allocate memory for socket service
+	this->socket_buffer = (u32*) memalign (SOC_ALIGN, SOC_BUFFERSIZE);
+	if(this->socket_buffer == NULL) {
+		this->fatalError("Could not create socket buffer", 1);
+	}
+
+	// Initialize socket service
+	rc = socInit(socket_buffer, SOC_BUFFERSIZE);
+	if(rc) {
+		this->fatalError("Could not initialize sockets", (u32)rc);
 	}
 
 	// Initialize renderer
@@ -93,6 +106,8 @@ Application::~Application() {
 
 	if(!init) return;
 
+	socExit();
+
 	C3D_RenderTargetDelete(this->screen[0]);
 	C3D_RenderTargetDelete(this->screen[1]);
 
@@ -107,7 +122,7 @@ void Application::fatalError(const char *text, u32 errorCode) {
 
 	// Print error
 	consoleInit(GFX_TOP, NULL);
-	printf(text, errorCode);
+	printf("\n %s\n\n Error code 0x%lX\n\n Press any key to exit", text, errorCode);
 
 	// Idle wait loop
 	while(aptMainLoop()) {

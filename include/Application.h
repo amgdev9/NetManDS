@@ -10,6 +10,10 @@
 #include <3ds.h>
 #include <citro2d.h>
 
+// Defines
+#define SOC_ALIGN       0x1000
+#define SOC_BUFFERSIZE  0x100000		// 1MB
+
 namespace NetMan {
 
 /**
@@ -27,6 +31,7 @@ class Application {
 		touchPosition touch;
 		bool init;
 		C3D_RenderTarget *screen[2];
+		u32 *socket_buffer;
 	public:
 		static Application *getInstance();
 		void initialize();
