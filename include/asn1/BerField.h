@@ -30,11 +30,11 @@ class BerField {
 		inline u32 getLength() { return length; }
 	public:
 		BerField(u8 tagOptions, u32 tag);
-		u32 getTotalSize();
+		virtual u32 getTotalSize();
 		void parseTag(u8 **out);
 		void parseLength(u8 **out);
 		virtual void parseData(u8 **out) = 0;
-		virtual ~BerField() = 0;
+		virtual ~BerField() { }
 };
 
 }

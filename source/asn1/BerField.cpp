@@ -18,13 +18,14 @@ BerField::BerField(u8 tagOptions, u32 tag) {
 	this->tagOptions = tagOptions;
 	this->tag = tag;
 	this->length = 0;
+	this->lengthSize = 1;
 
 	// Calculate tag size
 	this->tagSize = 1;
 	if(tag >= 31){
 		this->tagSize ++;
 		for(u8 i = 1; i <= 4; i++) {
-			if(tag >= (u32)(1 << (7 * i))) this->tagSize ++;
+			if(tag >> (7 * i)) this->tagSize ++;
 		}
 	}
 }
@@ -38,7 +39,7 @@ void BerField::setLength(u32 length) {
 	if(length > 127){
 		this->lengthSize ++;
 		for(u8 i = 1; i <= 3; i++) {
-			if(length >= (u32)(1 << (i << 3))) this->lengthSize ++;
+			if(length >> (i << 3)) this->lengthSize ++;
 		}
 	}
 }

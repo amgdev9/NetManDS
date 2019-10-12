@@ -18,11 +18,12 @@ namespace NetMan {
 class BerPdu {
 	private:
 		std::vector<BerField*> fields;
-	public:
-		BerPdu();
+	protected:
 		void addField(BerField *field);
 		void send(UdpSocket *sock, const char *ip, u16 port);
 		void receive(UdpSocket *sock, const char *ip, u16 port);
+	public:
+		BerPdu();
 		virtual ~BerPdu();
 };
 

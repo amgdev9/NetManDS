@@ -9,7 +9,7 @@
 
 namespace NetMan {
 
-BerOctetString::BerOctetString(const char *value) : BerField(BER_TAGCLASS_OCTETSTRING, BER_TAG_OCTETSTRING){
+BerOctetString::BerOctetString(const char *value, u8 tagOptions, u32 tag) : BerField(tagOptions, tag){
 
 	u32 strLength = strlen(value);
 

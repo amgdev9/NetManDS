@@ -7,17 +7,21 @@
 
 namespace NetMan {
 
-BerInteger::BerInteger(s32 value) : BerField(BER_TAGCLASS_INTEGER, BER_TAG_INTEGER){
+/**
+ * @brief Constructor for a Integer field
+ * @param value Value to be stored
+ */
+BerInteger::BerInteger(s32 value, u8 tagOptions, u32 tag) : BerField(tagOptions, tag){
 
 	this->value = value;
 
-	u8 length = 1;						// 8 bits by default
-	if(value > 0xFF){					// 16 bits
-		length = 2;
-	}else if(value > 0xFFFF){			// 24 bits
-		length = 3;
-	}else if(value > 0xFFFFFF){			// 32 bits
+	u8 length = 1;													// 8 bits by default
+	if(value < INTEGER_MIN(24) || value > INTEGER_MAX(24)) {		// 32 bits
 		length = 4;
+	} else if(value < INTEGER_MIN(16) || value > INTEGER_MAX(16)) {	// 24 bits
+		length = 3;
+	} else if(value < INTEGER_MIN(8) || value > INTEGER_MAX(8)) {	// 16 bits
+		length = 2;
 	}
 
 	this->setLength(length);
@@ -27,20 +31,23 @@ void BerInteger::parseData(u8 **out) {
 
 	u8 *data = *out;
 
-	if(this->value > 0xFFFFFF){					// 32 bits
-		data[0] = (this->value >> 24) &0xFF;
-		data[1] = (this->value >> 16) &0xFF;
-		data[2] = (this->value >> 8) &0xFF;
-		data[3] = this->value &0xFF;
-	}else if(this->value > 0xFFFF){				// 24 bits
-		data[0] = (this->value >> 16) &0xFF;
-		data[1] = (this->value >> 8) &0xFF;
-		data[2] = this->value &0xFF;
-	}else if(this->value > 0xFF){					// 16 bits
-		data[0] = (this->value >> 8) &0xFF;
-		data[1] = this->value &0xFF;
-	} else {								// 8 bits
-		data[0] = this->value &0xFF;
+	switch(this->getLength()) {
+		case 2:
+			((s16*)data)[0] = (s16)this->value;
+			break;
+		case 3:
+			{
+				u8 *v = (u8*)&this->value;
+				data[0] = v[0];
+				data[1] = v[1];
+				data[2] = v[2];
+			}
+			break;
+		case 4:
+			((s32*)data)[0] = this->value;
+			break;
+		default:
+			((s8*)data)[0] = (s8)this->value;
 	}
 
 	// Advance write pointer

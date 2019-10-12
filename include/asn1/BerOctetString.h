@@ -18,7 +18,7 @@ class BerOctetString: public BerField {
 	private:
 		char *text;
 	public:
-		BerOctetString(const char *value);
+		BerOctetString(const char *value, u8 tagOptions = BER_TAGCLASS_OCTETSTRING, u32 tag = BER_TAG_OCTETSTRING);
 		void parseData(u8 **out);
 		virtual ~BerOctetString();
 };
