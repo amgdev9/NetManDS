@@ -45,12 +45,11 @@ namespace NetMan {
 class Snmpv1Pdu: public BerPdu {
 	private:
 		BerSequence *varBindList;
-		void generateHeader();
+		BerSequence *generateHeader();
 	public:
 		Snmpv1Pdu();
 		void addVarBind(const char *oid, BerField *value = new BerNull());
-		void getRequest(UdpSocket *sock, const char *ip);
-		void getNextRequest(UdpSocket *sock, const char *ip);
+		void sendRequest(u32 type, UdpSocket *sock, const char *ip);
 };
 
 }

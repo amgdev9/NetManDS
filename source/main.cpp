@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 
 	Snmpv1Pdu *pdu = new Snmpv1Pdu();
 	pdu->addVarBind("1.2.3.4");
-	pdu->getRequest(sock, "192.168.100.1");
+	pdu->sendRequest(SNMPV1_GETREQUEST, sock, "192.168.100.1");
 	delete pdu;
 	delete sock;
 

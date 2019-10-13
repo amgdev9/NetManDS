@@ -23,20 +23,22 @@ void Snmpv1Pdu::addVarBind(const char *oid, BerField *value) {
 	this->varBindList->addChild(varBind);
 }
 
-void Snmpv1Pdu::generateHeader() {
+BerSequence *Snmpv1Pdu::generateHeader() {
 
 	BerSequence *message = new BerSequence();
-	this->addField(message);
 
 	// Header (common to all SNMP PDUs)
 	message->addChild(new BerInteger(SNMPV1_VERSION));
 	message->addChild(new BerOctetString("public"));		// TODO Configuration
 	// From here it can be PDUs or authentication data
+
+	return message;
 }
 
 void Snmpv1Pdu::sendRequest(u32 type, UdpSocket *sock, const char *ip) {
 
-	this->generateHeader();
+	BerSequence *message = this->generateHeader();
+	this->addField(message);
 
 	// GetRequest PDU
 	BerSequence *getRequest = new BerSequence(SNMPV1_TAGCLASS_REQUEST, type);
