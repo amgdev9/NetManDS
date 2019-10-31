@@ -14,10 +14,10 @@ Snmpv1Pdu::Snmpv1Pdu() {
 	this->varBindList = new BerSequence();
 }
 
-void Snmpv1Pdu::addVarBind(const char *oid, BerField *value) {
+void Snmpv1Pdu::addVarBind(BerOid *oid, BerField *value) {
 
 	BerSequence *varBind = new BerSequence();
-	varBind->addChild(new BerOid(oid));
+	varBind->addChild(oid);
 	varBind->addChild(value);
 
 	this->varBindList->addChild(varBind);
@@ -50,6 +50,51 @@ void Snmpv1Pdu::sendRequest(u32 type, UdpSocket *sock, const char *ip) {
 	getRequest->addChild(this->varBindList);						// Elements to ask for
 
 	BerPdu::send(sock, ip, SNMPV1_PORT);
+
+	delete getRequest;
+}
+
+void Snmpv1Pdu::recvResponse(UdpSocket *sock, const char *ip) {
+
+	// Delete previous data
+	delete varBindList;
+
+	// Receive data
+	u8 *data = BerPdu::receive(sock, ip, SNMPV1_PORT);
+	u8 **ptr = &data;
+
+	// Skip main sequence
+	BerSequence::decode(ptr);
+
+	// Get header fields
+	BerInteger *responseID = BerInteger::decode(ptr);
+	BerInteger *errorStatus = BerInteger::decode(ptr);
+	BerInteger *errorDetails = BerInteger::decode(ptr);
+
+	// Skip varbindlist sequence
+	BerSequence::decode(ptr);
+	varBindList = new BerSequence();
+
+	// Loop each varbind
+	while(*ptr != data) {
+
+		// Skip varbind sequence
+		BerSequence::decode(ptr);
+
+		// Decode OID and value
+		BerOid *oid = BerOid::decode(ptr);
+		BerField *value = BerField::decode(ptr);
+
+		// Add pair OID-value to the varbindlist
+		this->addVarBind(oid, value);
+	}
+
+	// Delete temp data
+	delete [] data;
+}
+
+Snmpv1Pdu::~Snmpv1Pdu() {
+	delete varBindList;
 }
 
 }

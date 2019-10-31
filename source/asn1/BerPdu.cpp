@@ -50,8 +50,15 @@ void BerPdu::send(UdpSocket *sock, const char *ip, u16 port) {
 	delete [] pdu_base;
 }
 
-void BerPdu::receive(UdpSocket *sock, const char *ip, u16 port) {
-	// TODO
+u8 *BerPdu::receive(UdpSocket *sock, const char *ip, u16 port) {
+
+	// Create recv buffer
+	u8 *data = new u8[BER_MAX_PDU_SIZE];
+
+	// Receive packet data
+	sock->recvPacket(data, BER_MAX_PDU_SIZE, ip, port);
+
+	return data;
 }
 
 }

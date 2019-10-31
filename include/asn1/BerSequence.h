@@ -25,6 +25,7 @@ class BerSequence: public BerField {
 		void parseData(u8 **out);
 		u32 getTotalSize() override;
 		~BerSequence();
+		static void decode(u8 **data) override;
 };
 
 }

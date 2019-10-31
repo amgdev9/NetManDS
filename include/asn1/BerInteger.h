@@ -22,6 +22,7 @@ class BerInteger: public BerField {
 	public:
 		BerInteger(s32 value, u8 tagOptions = BER_TAGCLASS_INTEGER, u32 tag = BER_TAG_INTEGER);
 		void parseData(u8 **out);
+		static BerInteger *decode(u8 **data) override;
 };
 
 }

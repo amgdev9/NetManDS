@@ -35,6 +35,7 @@ class BerField {
 		void parseLength(u8 **out);
 		virtual void parseData(u8 **out) = 0;
 		virtual ~BerField() { }
+		static BerField *decode(u8 **data);
 };
 
 }

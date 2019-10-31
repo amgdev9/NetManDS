@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 	UdpSocket *sock = new UdpSocket();
 
 	Snmpv1Pdu *pdu = new Snmpv1Pdu();
-	pdu->addVarBind("1.2.3.4");
+	pdu->addVarBind(new BerOid("1.2.3.4"));
 	pdu->sendRequest(SNMPV1_GETREQUEST, sock, "192.168.100.1");
 	delete pdu;
 	delete sock;

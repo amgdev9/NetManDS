@@ -78,4 +78,8 @@ BerOid::~BerOid() {
 
 }
 
+static BerOid *BerOid::decode(u8** data) {
+	// TODO
+}
+
 }

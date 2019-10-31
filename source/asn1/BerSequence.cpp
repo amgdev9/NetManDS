@@ -49,4 +49,8 @@ BerSequence::~BerSequence() {
 	}
 }
 
+static void BerSequence::decode(u8 **data) {
+	// TODO Unspecified length not supported
+}
+
 }

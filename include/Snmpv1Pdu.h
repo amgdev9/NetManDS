@@ -48,8 +48,10 @@ class Snmpv1Pdu: public BerPdu {
 		BerSequence *generateHeader();
 	public:
 		Snmpv1Pdu();
-		void addVarBind(const char *oid, BerField *value = new BerNull());
+		void addVarBind(BerOid *oid, BerField *value = new BerNull());
 		void sendRequest(u32 type, UdpSocket *sock, const char *ip);
+		void recvResponse(UdpSocket *sock, const char *ip);
+		~Snmpv1Pdu();
 };
 
 }

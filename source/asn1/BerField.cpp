@@ -81,4 +81,8 @@ u32 BerField::getTotalSize() {
 	return (this->tagSize + this->lengthSize + this->length);
 }
 
+static BerField *BerField::decode(u8 **data) {
+	// TODO Decode according to tag
+}
+
 }

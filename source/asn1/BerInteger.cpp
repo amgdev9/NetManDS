@@ -54,4 +54,8 @@ void BerInteger::parseData(u8 **out) {
 	*out += this->getLength();
 }
 
+static BerInteger *BerInteger::decode(u8 **data) {
+	// TODO
+}
+
 }

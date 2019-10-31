@@ -13,6 +13,9 @@
 #include "asn1/BerField.h"
 #include "UdpSocket.h"
 
+// Defines
+#define BER_MAX_PDU_SIZE		(64 << 10)
+
 namespace NetMan {
 
 class BerPdu {
@@ -21,7 +24,7 @@ class BerPdu {
 	protected:
 		void addField(BerField *field);
 		void send(UdpSocket *sock, const char *ip, u16 port);
-		void receive(UdpSocket *sock, const char *ip, u16 port);
+		u8 *receive(UdpSocket *sock, const char *ip, u16 port);
 	public:
 		BerPdu();
 		virtual ~BerPdu();

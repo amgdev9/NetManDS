@@ -23,6 +23,7 @@ class BerOid: public BerField {
 		BerOid(const char *oidString, u8 tagOptions = BER_TAGCLASS_OID, u32 tag = BER_TAG_OID);
 		void parseData(u8 **out);
 		virtual ~BerOid();
+		static BerOid *decode(u8** data) override;
 };
 
 }

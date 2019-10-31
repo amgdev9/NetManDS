@@ -16,6 +16,7 @@ class UdpSocket {
 	public:
 		UdpSocket();
 		void sendPacket(void *data, u32 size, const char *ip, u16 port);
+		void recvPacket(void *data, u32 size, const char *ip, u16 port);
 		virtual ~UdpSocket();
 };
 
