@@ -1,13 +1,16 @@
 /**
  * @file BerSequence.h
- * @brief 
+ * @brief Class to store a SEQUENCE/SEQUENCE OF
  */
 
 #ifndef BERSEQUENCE_H_
 #define BERSEQUENCE_H_
 
+// Includes C/C++
+#include <memory>
 #include <vector>
 
+// Own includes
 #include "asn1/BerField.h"
 
 // Defines
@@ -16,16 +19,21 @@
 
 namespace NetMan {
 
+/**
+ * @class BerSequence
+ */
 class BerSequence: public BerField {
 	private:
-		std::vector<BerField*> children;
+		std::vector<std::shared_ptr<BerField>> children;
 	public:
 		BerSequence(u8 tagOptions = BER_TAGCLASS_SEQUENCE, u32 tag = BER_TAG_SEQUENCE);
-		void addChild(BerField *child);
+		void addChild(std::shared_ptr<BerField> child);
+		std::shared_ptr<BerField> getChild(u16 i);
 		void parseData(u8 **out);
 		u32 getTotalSize() override;
 		~BerSequence();
-		static void decode(u8 **data) override;
+		static u32 decode(u8 **data, u8 tagOptions = BER_TAGCLASS_SEQUENCE, u32 tag = BER_TAG_SEQUENCE);
+		void print() override;
 };
 
 }

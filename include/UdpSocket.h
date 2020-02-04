@@ -1,22 +1,35 @@
 /**
  * @file UdpSocket.h
- * @brief 
+ * @brief UDP Socket wrapper
  */
 
 #ifndef UDPSOCKET_H_
 #define UDPSOCKET_H_
 
+// Includes C/C++
+#include <sys/socket.h>
+
+// Includes 3DS
 #include <3ds/types.h>
+
+// Defines
+#define DEFAULT_SOCKET_TIMEOUT_SECS		5
+#define DEFAULT_SOCKET_TIMEOUT_USECS	0
 
 namespace NetMan {
 
+/**
+ * @class UdpSocket
+ */
 class UdpSocket {
 	private:
-		int fd;			/**< File descriptor for UDP socket */
+		int fd;				/**< File descriptor for UDP socket */
+		struct timeval tv;	/**< Timeout for UDP socket */
 	public:
-		UdpSocket();
-		void sendPacket(void *data, u32 size, const char *ip, u16 port);
-		void recvPacket(void *data, u32 size, const char *ip, u16 port);
+		UdpSocket(u32 timeoutSecs = DEFAULT_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_SOCKET_TIMEOUT_USECS);
+		void sendPacket(void *data, u32 size, const std::string &ip, u16 port);
+		void recvPacket(void *data, u32 size, const std::string &ip = "", u16 port = 0);
+		void bindTo(u16 port);
 		virtual ~UdpSocket();
 };
 

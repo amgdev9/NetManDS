@@ -1,11 +1,15 @@
 /**
  * @file BerField.h
- * @brief 
+ * @brief BER field
  */
 
 #ifndef BERFIELD_H_
 #define BERFIELD_H_
 
+// Includes C/C++
+#include <memory>
+
+// Own includes
 #include <3ds/types.h>
 
 // Defines
@@ -18,6 +22,10 @@
 
 namespace NetMan {
 
+/**
+ * @class BerField
+ * @brief BER field
+ */
 class BerField {
 	private:
 		u32 tag;
@@ -28,14 +36,16 @@ class BerField {
 	protected:
 		void setLength(u32 length);
 		inline u32 getLength() { return length; }
+		static u32 decodeLength(u8 **data);
 	public:
 		BerField(u8 tagOptions, u32 tag);
 		virtual u32 getTotalSize();
 		void parseTag(u8 **out);
 		void parseLength(u8 **out);
 		virtual void parseData(u8 **out) = 0;
+		virtual void print() = 0;
 		virtual ~BerField() { }
-		static BerField *decode(u8 **data);
+		static std::shared_ptr<BerField> decode(u8 **data);
 };
 
 }

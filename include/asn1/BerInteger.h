@@ -1,11 +1,15 @@
 /**
  * @file BerInteger.h
- * @brief 
+ * @brief Class to hold an Integer
  */
 
 #ifndef BERINTEGER_H_
 #define BERINTEGER_H_
 
+// Includes C/C++
+#include <memory>
+
+// Own includes
 #include "asn1/BerField.h"
 
 // Defines
@@ -16,13 +20,19 @@
 
 namespace NetMan {
 
+/**
+ * @class BerInteger
+ */
 class BerInteger: public BerField {
 	private:
 		s32 value;
 	public:
 		BerInteger(s32 value, u8 tagOptions = BER_TAGCLASS_INTEGER, u32 tag = BER_TAG_INTEGER);
 		void parseData(u8 **out);
-		static BerInteger *decode(u8 **data) override;
+		static std::shared_ptr<BerInteger> decode(u8 **data);
+		static s32 decodeIntegerValue(u8 **data, u8 len);
+		void print() override;
+		s32 getValue();
 };
 
 }

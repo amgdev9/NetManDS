@@ -1,10 +1,13 @@
 /**
  * @file Application.h
- * @brief 
+ * @brief Application singleton
  */
 
 #ifndef SOURCE_APPLICATION_H_
 #define SOURCE_APPLICATION_H_
+
+// Includes C/C++
+#include <memory>
 
 // Includes 3DS
 #include <3ds.h>
@@ -21,22 +24,21 @@ namespace NetMan {
  */
 class Application {
 	private:
-		static Application *instance;
-		static void destroy();
+		u32 held;										/**< Keys held */
+		u32 down;										/**< Keys down */
+		u32 up;											/**< Keys up */
+		touchPosition touch;							/**< Touchpad state */
+		bool init;										/**< Initialized? */
+		C3D_RenderTarget *screen[2];					/**< Render targets */
+		std::unique_ptr<u32> socket_buffer;				/**< Socket buffer */
+
 		Application();
 		virtual ~Application();
-		u32 held;
-		u32 down;
-		u32 up;
-		touchPosition touch;
-		bool init;
-		C3D_RenderTarget *screen[2];
-		u32 *socket_buffer;
 	public:
-		static Application *getInstance();
+		static Application &getInstance();
 		void initialize();
 		void run();
-		void fatalError(const char *text, u32 errorCode);
+		void fatalError(const std::string &text, u32 errorCode);
 };
 
 }

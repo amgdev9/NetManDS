@@ -1,18 +1,23 @@
 /**
  * @file Snmpv1Pdu.h
- * @brief 
+ * @brief SNMPv1 PDU handler
  */
 
 #ifndef SNMPV1PDU_H_
 #define SNMPV1PDU_H_
 
+// Includes C/C++
+#include <memory>
+
+// Own includes
 #include "asn1/BerPdu.h"
 #include "asn1/BerSequence.h"
 #include "asn1/BerOid.h"
 #include "asn1/BerNull.h"
+#include "asn1/BerOctetString.h"
+#include "Snmp.h"
 
 // Defines
-#define SNMPV1_PORT				161
 #define SNMPV1_VERSION			0
 #define SNMPV1_ERROR_NOERROR	0
 #define SNMPV1_ERROR_TOOBIG		1
@@ -22,11 +27,12 @@
 #define SNMPV1_ERROR_GENERR		5
 
 // Defines PDUs tags
-#define SNMPV1_TAGCLASS_REQUEST	BER_TAG_CONTEXT
-#define SNMPV1_GETREQUEST		0
-#define SNMPV1_GETNEXTREQUEST	1
-#define SNMPV1_GETRESPONSE		2
-#define SNMPV1_SETREQUEST		3
+#define SNMPV1_TAGCLASS				(BER_TAG_CONTEXT | BER_TAG_STRUCTURED)
+#define SNMPV1_GETREQUEST			0
+#define SNMPV1_GETNEXTREQUEST		1
+#define SNMPV1_GETRESPONSE			2
+#define SNMPV1_SETREQUEST			3
+#define SNMPV1_TRAP					4
 
 // Defines Application types
 #define SNMPV1_TAGCLASS_NETWORKADDRESS 	BER_TAG_APPLICATION		/* OCTET STRING of SIZE 4 */
@@ -42,15 +48,25 @@
 
 namespace NetMan {
 
+/**
+ * @class Snmpv1Pdu
+ */
 class Snmpv1Pdu: public BerPdu {
 	private:
-		BerSequence *varBindList;
-		BerSequence *generateHeader();
+		std::shared_ptr<BerSequence> varBindList;
+		std::shared_ptr<BerSequence> generateHeader(u8 ver);
+		void checkHeader(u8 **ptr);
+		static u32 requestID;
+		u32 reqID;
+		std::string community;
 	public:
-		Snmpv1Pdu();
-		void addVarBind(BerOid *oid, BerField *value = new BerNull());
-		void sendRequest(u32 type, UdpSocket *sock, const char *ip);
-		void recvResponse(UdpSocket *sock, const char *ip);
+		Snmpv1Pdu(const std::string &community);
+		void clear() override;
+		void addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
+		virtual void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip);
+		virtual void recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip);
+		virtual void recvTrap(std::shared_ptr<UdpSocket> sock);
+		std::shared_ptr<BerField> getVarBind(u16 i);
 		~Snmpv1Pdu();
 };
 

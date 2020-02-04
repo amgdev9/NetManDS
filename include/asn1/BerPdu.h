@@ -1,33 +1,33 @@
 /**
  * @file BerPdu.h
- * @brief 
+ * @brief BER PDU handler
  */
 
 #ifndef BERPDU_H_
 #define BERPDU_H_
 
 // Includes C/C++
+#include <memory>
 #include <vector>
 
 // Own includes
 #include "asn1/BerField.h"
 #include "UdpSocket.h"
 
-// Defines
-#define BER_MAX_PDU_SIZE		(64 << 10)
-
 namespace NetMan {
 
+/**
+ * @class BerPdu
+ * @brief BER PDU handler
+ */
 class BerPdu {
-	private:
-		std::vector<BerField*> fields;
 	protected:
-		void addField(BerField *field);
-		void send(UdpSocket *sock, const char *ip, u16 port);
-		u8 *receive(UdpSocket *sock, const char *ip, u16 port);
+		std::vector<std::shared_ptr<BerField>> fields;
+		void send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port);
 	public:
 		BerPdu();
 		virtual ~BerPdu();
+		virtual void clear();
 };
 
 }
