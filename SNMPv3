@@ -1,0 +1,33 @@
+SEQUENCE
+	msgVersion INTEGER ( 0 .. 2147483647 ),
+	msgGlobalData HeaderData,
+	{
+		msgID      INTEGER (0..2147483647),
+		msgMaxSize INTEGER (484..2147483647),
+		msgFlags   OCTET STRING (SIZE(1)),
+		msgSecurityModel INTEGER (1..2147483647)
+	}
+	msgSecurityParameters OCTET STRING,
+		Si estamos usando USM, almacena la serialización de esto
+		{
+			msgAuthoritativeEngineID     OCTET STRING,
+              		msgAuthoritativeEngineBoots  INTEGER (0..2147483647),
+             		msgAuthoritativeEngineTime   INTEGER (0..2147483647),
+              		msgUserName                  OCTET STRING (SIZE(0..32)),
+              		msgAuthenticationParameters  OCTET STRING,
+              		msgPrivacyParameters         OCTET STRING
+		}
+	msgData  ScopedPduData	// SE ENCRIPTA A PARTIR DE AQUI
+	{
+		contextEngineID  OCTET STRING,
+		contextName      OCTET STRING,
+		PDU de SNMPv2 (sin cabecera SNMPv2)
+	}
+
+RFC3412 para saber que es cada campo
+RFC3414 para modelo USM
+	2.6 sobre claves
+	6,7 algoritmo MD5 y SHA para autenticación
+	8 algoritmo CBC-DES para confidencialidad
+	A para pasar de password a clave
+

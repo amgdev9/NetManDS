@@ -23,8 +23,10 @@ namespace NetMan {
  */
 class UdpSocket {
 	private:
-		int fd;				/**< File descriptor for UDP socket */
-		struct timeval tv;	/**< Timeout for UDP socket */
+		int fd;					/**< File descriptor for UDP socket */
+		struct timeval tv;		/**< Timeout for UDP socket */
+		in_addr_t lastOrigin;	/**< Last received packet's origin IP */
+		u16 lastPort;			/**< Last received packet's origin port */
 	public:
 		UdpSocket(u32 timeoutSecs = DEFAULT_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_SOCKET_TIMEOUT_USECS);
 		void sendPacket(void *data, u32 size, const std::string &ip, u16 port);

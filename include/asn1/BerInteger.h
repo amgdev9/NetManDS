@@ -25,14 +25,18 @@ namespace NetMan {
  */
 class BerInteger: public BerField {
 	private:
-		s32 value;
+		std::unique_ptr<u8> value;
+		bool sign;
 	public:
-		BerInteger(s32 value, u8 tagOptions = BER_TAGCLASS_INTEGER, u32 tag = BER_TAG_INTEGER);
+		BerInteger(void *value, u8 len, bool sign, u8 tagOptions = BER_TAGCLASS_INTEGER, u32 tag = BER_TAG_INTEGER);
 		void parseData(u8 **out);
-		static std::shared_ptr<BerInteger> decode(u8 **data);
-		static s32 decodeIntegerValue(u8 **data, u8 len);
+		static std::shared_ptr<BerInteger> decode(u8 **data, bool sign);
+		static void decodeIntegerValue(u8 **data, u8 len, bool sign, u8 *dest, u8 maxlen);
 		void print() override;
-		s32 getValue();
+		u32 getValueU32();
+		s32 getValueS32();
+		u64 getValueU64();
+		s64 getValueS64();
 };
 
 }

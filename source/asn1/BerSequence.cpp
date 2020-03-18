@@ -72,14 +72,17 @@ BerSequence::~BerSequence() { }
  * @param tag Tag (optional)
  * @return Sequence length
  */
-u32 BerSequence::decode(u8 **data, u8 tagOptions, u32 tag) {
+u32 BerSequence::decode(u8 **data, u8 tagOptions, u32 tag, u8 *decodedTag) {
 	
 	u8 *in = *data;
 
 	// Check tag
-	if(in[0] != (tagOptions | tag)) {
+	if(in[0] != (tagOptions | tag) && tag != BER_TAG_ANY) {
 		throw std::runtime_error("Not a SEQUENCE");
 	}
+
+	// Parse tag
+	if(decodedTag) *decodedTag = in[0] &0x1F;
 
 	// Return length
 	*data += 1;

@@ -11,5 +11,6 @@
 #define SNMP_PORT				1161
 #define SNMP_TRAP_PORT			1162
 #define SNMP_MAX_PDU_SIZE		(64 << 10)
+#define SNMP_PDU_ANY            0xFFFFFFFF
 
 #endif

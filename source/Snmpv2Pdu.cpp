@@ -1,9 +1,10 @@
 /**
- * @file Snmpv1Pdu.cpp
- * @brief SNMPv1 PDU handler
+ * @file Snmpv2Pdu.cpp
+ * @brief SNMPv2c PDU handler
  */
 
 // Own includes
+#include "asn1/BerInteger.h"
 #include "Snmpv2Pdu.h"
 
 namespace NetMan {
@@ -12,16 +13,8 @@ namespace NetMan {
  * @brief Constructor for a SNMPv2 PDU
  * @param community Community to be used
  */
-Snmpv2Pdu::Snmpv2Pdu(const std::string &community) : Snmpv1Pdu(community) { }
-
-/**
- * @brief Send a SNMPv2 request
- * @param type  Any of the SNMPV2_*REQUEST defines
- * @param sock  Socket used for transmission
- * @param ip    Destination IP address
- */
-void Snmpv2Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip) {
-
+Snmpv2Pdu::Snmpv2Pdu(const std::string &community) : Snmpv1Pdu(community) {
+    this->snmpVersion = SNMPV2_VERSION;
 }
 
 /**
@@ -33,15 +26,41 @@ void Snmpv2Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
  */
 void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip) {
 
-}
+	try {
 
-/**
- * @brief Receive a SNMPv2 response
- * @param sock  Socket used for reception
- * @param ip    Expected source IP
- */
-void Snmpv2Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip) {
+        if(this->varBindList == nullptr) {
+		    throw std::runtime_error("Empty VarBindList");
+	    }
 
+		std::shared_ptr<BerSequence> message = this->generateHeader(this->snmpVersion);
+
+		// GetBulkRequest PDU
+		std::shared_ptr<BerSequence> getBulkRequest = std::make_shared<BerSequence>(SNMPV1_TAGCLASS, SNMPV2_GETBULKREQUEST);
+		message->addChild(getBulkRequest);
+
+		this->reqID = ++Snmpv1Pdu::requestID;
+		std::shared_ptr<BerInteger> reqid = std::make_shared<BerInteger>(&this->reqID, sizeof(u32), false);
+		std::shared_ptr<BerInteger> nrField = std::make_shared<BerInteger>(&nonRepeaters, sizeof(u32), false);
+		std::shared_ptr<BerInteger> mrField = std::make_shared<BerInteger>(&maxRepetitions, sizeof(u32), false);
+		getBulkRequest->addChild(reqid);				// RequestID
+		getBulkRequest->addChild(nrField);				// Non repeaters
+		getBulkRequest->addChild(mrField);	    		// Max repetitions
+		getBulkRequest->addChild(this->varBindList);	// Elements to ask for
+
+		this->fields.push_back(message);
+		BerPdu::send(sock, ip, SNMP_PORT);
+
+	} catch (const std::bad_alloc &e) {
+		this->fields.clear();
+		throw;
+	} catch (const std::runtime_error &e) {
+		this->fields.clear();
+		throw;
+	}
+
+	// Clear data
+	this->fields.clear();
+	this->varBindList.reset();
 }
 
 /**
@@ -50,6 +69,25 @@ void Snmpv2Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string 
  */
 void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 
+    try {
+
+        // Receive a trap or inform-request PDU
+        u8 pduType = this->recvResponse(sock, "", SNMP_PDU_ANY);
+
+        // Error if not a notification was received
+        if(pduType != SNMPV2_TRAP && pduType != SNMPV2_INFORMREQUEST) {
+            throw std::runtime_error("This is not a notification PDU");
+        }
+
+        // If it was an inform-request, send the acknowledgement
+        if(pduType == SNMPV2_INFORMREQUEST) {
+            this->sendRequest(SNMPV2_GETRESPONSE, sock, "");    // Use inform-request origin IP-port as destination IP-port
+        }
+    } catch (const std::runtime_error &e) {
+		throw;
+	} catch (const std::bad_alloc &e) {
+		throw;
+	}
 }
 
 /**

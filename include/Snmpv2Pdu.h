@@ -1,6 +1,6 @@
 /**
  * @file Snmpv2Pdu.h
- * @brief SNMPv2 PDU handler
+ * @brief SNMPv2c PDU handler
  */
 
 #ifndef SNMPV2PDU_H_
@@ -52,31 +52,14 @@
 
 namespace NetMan {
 
-// HACER COUNTER64
-// PDU SON TODAS IGUALES QUE EN SNMPV1 (TRAP ES IGUAL QUE TODAS AHORA) EXCEPTO GETBULK
-// CABECERA VERSION-COMUNIDAD ES IGUAL QUE EN SNMPV1
-/*
-BulkPDU ::=                         -- must be identical in
-    SEQUENCE {                      -- structure to PDU
-        request-id      INTEGER (-214783648..214783647),    U32
-        non-repeaters   INTEGER (0..max-bindings),  U32
-        max-repetitions INTEGER (0..max-bindings),  U32
-
-        variable-bindings           -- values are ignored
-            VarBindList
-       }
-*/
-
 /**
- * @class Snmpv1Pdu
+ * @class Snmpv2Pdu
  */
 class Snmpv2Pdu: public Snmpv1Pdu {
 	public:
 		Snmpv2Pdu(const std::string &community);
-		void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip) override;
-        void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip);
-		void recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip) override;
-		void recvTrap(std::shared_ptr<UdpSocket> sock) override;
+        virtual void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip);
+		virtual void recvTrap(std::shared_ptr<UdpSocket> sock) override;
 		~Snmpv2Pdu();
 };
 

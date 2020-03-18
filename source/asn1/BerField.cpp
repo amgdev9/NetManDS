@@ -9,7 +9,6 @@
 // Own includes
 #include "asn1/BerField.h"
 #include "asn1/BerInteger.h"
-#include "asn1/BerInteger64.h"
 #include "asn1/BerNull.h"
 #include "asn1/BerOctetString.h"
 #include "asn1/BerOid.h"
@@ -119,7 +118,9 @@ u32 BerField::decodeLength(u8 **data) {
 	*data += 1;
 	if(len &(1 << 7)) {			// Long length
 		try {
-			len = (u32) BerInteger::decodeIntegerValue(data, len &0x7F);
+			u32 l;
+			BerInteger::decodeIntegerValue(data, len &0x7F, false, (u8*)&l, sizeof(u32));
+			len = l;
 		} catch(const std::runtime_error &e) {
 			throw e;
 		}
@@ -139,10 +140,11 @@ std::shared_ptr<BerField> BerField::decode(u8 **data) {
 		switch((*data)[0]) {
 			// SNMPv1+
 			case (BER_TAG_INTEGER | BER_TAGCLASS_INTEGER):
+				return BerInteger::decode(data, true);
 			case (SNMPV1_TAG_COUNTER | SNMPV1_TAGCLASS_COUNTER):
 			case (SNMPV1_TAG_GAUGE | SNMPV1_TAGCLASS_GAUGE):
 			case (SNMPV1_TAG_TIMETICKS | SNMPV1_TAGCLASS_TIMETICKS):
-				return BerInteger::decode(data);
+				return BerInteger::decode(data, false);
 			case (BER_TAG_NULL | BER_TAGCLASS_NULL):
 				return BerNull::decode(data);
 			case (BER_TAG_OCTETSTRING | BER_TAGCLASS_OCTETSTRING):
@@ -157,7 +159,7 @@ std::shared_ptr<BerField> BerField::decode(u8 **data) {
 			case (SNMPV2_TAG_ENDOFMIBVIEW | SNMPV2_TAGCLASS_VALUE_EXCEPTION):
 				return BerNull::decode(data);
 			case (SNMPV2_TAG_COUNTER64 | SNMPV2_TAGCLASS_COUNTER64):
-				return BerInteger64::decode(data);
+				return BerInteger::decode(data, false);
 		}
 	} catch (const std::runtime_error &e) {
 		throw;
