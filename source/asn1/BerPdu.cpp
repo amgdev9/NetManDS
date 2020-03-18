@@ -31,13 +31,19 @@ void BerPdu::clear() {
 BerPdu::~BerPdu() { }
 
 /**
- * @brief Send a BerPdu
- * @param sock Socket to be used for sending
- * @param ip Destination IP address
- * @param port Destination port
+ * @brief Add a field to the BerPdu
+ * @param field Field to be added
  */
-void BerPdu::send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port) {
+void BerPdu::addField(std::shared_ptr<BerField> field) {
+	fields.push_back(field);
+}
 
+/**
+ * @brief Serialize a BerPdu
+ * @return The serialized BerPdu
+ */
+std::unique_ptr<u8> BerPdu::serialize(u32 *size) {
+	
 	// Variables
 	u32 pdu_size = 0;
 
@@ -57,6 +63,27 @@ void BerPdu::send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 po
 			fields[i]->parseLength(&pdu_buffer);
 			fields[i]->parseData(&pdu_buffer);
 		}
+
+		// Return the PDU buffer
+		*size = pdu_size;
+		return pdu_base;
+	} catch (const std::runtime_error &e) {
+		throw;
+	}
+}
+
+/**
+ * @brief Send a BerPdu
+ * @param sock Socket to be used for sending
+ * @param ip Destination IP address
+ * @param port Destination port
+ */
+void BerPdu::send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port) {
+
+	// Create the PDU buffer
+	try {
+		u32 pdu_size = 0;
+		std::unique_ptr<u8> pdu_base = this->serialize(&pdu_size);
 
 		// Send the PDU packet
 		sock->sendPacket(pdu_base.get(), pdu_size, ip, port);

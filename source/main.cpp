@@ -9,7 +9,7 @@
 
 // Own includes
 #include "Application.h"
-#include "Snmpv1Pdu.h"
+#include "Snmpv2Pdu.h"
 
 using namespace NetMan;
 
@@ -47,7 +47,7 @@ void snmpv1_test() {
 	try {
 
 		// Pruebas SNMP GET
-		std::shared_ptr<Snmpv1Pdu> pdu = std::make_shared<Snmpv1Pdu>("public");
+		std::shared_ptr<Snmpv2Pdu> pdu = std::make_shared<Snmpv2Pdu>("public");
 		std::shared_ptr<BerOid> oid[7];
 		oid[0] = std::make_shared<BerOid>("1.3.6.1.2.1.1.1.0");
 		oid[1] = std::make_shared<BerOid>("1.3.6.1.2.1.1.2.0");
@@ -60,8 +60,8 @@ void snmpv1_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV1_GETREQUEST, sock, "127.0.0.1");
-		pdu->recvResponse(sock, "127.0.0.1");
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1");
+		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
 
 		// Pruebas SNMP SET
 		/*pdu->clear();
@@ -74,6 +74,17 @@ void snmpv1_test() {
 		pdu->addVarBind(oid[5], val[2]);
 		pdu->sendRequest(SNMPV1_SETREQUEST, sock, "127.0.0.1");
 		pdu->recvResponse(sock, "127.0.0.1");*/
+
+		// Pruebas SNMP GET BULK
+		pdu->clear();
+		oid[0] = std::make_shared<BerOid>("1.3.6.1.2.1.1.3");
+		oid[1] = std::make_shared<BerOid>("1.3.6.1.2.1.1.1");
+		oid[2] = std::make_shared<BerOid>("1.3.6.1.2.1.2.2");
+		for(u8 i = 0; i < 3; i++) {
+			pdu->addVarBind(oid[i], nullval);
+		}
+		pdu->sendBulkRequest(2, 5, sock, "127.0.0.1");
+		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
 
 		// Pruebas SNMP TRAP
 		sock = std::make_shared<UdpSocket>(30);

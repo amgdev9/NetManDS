@@ -141,7 +141,7 @@ void Snmpv1Pdu::checkHeader(u8 **ptr) {
 
 		// Check version
 		std::shared_ptr<BerInteger> version = BerInteger::decode(ptr, false);
-		if(version->getValueU32() != SNMPV1_VERSION) {
+		if(version->getValueU32() != this->snmpVersion) {
 			throw std::runtime_error("Not a SNMPv1 PDU");
 		}
 
@@ -169,14 +169,14 @@ void Snmpv1Pdu::checkHeader(u8 **ptr) {
  * @param expectedPduType Expected PDU type
  * @return Type of response PDU obtained (=expectedPduType, or obtained PDU if SNMP_PDU_ANY)
  */
-u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u32 expectedPduType) {
+u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
 
 	try {
 		// Create recv buffer
 		std::unique_ptr<u8> data(new u8[SNMP_MAX_PDU_SIZE]);
 
 		// Receive packet data
-		sock->recvPacket(data.get(), SNMP_MAX_PDU_SIZE, ip, SNMP_PORT);
+		sock->recvPacket(data.get(), SNMP_MAX_PDU_SIZE, ip, port);
 		u8 *ptr = data.get();
 
 		// Read response header
@@ -188,8 +188,11 @@ u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 
 		// Check responseID
 		std::shared_ptr<BerInteger> responseID = BerInteger::decode(&ptr, false);
-		if(responseID->getValueU32() != this->reqID) {
+		if(port != 0 && responseID->getValueU32() != this->reqID) {	// If port == 0, it is a SNMP trap
 			throw std::runtime_error("RequestID does not match");
+		}
+		if(port == 0) {		// If it was a SNMP trap, save the request ID for the possible ACK
+			Snmpv1Pdu::requestID = responseID->getValueU32() - 1;
 		}
 #ifdef SNMP_DEBUG
 		responseID->print();

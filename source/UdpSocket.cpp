@@ -30,6 +30,7 @@ UdpSocket::UdpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
 	this->tv.tv_sec = timeoutSecs;
 	this->tv.tv_usec = timeoutUsecs;
 	this->lastOrigin = 0;
+	this->lastPort = 0;
 }
 
 /**
@@ -46,7 +47,7 @@ void UdpSocket::sendPacket(void *data, u32 size, const std::string &ip, u16 port
 	dest.sin_family = AF_INET;
 	if(ip.compare("") == 0) {
 		dest.sin_addr.s_addr = this->lastOrigin;
-		dest.sin_port = htons(this->lastPort);
+		dest.sin_port = this->lastPort;
 	} else {
 		dest.sin_addr.s_addr = inet_addr(ip.c_str());
 		dest.sin_port = htons(port);
@@ -88,6 +89,9 @@ void UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port
 	if(port && src.sin_port != htons(port)) {
 		throw std::runtime_error("Source port does not match");
 	}
+
+	this->lastOrigin = src.sin_addr.s_addr;
+	this->lastPort = src.sin_port;
 }
 
 /**

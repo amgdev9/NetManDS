@@ -28,6 +28,9 @@ class BerPdu {
 		BerPdu();
 		virtual ~BerPdu();
 		virtual void clear();
+		// TODO Friend of SNMPv3 PDU
+		void addField(std::shared_ptr<BerField> field);
+		std::unique_ptr<u8> serialize(u32 *pdu_size);
 };
 
 }

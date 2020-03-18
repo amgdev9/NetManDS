@@ -72,7 +72,7 @@ void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
     try {
 
         // Receive a trap or inform-request PDU
-        u8 pduType = this->recvResponse(sock, "", SNMP_PDU_ANY);
+        u8 pduType = this->recvResponse(sock, "", 0, SNMP_PDU_ANY);
 
         // Error if not a notification was received
         if(pduType != SNMPV2_TRAP && pduType != SNMPV2_INFORMREQUEST) {

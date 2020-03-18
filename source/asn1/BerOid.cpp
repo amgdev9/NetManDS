@@ -103,7 +103,7 @@ void BerOid::parseData(u8 **out) {
 
 		// Parse the number
 		for(u8 j = 0; j < len; j++) {
-			data[len - j - 1] = ((j < (len - 1)) << 7) | 		// Bit 7 up except the last iteration
+			data[len - j - 1] = ((j > 0) << 7) | 		// Bit 7 up except the last iteration
 								((this->oid[i] >> (7 * j)) &0x7F);
 		}
 
