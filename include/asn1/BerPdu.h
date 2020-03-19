@@ -21,6 +21,9 @@ namespace NetMan {
  * @brief BER PDU handler
  */
 class BerPdu {
+	private:
+		void addField(std::shared_ptr<BerField> field);
+		std::unique_ptr<u8> serialize(u32 *pdu_size);
 	protected:
 		std::vector<std::shared_ptr<BerField>> fields;
 		void send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port);
@@ -28,9 +31,7 @@ class BerPdu {
 		BerPdu();
 		virtual ~BerPdu();
 		virtual void clear();
-		// TODO Friend of SNMPv3 PDU
-		void addField(std::shared_ptr<BerField> field);
-		std::unique_ptr<u8> serialize(u32 *pdu_size);
+		friend class Snmpv3Pdu;
 };
 
 }

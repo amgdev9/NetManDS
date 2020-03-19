@@ -24,6 +24,12 @@ SEQUENCE
 		PDU de SNMPv2 (sin cabecera SNMPv2)
 	}
 
+TRAPS: agente manda el trap con su engineID (NO MANDAR REPORT, PORQUE NO ES UN PDU "REPORTABLE"), aceptar si engineID y userName estan bien
+INFORM: Te envia el agente el inform-request -> responder con un getresponse si el engineID y el userName estan bien
+    REPORT: mandar cuando el inform no tengan bien el engineID o el userName
+        - Cuando mandemos un GET al agente, puede mandar un report en vez del get-response, debemos capturarlo y mostrar el error que tiene
+        - En un GET al agente, el primer paso de obtener el engineID no es necesario si ya lo tenemos
+
 RFC3412 para saber que es cada campo
 RFC3414 para modelo USM
 	2.6 sobre claves

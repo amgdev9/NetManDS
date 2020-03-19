@@ -56,11 +56,14 @@ namespace NetMan {
  * @class Snmpv2Pdu
  */
 class Snmpv2Pdu: public Snmpv1Pdu {
+	private:
+		std::shared_ptr<BerSequence> generateBulkRequest(u32 nonRepeaters, u32 maxRepetitions);
 	public:
 		Snmpv2Pdu(const std::string &community);
         virtual void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip);
 		virtual void recvTrap(std::shared_ptr<UdpSocket> sock) override;
 		~Snmpv2Pdu();
+		friend class Snmpv3Pdu;
 };
 
 }

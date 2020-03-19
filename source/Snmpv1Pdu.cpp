@@ -39,16 +39,22 @@ void Snmpv1Pdu::clear() {
 }
 
 /**
- * @brief Add a field to the PDU
+ * @brief Set the VarBindList to empty state
+ */
+void Snmpv1Pdu::emptyVarBindList() {
+	this->varBindList = std::make_shared<BerSequence>();
+}
+
+/**
+ * @brief Add a field to a VarBindList
+ * @param vbList VarBindList to use
  * @param oid Object identifier of the field
  * @param value Value for that field (optional if requesting)
  */
-void Snmpv1Pdu::addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value) {
-
+void Snmpv1Pdu::addVarBind(std::shared_ptr<BerSequence> vbList, std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value) {
+	
 	std::shared_ptr<BerSequence> varBind = nullptr;
 	try {
-		if(this->varBindList == nullptr) this->varBindList = std::make_shared<BerSequence>();
-
 		varBind = std::make_shared<BerSequence>();
 	} catch (const std::bad_alloc &e) {
 		throw;
@@ -56,7 +62,22 @@ void Snmpv1Pdu::addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField
 	varBind->addChild(oid);
 	varBind->addChild(value);
 
-	this->varBindList->addChild(varBind);
+	vbList->addChild(varBind);
+}
+
+/**
+ * @brief Add a field to the PDU
+ * @param oid Object identifier of the field
+ * @param value Value for that field (optional if requesting)
+ */
+void Snmpv1Pdu::addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value) {
+
+	try {
+		if(this->varBindList == nullptr) this->varBindList = std::make_shared<BerSequence>();
+		Snmpv1Pdu::addVarBind(this->varBindList, oid, value);
+	} catch (const std::bad_alloc &e) {
+		throw;
+	}
 }
 
 /**
@@ -83,6 +104,29 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::generateHeader(u32 ver) {
 }
 
 /**
+ * @brief Generate a SNMPv1 PDU
+ * @param type PDU type
+ * @return The generated PDU (without its header)
+ */
+std::shared_ptr<BerSequence> Snmpv1Pdu::generateRequest(u32 type) {
+
+	std::shared_ptr<BerSequence> getRequest = std::make_shared<BerSequence>(SNMPV1_TAGCLASS, type);
+
+	this->reqID = ++Snmpv1Pdu::requestID;
+	u32 errorInteger = SNMPV1_ERROR_NOERROR;
+	u32 errorDetailsInteger = 0;
+	std::shared_ptr<BerInteger> reqid = std::make_shared<BerInteger>(&this->reqID, sizeof(u32), false);
+	std::shared_ptr<BerInteger> error = std::make_shared<BerInteger>(&errorInteger, sizeof(u32), false);
+	std::shared_ptr<BerInteger> errorDetails = std::make_shared<BerInteger>(&errorDetailsInteger, sizeof(u32), false);
+	getRequest->addChild(reqid);				// RequestID
+	getRequest->addChild(error);				// Error status
+	getRequest->addChild(errorDetails);			// Error details
+	getRequest->addChild(this->varBindList);	// Elements to ask for
+
+	return getRequest;
+}
+
+/**
  * @brief Send a GET REQUEST
  * @param type Type of SNMP PDU
  * @param socket Socket used when sending the PDU
@@ -99,19 +143,8 @@ void Snmpv1Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 		std::shared_ptr<BerSequence> message = this->generateHeader(this->snmpVersion);
 
 		// GetRequest PDU
-		std::shared_ptr<BerSequence> getRequest = std::make_shared<BerSequence>(SNMPV1_TAGCLASS, type);
+		std::shared_ptr<BerSequence> getRequest = this->generateRequest(type);
 		message->addChild(getRequest);
-
-		this->reqID = ++Snmpv1Pdu::requestID;
-		u32 errorInteger = SNMPV1_ERROR_NOERROR;
-		u32 errorDetailsInteger = 0;
-		std::shared_ptr<BerInteger> reqid = std::make_shared<BerInteger>(&this->reqID, sizeof(u32), false);
-		std::shared_ptr<BerInteger> error = std::make_shared<BerInteger>(&errorInteger, sizeof(u32), false);
-		std::shared_ptr<BerInteger> errorDetails = std::make_shared<BerInteger>(&errorDetailsInteger, sizeof(u32), false);
-		getRequest->addChild(reqid);				// RequestID
-		getRequest->addChild(error);				// Error status
-		getRequest->addChild(errorDetails);			// Error details
-		getRequest->addChild(this->varBindList);	// Elements to ask for
 
 		this->fields.push_back(message);
 		BerPdu::send(sock, ip, SNMP_PORT);
@@ -163,9 +196,87 @@ void Snmpv1Pdu::checkHeader(u8 **ptr) {
 }
 
 /**
+ * @brief Receive a response from a buffer
+ * @param ptr Buffer data
+ * @param port Expected port
+ * @param reqID Expected request ID
+ * @param pduType Type of response PDU obtained (=expectedPduType, or obtained PDU if SNMP_PDU_ANY)
+ * @param expectedPduType Expected PDU type
+ */
+std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, u16 port, u32 reqID, u8 *pduType, u32 expectedPduType) {
+
+	// Skip get-response sequence
+	BerSequence::decode(ptr, SNMPV1_TAGCLASS, expectedPduType, pduType);
+
+	// Check responseID
+	std::shared_ptr<BerInteger> responseID = BerInteger::decode(ptr, false);
+	if(port != 0 && responseID->getValueU32() != reqID) {	// If port == 0, it is a SNMP trap
+		throw std::runtime_error("RequestID does not match");
+	}
+	if(port == 0) {		// If it was a SNMP trap, save the request ID for the possible ACK
+		Snmpv1Pdu::requestID = responseID->getValueU32() - 1;
+	}
+#ifdef SNMP_DEBUG
+		responseID->print();
+#endif
+
+		// Check errors
+		std::shared_ptr<BerInteger> errorStatus = BerInteger::decode(ptr, false);
+#ifdef SNMP_DEBUG
+		errorStatus->print();
+#endif
+		std::shared_ptr<BerInteger> errorDetails = BerInteger::decode(ptr, false);
+#ifdef SNMP_DEBUG
+		errorDetails->print();
+#endif
+		if(errorStatus->getValueU32() != SNMPV1_ERROR_NOERROR) {
+			throw std::runtime_error(std::string("Error in SNMP response: ") + 
+									 std::to_string(errorStatus->getValueU32()) +
+									 std::string("; Details: ") +
+									 std::to_string(errorDetails->getValueU32()));
+		}
+
+		// Skip varbindlist sequence
+		u32 varbindLength = BerSequence::decode(ptr);
+
+		// Create a VarBindList
+		std::shared_ptr<BerSequence> vbList = std::make_shared<BerSequence>();
+
+		// Loop each varbind
+		u32 read = 0;
+		while(read < varbindLength) {
+
+			u8 *tmp = *ptr;
+
+			// Skip varbind sequence
+			BerSequence::decode(ptr);
+
+			// Decode OID
+			std::shared_ptr<BerOid> oid = BerOid::decode(ptr);
+#ifdef SNMP_DEBUG
+			oid->print();
+#endif
+
+			// Decode value
+			std::shared_ptr<BerField> value = BerField::decode(ptr);
+			read += (*ptr - tmp);
+#ifdef SNMP_DEBUG
+			value->print();
+#endif
+
+			// Add pair OID,value to the varbindlist
+			Snmpv1Pdu::addVarBind(vbList, oid, value);
+		}
+
+		// Return the loaded VarBindList
+		return vbList;
+}
+
+/**
  * @brief Receive a response from the agent
  * @param sock Socket used for reception
  * @param ip Expected source IP
+ * @param port Expected port
  * @param expectedPduType Expected PDU type
  * @return Type of response PDU obtained (=expectedPduType, or obtained PDU if SNMP_PDU_ANY)
  */
@@ -182,69 +293,11 @@ u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 		// Read response header
 		this->checkHeader(&ptr);
 
-		// Skip get-response sequence
+		// Read PDU fields
 		u8 pduType;
-		BerSequence::decode(&ptr, SNMPV1_TAGCLASS, expectedPduType, &pduType);
-
-		// Check responseID
-		std::shared_ptr<BerInteger> responseID = BerInteger::decode(&ptr, false);
-		if(port != 0 && responseID->getValueU32() != this->reqID) {	// If port == 0, it is a SNMP trap
-			throw std::runtime_error("RequestID does not match");
-		}
-		if(port == 0) {		// If it was a SNMP trap, save the request ID for the possible ACK
-			Snmpv1Pdu::requestID = responseID->getValueU32() - 1;
-		}
-#ifdef SNMP_DEBUG
-		responseID->print();
-#endif
-
-		// Check errors
-		std::shared_ptr<BerInteger> errorStatus = BerInteger::decode(&ptr, false);
-#ifdef SNMP_DEBUG
-		errorStatus->print();
-#endif
-		std::shared_ptr<BerInteger> errorDetails = BerInteger::decode(&ptr, false);
-#ifdef SNMP_DEBUG
-		errorDetails->print();
-#endif
-		if(errorStatus->getValueU32() != SNMPV1_ERROR_NOERROR) {
-			throw std::runtime_error(std::string("Error in SNMP response: ") + 
-									 std::to_string(errorStatus->getValueU32()) +
-									 std::string("; Details: ") +
-									 std::to_string(errorDetails->getValueU32()));
-		}
-
-		// Skip varbindlist sequence
-		u32 varbindLength = BerSequence::decode(&ptr);
-
-		// Loop each varbind
-		u32 read = 0;
-		while(read < varbindLength) {
-
-			u8 *tmp = ptr;
-
-			// Skip varbind sequence
-			BerSequence::decode(&ptr);
-
-			// Decode OID
-			std::shared_ptr<BerOid> oid = BerOid::decode(&ptr);
-#ifdef SNMP_DEBUG
-			oid->print();
-#endif
-
-			// Decode value
-			std::shared_ptr<BerField> value = BerField::decode(&ptr);
-			read += (ptr - tmp);
-#ifdef SNMP_DEBUG
-			value->print();
-#endif
-
-			// Add pair OID,value to the varbindlist
-			this->addVarBind(oid, value);
-		}
-
-		// Return decoded PDU type
+		this->varBindList = Snmpv1Pdu::recvResponse(&ptr, port, this->reqID, &pduType, expectedPduType);
 		return pduType;
+
 	} catch (const std::runtime_error &e) {
 		throw;
 	} catch (const std::bad_alloc &e) {

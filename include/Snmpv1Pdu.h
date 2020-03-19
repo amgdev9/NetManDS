@@ -56,6 +56,9 @@ class Snmpv1Pdu: public BerPdu {
 		u32 snmpVersion;
 		std::shared_ptr<BerSequence> varBindList;
 		std::shared_ptr<BerSequence> generateHeader(u32 ver);
+		std::shared_ptr<BerSequence> generateRequest(u32 type);
+		static std::shared_ptr<BerSequence> recvResponse(u8 **ptr, u16 port, u32 reqID, u8 *pduType, u32 expectedPduType = SNMPV1_GETRESPONSE);
+		static void addVarBind(std::shared_ptr<BerSequence> vbList, std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
 		void checkHeader(u8 **ptr);
 		static u32 requestID;
 		u32 reqID;
@@ -63,6 +66,7 @@ class Snmpv1Pdu: public BerPdu {
 	public:
 		Snmpv1Pdu(const std::string &community);
 		void clear() override;
+		void emptyVarBindList();
 		void addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
 		virtual void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip);
 		virtual u8 recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);

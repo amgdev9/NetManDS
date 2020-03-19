@@ -18,6 +18,28 @@ Snmpv2Pdu::Snmpv2Pdu(const std::string &community) : Snmpv1Pdu(community) {
 }
 
 /**
+ * @brief Generate a SNMPv2 bulk request PDU
+ * @param nonRepeaters      Number of scalar objects to fetch
+ * @param maxRepetitions    Number of rows to get for the remaining objects
+ * @return The generated PDU (without its header)
+ */
+std::shared_ptr<BerSequence> Snmpv2Pdu::generateBulkRequest(u32 nonRepeaters, u32 maxRepetitions) {
+
+	std::shared_ptr<BerSequence> getBulkRequest = std::make_shared<BerSequence>(SNMPV1_TAGCLASS, SNMPV2_GETBULKREQUEST);
+
+	this->reqID = ++Snmpv1Pdu::requestID;
+	std::shared_ptr<BerInteger> reqid = std::make_shared<BerInteger>(&this->reqID, sizeof(u32), false);
+	std::shared_ptr<BerInteger> nrField = std::make_shared<BerInteger>(&nonRepeaters, sizeof(u32), false);
+	std::shared_ptr<BerInteger> mrField = std::make_shared<BerInteger>(&maxRepetitions, sizeof(u32), false);
+	getBulkRequest->addChild(reqid);				// RequestID
+	getBulkRequest->addChild(nrField);				// Non repeaters
+	getBulkRequest->addChild(mrField);	    		// Max repetitions
+	getBulkRequest->addChild(this->varBindList);	// Elements to ask for
+
+	return getBulkRequest;
+}
+
+/**
  * @brief Send a SNMPv2 GetBulk request
  * @param nonRepeaters      Number of scalar objects to fetch
  * @param maxRepetitions    Number of rows to get for the remaining objects
@@ -35,17 +57,8 @@ void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::share
 		std::shared_ptr<BerSequence> message = this->generateHeader(this->snmpVersion);
 
 		// GetBulkRequest PDU
-		std::shared_ptr<BerSequence> getBulkRequest = std::make_shared<BerSequence>(SNMPV1_TAGCLASS, SNMPV2_GETBULKREQUEST);
+		std::shared_ptr<BerSequence> getBulkRequest = this->generateBulkRequest(nonRepeaters, maxRepetitions);
 		message->addChild(getBulkRequest);
-
-		this->reqID = ++Snmpv1Pdu::requestID;
-		std::shared_ptr<BerInteger> reqid = std::make_shared<BerInteger>(&this->reqID, sizeof(u32), false);
-		std::shared_ptr<BerInteger> nrField = std::make_shared<BerInteger>(&nonRepeaters, sizeof(u32), false);
-		std::shared_ptr<BerInteger> mrField = std::make_shared<BerInteger>(&maxRepetitions, sizeof(u32), false);
-		getBulkRequest->addChild(reqid);				// RequestID
-		getBulkRequest->addChild(nrField);				// Non repeaters
-		getBulkRequest->addChild(mrField);	    		// Max repetitions
-		getBulkRequest->addChild(this->varBindList);	// Elements to ask for
 
 		this->fields.push_back(message);
 		BerPdu::send(sock, ip, SNMP_PORT);
