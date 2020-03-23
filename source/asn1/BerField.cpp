@@ -12,7 +12,7 @@
 #include "asn1/BerNull.h"
 #include "asn1/BerOctetString.h"
 #include "asn1/BerOid.h"
-#include "Snmpv2Pdu.h"
+#include "snmp/Snmpv2Pdu.h"
 
 namespace NetMan {
 

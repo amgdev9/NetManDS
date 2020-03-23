@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 // Own includes
-#include "Snmpv1Pdu.h"
+#include "snmp/Snmpv1Pdu.h"
 #include "asn1/BerInteger.h"
 #include "asn1/BerOctetString.h"
 
@@ -198,24 +198,26 @@ void Snmpv1Pdu::checkHeader(u8 **ptr) {
 /**
  * @brief Receive a response from a buffer
  * @param ptr Buffer data
- * @param port Expected port
+ * @param checkResponseID Check response ID?
  * @param reqID Expected request ID
  * @param pduType Type of response PDU obtained (=expectedPduType, or obtained PDU if SNMP_PDU_ANY)
  * @param expectedPduType Expected PDU type
  */
-std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, u16 port, u32 reqID, u8 *pduType, u32 expectedPduType) {
+std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, bool checkResponseID, u32 reqID, u8 *pduType, u32 expectedPduType) {
 
-	// Skip get-response sequence
-	BerSequence::decode(ptr, SNMPV1_TAGCLASS, expectedPduType, pduType);
+	try {
 
-	// Check responseID
-	std::shared_ptr<BerInteger> responseID = BerInteger::decode(ptr, false);
-	if(port != 0 && responseID->getValueU32() != reqID) {	// If port == 0, it is a SNMP trap
-		throw std::runtime_error("RequestID does not match");
-	}
-	if(port == 0) {		// If it was a SNMP trap, save the request ID for the possible ACK
-		Snmpv1Pdu::requestID = responseID->getValueU32() - 1;
-	}
+		// Skip get-response sequence
+		BerSequence::decode(ptr, SNMPV1_TAGCLASS, expectedPduType, pduType);
+
+		// Check responseID
+		std::shared_ptr<BerInteger> responseID = BerInteger::decode(ptr, false);
+		if(checkResponseID && responseID->getValueU32() != reqID) {
+			throw std::runtime_error("RequestID does not match");
+		}
+		if(!checkResponseID) {		// Save the request ID for the possible ACK
+			Snmpv1Pdu::requestID = responseID->getValueU32() - 1;
+		}
 #ifdef SNMP_DEBUG
 		responseID->print();
 #endif
@@ -270,6 +272,12 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, u16 port, u32 req
 
 		// Return the loaded VarBindList
 		return vbList;
+
+	} catch (const std::runtime_error &e) {
+		throw;
+	} catch (const std::bad_alloc &e) {
+		throw;
+	}
 }
 
 /**
@@ -295,7 +303,7 @@ u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 
 		// Read PDU fields
 		u8 pduType;
-		this->varBindList = Snmpv1Pdu::recvResponse(&ptr, port, this->reqID, &pduType, expectedPduType);
+		this->varBindList = Snmpv1Pdu::recvResponse(&ptr, port != 0, this->reqID, &pduType, expectedPduType);
 		return pduType;
 
 	} catch (const std::runtime_error &e) {

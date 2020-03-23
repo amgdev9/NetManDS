@@ -29,6 +29,9 @@ INFORM: Te envia el agente el inform-request -> responder con un getresponse si 
     REPORT: mandar cuando el inform no tengan bien el engineID o el userName
         - Cuando mandemos un GET al agente, puede mandar un report en vez del get-response, debemos capturarlo y mostrar el error que tiene
         - En un GET al agente, el primer paso de obtener el engineID no es necesario si ya lo tenemos
+HASH QUE SE DEBEN SOPORTAR: HMAC-MD5-96 y HMAC-SHA-96 (NO ENCRIPTA, SOLO METE EL HASH en msgAuthenticationParameters, al parecer se hace sobre la
+    PDU encriptada)
+PRIV QUE SE DEBEN SOPORTAR: CBC-DES (encripta la PDU y mete info adicional en msgPrivacyParameters)
 
 RFC3412 para saber que es cada campo
 RFC3414 para modelo USM
@@ -36,4 +39,20 @@ RFC3414 para modelo USM
 	6,7 algoritmo MD5 y SHA para autenticación
 	8 algoritmo CBC-DES para confidencialidad
 	A para pasar de password a clave
+
+HMAC-MD5/SHA-96:
+    0) A.2.1 para pasar de contraseña a authKey (A.2.2 para SHA1)
+    1) extendedAuthKey = authKey alargar a 64 bytes (relleno de 0)
+    2) K1 = extendedAuthKey XOR 0x363636...
+    3) K2 = extendedAuthKey XOR 0x5c5c5c...
+    4) MD5(K2 + MD5(K1 + mensaje))  // SHA1 si hacemos HMAC-SHA-96:
+    5) Pillar los 12 primeros bytes
+
+CBC-DES:
+    0) A.2.1 o A.2.2 (según autenticación usada) para generar key
+    1) claveDES = key[0-7, quitando el LSB de cada byte]
+    2) preIV = key[8-15]
+    3) salt = engineBoots +(concat) random_u32(). Cada elemento de la concatenación en BIG ENDIAN (Most Significant Byte first)
+    4) IV = preIV XOR salt
+    5) encriptar usando CBC-DES y serializar en un OCTET STRING
 

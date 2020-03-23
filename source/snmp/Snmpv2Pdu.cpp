@@ -5,7 +5,7 @@
 
 // Own includes
 #include "asn1/BerInteger.h"
-#include "Snmpv2Pdu.h"
+#include "snmp/Snmpv2Pdu.h"
 
 namespace NetMan {
 

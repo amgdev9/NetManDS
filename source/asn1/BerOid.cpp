@@ -168,13 +168,21 @@ void BerOid::print() {
 
 	FILE *f = fopen("log.txt", "a+");
 	
-	fprintf(f, "OID: %ld.%ld", oid[0] / 40, oid[0] % 40);
-	for(u32 i = 1; i < oid.size(); i++) {
-		fprintf(f, ".%ld", oid[i]);
-	}
-	fprintf(f, "\n");
+	fprintf(f, "OID: %s\n", this->get()->c_str());
 
 	fclose(f);
+}
+
+std::shared_ptr<std::string> BerOid::get() {
+	std::shared_ptr<std::string> text = std::make_shared<std::string>();
+	char tmp[64];
+	sprintf(tmp, "%ld.%ld", oid[0] / 40, oid[0] % 40);
+	text->append(tmp);
+	for(u32 i = 1; i < oid.size(); i++) {
+		sprintf(tmp, ".%ld", oid[i]);
+		text->append(tmp);
+	}
+	return text;
 }
 
 }

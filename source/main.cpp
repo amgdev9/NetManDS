@@ -9,8 +9,9 @@
 
 // Own includes
 #include "Application.h"
-#include "Snmpv2Pdu.h"
-#include "Snmpv3Pdu.h"
+#include "snmp/Snmpv2Pdu.h"
+#include "snmp/Snmpv3Pdu.h"
+#include "snmp/Snmpv3UserStore.h"
 
 using namespace NetMan;
 
@@ -28,6 +29,9 @@ int main(int argc, char **argv) {
 	Application &app = Application::getInstance();
 
 	app.initialize();
+
+	Snmpv3UserStore &store = Snmpv3UserStore::getInstance();
+	store.load("userStore.txt");
 
 	//snmpv1_test();
 	snmpv3_test();
@@ -50,9 +54,7 @@ void snmpv3_test() {
 	try {
 
 		// Pruebas SNMP GET
-		std::string contextName = "";
-		std::string userName = "manager";
-		std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(contextName, userName);
+		std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>("engineid", "", "manager");
 		std::shared_ptr<BerOid> oid[7];
 		oid[0] = std::make_shared<BerOid>("1.3.6.1.2.1.1.1.0");
 		oid[1] = std::make_shared<BerOid>("1.3.6.1.2.1.1.2.0");
@@ -65,7 +67,19 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1");
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1", SNMP_PORT);
+		try{
+			pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+		} catch (std::runtime_error &e) {
+			f = fopen("sdmc:/log.txt", "a+");
+			fprintf(f, "Error: %s\n", e.what());
+			fclose(f);
+		}
+		pdu->clear();
+		for(u8 i = 0; i < 7; i++) {
+			pdu->addVarBind(oid[i], nullval);
+		}
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1", SNMP_PORT);
 		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
 
 		// Pruebas SNMP GET BULK
@@ -76,8 +90,17 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 3; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendBulkRequest(2, 5, sock, "127.0.0.1");
+		pdu->sendBulkRequest(2, 5, sock, "127.0.0.1", SNMP_PORT);
 		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+
+		// Pruebas SNMP TRAP e INFORM
+		pdu = std::make_shared<Snmpv3Pdu>("engineid", "", "manager");
+		sock = std::make_shared<UdpSocket>(30);
+		sock->bindTo(SNMP_TRAP_PORT);
+		pdu->clear();
+		pdu->recvTrap(sock);
+		pdu->clear();
+		pdu->recvTrap(sock);
 
 	} catch (const std::runtime_error &e) {
 		f = fopen("sdmc:/log.txt", "a+");
