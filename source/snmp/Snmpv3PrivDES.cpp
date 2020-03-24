@@ -24,21 +24,23 @@ Snmpv3PrivDES::~Snmpv3PrivDES() { }
  * @param length    Data payload length
  * @param password  Password to use for encryption
  * @param params    Security parameters
+ * @param authProto Authentication protocol interface
  * @return The encrypted payload encapsulated in an OCTET STRING
  */
-std::shared_ptr<BerOctetString> Snmpv3PrivDES::encrypt(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) {
+std::shared_ptr<BerOctetString> Snmpv3PrivDES::encrypt(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params, std::shared_ptr<Snmpv3AuthProto> authProto) {
     return nullptr;
 }
 
 /**
  * @brief Decrypt a payload using CBC-DES
  * @param data      Data payload to be decrypted
+ * @param length    Data payload length (input)
  * @param password  Password to use for decryption
  * @param params    Security parameters
- * @param length    Data payload length
+ * @param authProto Authentication protocol interface
  * @return The decrypted payload
  */
-std::unique_ptr<u8> Snmpv3PrivDES::decrypt(std::shared_ptr<BerOctetString> data, const std::string &password, Snmpv3SecurityParams &params, u32 *length) {
+std::unique_ptr<u8> Snmpv3PrivDES::decrypt(std::shared_ptr<BerOctetString> data, u32 *length, const std::string &password, Snmpv3SecurityParams &params, std::shared_ptr<Snmpv3AuthProto> authProto) {
     return nullptr;
 }
 

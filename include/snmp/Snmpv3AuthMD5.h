@@ -27,7 +27,7 @@ class Snmpv3AuthMD5 : public Snmpv3AuthProto {
         Snmpv3AuthMD5();
         virtual ~Snmpv3AuthMD5();
         void createHash(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) override;
-        bool authenticate(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) override;
+        std::unique_ptr<u8> passwordToKey(const std::string &password, Snmpv3SecurityParams &params) override;
 };
 
 }

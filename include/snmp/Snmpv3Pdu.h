@@ -21,11 +21,11 @@
 #define SNMPV3_FLAG_AUTH		(1 << 0)	/**< Authentication used? */
 
 // Defines error status
-#define SNMPV3_SECMODEL_MISMATCH	"1.3.6.1.6.3.15.1.1.1"
-#define SNMPV3_USERNAME_MISMATCH	"1.3.6.1.6.3.15.1.1.3"
-#define SNMPV3_ENGINEID_MISMATCH	"1.3.6.1.6.3.15.1.1.4"
-#define SNMPV3_AUTH_WRONG			"1.3.6.1.6.3.15.1.1.5"
-#define SNMPV3_PRIV_WRONG			"1.3.6.1.6.3.15.1.1.5"
+#define SNMPV3_SECMODEL_MISMATCH	"1.3.6.1.6.3.15.1.1.1.0"
+#define SNMPV3_USERNAME_MISMATCH	"1.3.6.1.6.3.15.1.1.3.0"
+#define SNMPV3_ENGINEID_MISMATCH	"1.3.6.1.6.3.15.1.1.4.0"
+#define SNMPV3_AUTH_WRONG			"1.3.6.1.6.3.15.1.1.5.0"
+#define SNMPV3_PRIV_WRONG			"1.3.6.1.6.3.15.1.1.6.0"
 
 namespace NetMan {
 
@@ -52,7 +52,7 @@ class Snmpv3Pdu: public BerPdu {
 		std::shared_ptr<BerSequence> varBindList;
 		static u32 requestID;
 		u32 reqID;
-		std::shared_ptr<BerSequence> generateHeader(bool reportable, std::shared_ptr<BerField> scopedPDU);
+		std::shared_ptr<BerSequence> generateHeader(u32 type, bool reportable, std::shared_ptr<BerField> scopedPDU);
 		std::shared_ptr<BerSequence> generateScopedPdu(std::shared_ptr<BerSequence> pdu);
 		std::shared_ptr<BerOctetString> checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock, u8 *flags);
 		static void sendReportTo(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params);

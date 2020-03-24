@@ -39,6 +39,9 @@ class BerField {
 		static u32 decodeLength(u8 **data);
 	public:
 		BerField(u8 tagOptions, u32 tag);
+		inline u32 getTagSize() { return tagSize; }
+		inline u32 getLengthSize() { return lengthSize; }
+		inline u32 getTagAndLengthSize(){ return tagSize + lengthSize; }
 		virtual u32 getTotalSize();
 		void parseTag(u8 **out);
 		void parseLength(u8 **out);

@@ -3,6 +3,9 @@
  * @brief SNMPv3 PDU handler
  */
 
+// Includes C/C++
+#include <string.h>
+
 // Own includes
 #include "snmp/Snmpv3Pdu.h"
 #include "snmp/Snmpv2Pdu.h"
@@ -34,11 +37,12 @@ Snmpv3Pdu::Snmpv3Pdu(const std::string &engineID, const std::string &contextName
 
 /**
  * @brief Generate a SNMPv3 header
+ * @param type			PDU type
  * @param reportable	Reportable flag set?
  * @param scopedPdu		Scoped PDU data
  * @return A sequence containing a SNMPv3 header
  */
-std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable, std::shared_ptr<BerField> scopedPdu) {
+std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(u32 type, bool reportable, std::shared_ptr<BerField> scopedPdu) {
 
     try {
 		std::shared_ptr<BerSequence> message = std::make_shared<BerSequence>();
@@ -53,8 +57,10 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable, std::sha
 		Snmpv3UserStore &store = Snmpv3UserStore::getInstance();
 		Snmpv3UserStoreEntry &user = store.getUser(secParams.msgUserName);
 		if(reportable) flags |= SNMPV3_FLAG_REPORTABLE;
-		if(user.authProto != SNMPV3_AUTHPROTO_NONE) flags |= SNMPV3_FLAG_AUTH;
-		if(user.privProto != SNMPV3_PRIVPROTO_NONE) flags |= SNMPV3_FLAG_PRIV;
+		if(type != SNMPV2_REPORT) {		// Reports are not secured
+			if(user.authProto != SNMPV3_AUTHPROTO_NONE) flags |= SNMPV3_FLAG_AUTH;
+			if(user.privProto != SNMPV3_PRIVPROTO_NONE) flags |= SNMPV3_FLAG_PRIV;
+		}
 
         // Fill msgGlobalData
         this->reqID = ++Snmpv3Pdu::requestID;
@@ -161,7 +167,9 @@ std::shared_ptr<BerOctetString> Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID
 #endif
 
 		// Get securityParameters
+		u8 *secParamsPtr = *ptr;		// Used if authentication is needed
 		std::shared_ptr<BerOctetString> securityParams = BerOctetString::decode(ptr);
+		secParamsPtr += securityParams->getTagAndLengthSize();	// Beginning of the OCTET STRING data
 
 		// Check securityParameters
 		u8 *paramsPtr = (u8*)securityParams->getValue().c_str();
@@ -196,11 +204,21 @@ std::shared_ptr<BerOctetString> Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID
 #endif
 
 		// Check authParams
+		secParamsPtr += (paramsPtr - (u8*)securityParams->getValue().c_str());
 		std::shared_ptr<BerOctetString> authParams = BerOctetString::decode(&paramsPtr);
+		secParamsPtr += authParams->getTagAndLengthSize();
+		if((*flags &SNMPV3_FLAG_AUTH) && authParams->getValue().length() != 12) {
+			throw std::runtime_error("authParam is not 12 octets");
+		}
 		params.msgAuthenticationParameters = authParams->getValue();
 #ifdef SNMP_DEBUG
 	authParams->print();
 #endif
+
+		// If data must be authenticated, fill the authParams in the packet with zeros
+		if(*flags &SNMPV3_FLAG_AUTH) {
+			memset(secParamsPtr, 0, 12);
+		}
 
 		// Check privParams
 		std::shared_ptr<BerOctetString> privParams = BerOctetString::decode(&paramsPtr);
@@ -302,33 +320,45 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 		// Get the authentication and privacy protocols
 		Snmpv3UserStore &userStore = Snmpv3UserStore::getInstance();
 		Snmpv3UserStoreEntry &user = userStore.getUser(secParams.msgUserName);
-		std::shared_ptr<Snmpv3PrivProto> privProto = userStore.getPrivProto(user);
-		std::shared_ptr<Snmpv3AuthProto> authProto = userStore.getAuthProto(user);
+		std::shared_ptr<Snmpv3PrivProto> privProto = nullptr;
+		std::shared_ptr<Snmpv3AuthProto> authProto = nullptr;
+		if(type != SNMPV2_REPORT) {		// Reports are not secured
+			privProto = userStore.getPrivProto(user);
+			authProto = userStore.getAuthProto(user);
+		}
 
-		// If authentication is enabled...
+		// Encrypt the PDU, if needed
 		std::shared_ptr<BerOctetString> encryptedPdu = nullptr;
-		if(authProto != nullptr) {
-
-			// Encrypt the PDU, if needed
-			if(privProto != nullptr) {
-				encryptedPdu = privProto->encrypt(serializedPdu.get(), serializedPduSize, user.privPass, this->secParams);
-
-				// Hash the encrypted PDU
-				std::string &encryptedPduString = encryptedPdu->getValue();
-				authProto->createHash((const u8*)encryptedPduString.c_str(), encryptedPduString.length(), user.authPass, this->secParams);
-				
-			} else {
-				// Hash the clear PDU
-				authProto->createHash(serializedPdu.get(), serializedPduSize, user.authPass, this->secParams);
-			}
+		if(authProto != nullptr && privProto != nullptr) {
+			encryptedPdu = privProto->encrypt(serializedPdu.get(), serializedPduSize, user.privPass, this->secParams, authProto);
 		}
 
 		// Generate a header
 		std::shared_ptr<BerSequence> message = nullptr;
+		if(authProto != nullptr) {
+			// Initialize the authentication parameter
+			this->secParams.msgAuthenticationParameters = std::string(12, '\0');
+		}
 		if(privProto != nullptr) {
-			message = this->generateHeader(true, encryptedPdu);
+			message = this->generateHeader(type, true, encryptedPdu);
 		} else {
-			message = this->generateHeader(true, scopedPdu);
+			message = this->generateHeader(type, true, scopedPdu);
+		}
+
+		// Authenticate the whole message
+		if(authProto != nullptr) {
+			serializerPdu->clear();
+			serializerPdu->addField(message);
+        	serializedPdu = serializerPdu->serialize(&serializedPduSize);
+			authProto->createHash(serializedPdu.get(), serializedPduSize, user.authPass, this->secParams);
+
+			// Regenerate the header
+			Snmpv3Pdu::requestID --;
+			if(privProto != nullptr) {
+				message = this->generateHeader(type, true, encryptedPdu);
+			} else {
+				message = this->generateHeader(type, true, scopedPdu);
+			}
 		}
 
 		// Send the PDU
@@ -391,32 +421,28 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 		// Authenticate the PDU
 		if(flags &SNMPV3_FLAG_AUTH && authProto != nullptr) {
 
-			// Decrypt the PDU first
-			bool authResult = false;
+			// Check the authentication status
+			bool authResult = authProto->authenticate(data.get(), packetSize, user.authPass, params);
+			if(!authResult) {
+				if(reportable) {
+					Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_AUTH_WRONG, secParams);
+				}
+				throw std::runtime_error("Authentication failed");
+			}
+
+			// Decrypt the PDU
 			if(flags &SNMPV3_FLAG_PRIV && privProto != nullptr) {
 				u32 decryptedPduSize;
 				std::unique_ptr<u8> decryptedPdu = nullptr;
 				try {
-					decryptedPdu = privProto->decrypt(encryptedPdu, user.privPass, params, &decryptedPduSize);
+					decryptedPdu = privProto->decrypt(encryptedPdu, &decryptedPduSize, user.privPass, params, authProto);
 				} catch (const std::runtime_error &e) {
 					if(reportable) {
 						Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_PRIV_WRONG, secParams);
 					}
 					throw;
 				}
-				authResult = authProto->authenticate(decryptedPdu.get(), decryptedPduSize, user.authPass, params);
 				ptr = decryptedPdu.get();	// Update the read pointer to the decrypted PDU
-			} else {
-				u32 pduSize = packetSize - (ptr - data.get());
-				authResult = authProto->authenticate(ptr, pduSize, user.authPass, params);
-			}
-
-			// Check the authentication status
-			if(!authResult) {
-				if(reportable) {
-					Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_AUTH_WRONG, secParams);
-				}
-				throw std::runtime_error("Authentication failed");
 			}
 		}
 
