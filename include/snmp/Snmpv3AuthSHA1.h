@@ -15,18 +15,19 @@
 
 // Own includes
 #include "Snmpv3Pdu.h"
+#include "Snmpv3AuthProto.h"
 
 namespace NetMan {
 
 /**
  * @class Snmpv3AuthSHA1
  */
-class Snmpv3AuthSHA1 {
+class Snmpv3AuthSHA1 : public Snmpv3AuthProto {
     public:
         Snmpv3AuthSHA1();
         virtual ~Snmpv3AuthSHA1();
-        void createHash(std::unique_ptr<u8> data, const std::string &password, Snmpv3SecurityParams &params);
-        bool authenticate(std::unique_ptr<u8> data, const std::string &password, Snmpv3SecurityParams &params);
+        void createHash(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) override;
+        bool authenticate(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) override;
 };
 
 }

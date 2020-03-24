@@ -52,8 +52,9 @@ class Snmpv3Pdu: public BerPdu {
 		std::shared_ptr<BerSequence> varBindList;
 		static u32 requestID;
 		u32 reqID;
-		std::shared_ptr<BerSequence> generateHeader(bool reportable);
-		u8 checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock);
+		std::shared_ptr<BerSequence> generateHeader(bool reportable, std::shared_ptr<BerField> scopedPDU);
+		std::shared_ptr<BerSequence> generateScopedPdu(std::shared_ptr<BerSequence> pdu);
+		std::shared_ptr<BerOctetString> checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock, u8 *flags);
 		static void sendReportTo(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params);
 	public:
 		Snmpv3Pdu(const std::string &engineID, const std::string &contextName, const std::string &userName);

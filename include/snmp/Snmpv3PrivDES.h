@@ -15,18 +15,19 @@
 
 // Own includes
 #include "Snmpv3Pdu.h"
+#include "Snmpv3PrivProto.h"
 
 namespace NetMan {
 
 /**
  * @class Snmpv3PrivDES
  */
-class Snmpv3PrivDES {
+class Snmpv3PrivDES : public Snmpv3PrivProto {
     public:
         Snmpv3PrivDES();
         virtual ~Snmpv3PrivDES();
-        std::shared_ptr<BerOctetString> encrypt(std::unique_ptr<u8> data, const std::string &password, Snmpv3SecurityParams &params);
-        std::unique_ptr<u8> decrypt(std::shared_ptr<BerOctetString> data, const std::string &password, Snmpv3SecurityParams &params);
+        std::shared_ptr<BerOctetString> encrypt(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) override;
+        std::unique_ptr<u8> decrypt(std::shared_ptr<BerOctetString> data, const std::string &password, Snmpv3SecurityParams &params, u32 *length) override;
 };
 
 }

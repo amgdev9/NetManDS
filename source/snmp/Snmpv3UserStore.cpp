@@ -9,6 +9,9 @@
 
 // Own includes
 #include "snmp/Snmpv3UserStore.h"
+#include "snmp/Snmpv3AuthMD5.h"
+#include "snmp/Snmpv3AuthSHA1.h"
+#include "snmp/Snmpv3PrivDES.h"
 
 namespace NetMan {
 
@@ -58,6 +61,7 @@ void Snmpv3UserStore::load(const std::string &path) {
  * @param entry User parameters
  */
 void Snmpv3UserStore::addUser(const std::string &name, const Snmpv3UserStoreEntry &entry) {
+
     try {
         if(this->userTable.find(name) != this->userTable.end()) {
             throw std::runtime_error("User " + name + " is repeated");
@@ -84,6 +88,7 @@ void Snmpv3UserStore::removeUser(const std::string &name) {
  * @return The user entry
  */
 Snmpv3UserStoreEntry &Snmpv3UserStore::getUser(const std::string &name) {
+
     try {
         if(this->userTable.find(name) == this->userTable.end()) {
             throw std::runtime_error("User " + name + " not found");
@@ -107,12 +112,47 @@ void Snmpv3UserStore::save() {
     char line[256];
     for(std::pair<std::string, Snmpv3UserStoreEntry> user : userTable) {
         Snmpv3UserStoreEntry &entry = user.second;
-        sprintf(line, "%s %d %s %d %s", user.first.c_str(), entry.authProto, entry.authPass.c_str(), entry.privProto, entry.privPass.c_str());
+        sprintf(line, "%s %ld %s %ld %s", user.first.c_str(), entry.authProto, entry.authPass.c_str(), entry.privProto, entry.privPass.c_str());
         outfile.write(line, 256);
     }
 
     // Close the file
     outfile.close();
+}
+
+/**
+ * @brief Get the authentication protocol used by an user
+ * @param user  User which uses authentication
+ * @return Its authentication protocol, or nullptr if not using it
+ */
+std::shared_ptr<Snmpv3AuthProto> Snmpv3UserStore::getAuthProto(const Snmpv3UserStoreEntry &user) {
+
+    switch(user.authProto) {
+        case SNMPV3_AUTHPROTO_MD5:
+            return std::make_shared<Snmpv3AuthMD5>();
+            break;
+        case SNMPV3_AUTHPROTO_SHA1:
+            return std::make_shared<Snmpv3AuthSHA1>();
+            break;
+    }
+
+    return nullptr;
+}
+
+/**
+ * @brief Get the privacy protocol used by an user
+ * @param user  User which uses privaty
+ * @return Its privacy protocol, or nullptr if not using it
+ */
+std::shared_ptr<Snmpv3PrivProto> Snmpv3UserStore::getPrivProto(const Snmpv3UserStoreEntry &user) {
+    
+    switch(user.privProto) {
+        case SNMPV3_PRIVPROTO_DES:
+            return std::make_shared<Snmpv3PrivDES>();
+            break;
+    }
+
+    return nullptr;
 }
 
 /**

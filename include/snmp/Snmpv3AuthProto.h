@@ -23,8 +23,8 @@ namespace NetMan {
  */
 class Snmpv3AuthProto {
     public:
-        virtual void createHash(std::unique_ptr<u8> data, const std::string &password, Snmpv3SecurityParams &params) = 0;
-        virtual bool authenticate(std::unique_ptr<u8> data, const std::string &password, Snmpv3SecurityParams &params) = 0;
+        virtual void createHash(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) = 0;
+        virtual bool authenticate(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) = 0;
 };
 
 }

@@ -35,9 +35,10 @@ Snmpv3Pdu::Snmpv3Pdu(const std::string &engineID, const std::string &contextName
 /**
  * @brief Generate a SNMPv3 header
  * @param reportable	Reportable flag set?
+ * @param scopedPdu		Scoped PDU data
  * @return A sequence containing a SNMPv3 header
  */
-std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable) {
+std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable, std::shared_ptr<BerField> scopedPdu) {
 
     try {
 		std::shared_ptr<BerSequence> message = std::make_shared<BerSequence>();
@@ -46,7 +47,6 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable) {
         u32 ver = SNMPV3_VERSION;
 		std::shared_ptr<BerInteger> msgVersion = std::make_shared<BerInteger>(&ver, sizeof(u32), false);
         std::shared_ptr<BerSequence> msgGlobalData = std::make_shared<BerSequence>();
-        std::shared_ptr<BerSequence> msgData = std::make_shared<BerSequence>();
 
 		// Prepare flags
 		u8 flags = 0;
@@ -93,17 +93,11 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable) {
         std::unique_ptr<u8> serializedParams = securityParams->serialize(&securityParamsSize);
         std::shared_ptr<BerOctetString> msgSecurityParameters = std::make_shared<BerOctetString>(std::string((char*)serializedParams.get(), securityParamsSize));
 
-        // Fill msgData
-        std::shared_ptr<BerOctetString> contextNameField = std::make_shared<BerOctetString>(contextName);
-        msgData->addChild(contextEngineID);		// = msgAuthoritativeEngineID (?)
-        msgData->addChild(contextNameField);
-        // From here the SNMPv2 PDU is added without its header (encrypted or not)
-
         // Add each structure to the header
         message->addChild(msgVersion);
 		message->addChild(msgGlobalData);
         message->addChild(msgSecurityParameters);
-        message->addChild(msgData);
+        message->addChild(scopedPdu);
 
 		// Return the generated message
 		return message;
@@ -118,9 +112,10 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(bool reportable) {
  * @param checkMsgID	Check message ID?
  * @param params		Security parameters (input)
  * @param sock			Socket used to generate reports to an agent
- * @return SNMPv3 header flags
+ * @param flags			SNMPv3 header flags
+ * @return Encrypted PDU, or nullptr if it is not encrypted
  */
-u8 Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock) {
+std::shared_ptr<BerOctetString> Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock, u8 *flags) {
 
     try {
 
@@ -151,12 +146,12 @@ u8 Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &param
 
 		// Skip maxSize and flags
 		BerInteger::decode(ptr, false);
-		u8 flags = BerOctetString::decode(ptr)->getValue().c_str()[0];
+		*flags = BerOctetString::decode(ptr)->getValue().c_str()[0];
 
 		// Check msgSecurityModel
 		std::shared_ptr<BerInteger> msgSecurityModel = BerInteger::decode(ptr, false);
 		if(msgSecurityModel->getValueU32() != SNMPV3_USM_MODEL) {
-			if(flags &SNMPV3_FLAG_REPORTABLE) {
+			if(*flags &SNMPV3_FLAG_REPORTABLE) {
 				Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_SECMODEL_MISMATCH, this->secParams);
 			}
 			throw std::runtime_error("msgSecurityModel does not match");
@@ -214,24 +209,13 @@ u8 Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &param
 	privParams->print();
 #endif
 
-        // Skip msgData sequence
-		BerSequence::decode(ptr);
-
-		// Skip contextEngineID
-		BerOctetString::decode(ptr);
-
-		// Check contextName
-		std::shared_ptr<BerOctetString> contextNameStr = BerOctetString::decode(ptr);
-		if(contextNameStr->getValue().compare(contextName) != 0) {
-			throw std::runtime_error("contextName does not match");
+		// Get the encrypted PDU, if any
+		if(*flags &SNMPV3_FLAG_PRIV) {
+			return BerOctetString::decode(ptr);
 		}
-#ifdef SNMP_DEBUG
-	contextNameStr->print();
-#endif
 
-		// Return flags
-		return flags;
-
+		// If the PDU was not encrypted...
+		return nullptr;
 	} catch (const std::runtime_error &e) {
 		throw;
 	} catch (const std::bad_alloc &e) {
@@ -262,6 +246,25 @@ void Snmpv3Pdu::addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField
 }
 
 /**
+ * @brief Generate a scoped PDU
+ * @param pdu	The corresponding SNMPv2 PDU
+ * @return The generated scoped PDU
+ */
+std::shared_ptr<BerSequence> Snmpv3Pdu::generateScopedPdu(std::shared_ptr<BerSequence> pdu) {
+
+	// Generate the scopedPDU
+	std::shared_ptr<BerSequence> msgData = std::make_shared<BerSequence>();
+    std::shared_ptr<BerOctetString> contextNameField = std::make_shared<BerOctetString>(contextName);
+	std::shared_ptr<BerOctetString> contextEngineID = std::make_shared<BerOctetString>(secParams.msgAuthoritativeEngineID);
+    msgData->addChild(contextEngineID);		// = msgAuthoritativeEngineID (?)
+    msgData->addChild(contextNameField);
+	msgData->addChild(pdu);
+
+	// Return it
+	return msgData;
+}
+
+/**
  * @brief Send a SNMPv3 request
  * @param type				Type of SNMP request
  * @param sock				Socket used for transmission
@@ -279,12 +282,7 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 			throw std::runtime_error("Empty VarBindList");
 		}
 
-		// TODO Generate authentication and privacy parameters
-
-        // Generate a header
-		std::shared_ptr<BerSequence> message = this->generateHeader(true);
-
-        // Send getrequest
+        // Generate a get-request
 		std::shared_ptr<Snmpv2Pdu> snmpv2Pdu = std::make_shared<Snmpv2Pdu>("");
 		snmpv2Pdu->varBindList = this->varBindList;
 		std::shared_ptr<BerSequence> pdu = nullptr;
@@ -293,9 +291,45 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 		} else {
 			pdu = snmpv2Pdu->generateRequest(type);
 		}
-		std::static_pointer_cast<BerSequence>(message->getChild(3))->addChild(pdu);
+		std::shared_ptr<BerSequence> scopedPdu = this->generateScopedPdu(pdu);
 
-		// TODO Serialize pdu-data and encrypt it
+		// Serialize the scoped PDU
+		std::shared_ptr<BerPdu> serializerPdu = std::make_shared<BerPdu>();
+		u32 serializedPduSize;
+		serializerPdu->addField(scopedPdu);
+        std::unique_ptr<u8> serializedPdu = serializerPdu->serialize(&serializedPduSize);
+
+		// Get the authentication and privacy protocols
+		Snmpv3UserStore &userStore = Snmpv3UserStore::getInstance();
+		Snmpv3UserStoreEntry &user = userStore.getUser(secParams.msgUserName);
+		std::shared_ptr<Snmpv3PrivProto> privProto = userStore.getPrivProto(user);
+		std::shared_ptr<Snmpv3AuthProto> authProto = userStore.getAuthProto(user);
+
+		// If authentication is enabled...
+		std::shared_ptr<BerOctetString> encryptedPdu = nullptr;
+		if(authProto != nullptr) {
+
+			// Encrypt the PDU, if needed
+			if(privProto != nullptr) {
+				encryptedPdu = privProto->encrypt(serializedPdu.get(), serializedPduSize, user.privPass, this->secParams);
+
+				// Hash the encrypted PDU
+				std::string &encryptedPduString = encryptedPdu->getValue();
+				authProto->createHash((const u8*)encryptedPduString.c_str(), encryptedPduString.length(), user.authPass, this->secParams);
+				
+			} else {
+				// Hash the clear PDU
+				authProto->createHash(serializedPdu.get(), serializedPduSize, user.authPass, this->secParams);
+			}
+		}
+
+		// Generate a header
+		std::shared_ptr<BerSequence> message = nullptr;
+		if(privProto != nullptr) {
+			message = this->generateHeader(true, encryptedPdu);
+		} else {
+			message = this->generateHeader(true, scopedPdu);
+		}
 
 		// Send the PDU
 		this->fields.push_back(message);
@@ -329,17 +363,81 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 		std::unique_ptr<u8> data(new u8[SNMP_MAX_PDU_SIZE]);
 
 		// Receive packet data
-		sock->recvPacket(data.get(), SNMP_MAX_PDU_SIZE, ip, port);
+		u32 packetSize = sock->recvPacket(data.get(), SNMP_MAX_PDU_SIZE, ip, port);
 		u8 *ptr = data.get();
 
 		// Read response header
 		Snmpv3SecurityParams params;
-		u8 flags = this->checkHeader(&ptr, port != 0, params, sock);
+		u8 flags;
+		std::shared_ptr<BerOctetString> encryptedPdu = this->checkHeader(&ptr, port != 0, params, sock, &flags);
 		bool reportable = flags &SNMPV3_FLAG_REPORTABLE;
+
+		// Send report if username does not match
+		Snmpv3UserStore &userStore = Snmpv3UserStore::getInstance();
+		Snmpv3UserStoreEntry user;
+		try {
+			user = userStore.getUser(params.msgUserName);
+		} catch (std::runtime_error &e) {
+			if(reportable) {
+				Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_USERNAME_MISMATCH, secParams);
+			}
+			throw;
+		}
+
+		// Get the authentication and privacy protocols
+		std::shared_ptr<Snmpv3PrivProto> privProto = userStore.getPrivProto(user);
+		std::shared_ptr<Snmpv3AuthProto> authProto = userStore.getAuthProto(user);
+
+		// Authenticate the PDU
+		if(flags &SNMPV3_FLAG_AUTH && authProto != nullptr) {
+
+			// Decrypt the PDU first
+			bool authResult = false;
+			if(flags &SNMPV3_FLAG_PRIV && privProto != nullptr) {
+				u32 decryptedPduSize;
+				std::unique_ptr<u8> decryptedPdu = nullptr;
+				try {
+					decryptedPdu = privProto->decrypt(encryptedPdu, user.privPass, params, &decryptedPduSize);
+				} catch (const std::runtime_error &e) {
+					if(reportable) {
+						Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_PRIV_WRONG, secParams);
+					}
+					throw;
+				}
+				authResult = authProto->authenticate(decryptedPdu.get(), decryptedPduSize, user.authPass, params);
+				ptr = decryptedPdu.get();	// Update the read pointer to the decrypted PDU
+			} else {
+				u32 pduSize = packetSize - (ptr - data.get());
+				authResult = authProto->authenticate(ptr, pduSize, user.authPass, params);
+			}
+
+			// Check the authentication status
+			if(!authResult) {
+				if(reportable) {
+					Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_AUTH_WRONG, secParams);
+				}
+				throw std::runtime_error("Authentication failed");
+			}
+		}
+
+		// Skip msgData sequence
+		BerSequence::decode(&ptr);
+
+		// Skip contextEngineID
+		BerOctetString::decode(&ptr);
+
+		// Check contextName
+		std::shared_ptr<BerOctetString> contextNameStr = BerOctetString::decode(&ptr);
+		if(contextNameStr->getValue().compare(contextName) != 0) {
+			throw std::runtime_error("contextName does not match");
+		}
+#ifdef SNMP_DEBUG
+	contextNameStr->print();
+#endif
 
 		// Decode SNMP PDU
 		u8 pduType;
-		std::shared_ptr<BerSequence> vbList = Snmpv2Pdu::recvResponse(&ptr, port, this->reqID, &pduType, SNMP_PDU_ANY);
+		std::shared_ptr<BerSequence> vbList = Snmpv2Pdu::recvResponse(&ptr, port != 0, this->reqID, &pduType, SNMP_PDU_ANY);
 		if(pduType != SNMPV2_REPORT) {
 			if(pduType != expectedPduType && expectedPduType != SNMP_PDU_ANY) {
 				throw std::runtime_error("Received undesired PDU");
@@ -352,17 +450,6 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 					}
 					throw std::runtime_error("EngineID does not match");
 				}
-				// Send report if username does not match
-				try {
-					Snmpv3UserStore::getInstance().getUser(params.msgUserName);
-				} catch (std::runtime_error &e) {
-					if(reportable) {
-						Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_USERNAME_MISMATCH, secParams);
-					}
-					throw;
-				}
-				// TODO Send report 1.3.6.1.6.3.15.1.1.5 if auth is wrong
-				// TODO Send report 1.3.6.1.6.3.15.1.1.6 if priv is wrong
 				this->varBindList = vbList;
 			}
 		} else {

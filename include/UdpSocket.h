@@ -30,7 +30,7 @@ class UdpSocket {
 	public:
 		UdpSocket(u32 timeoutSecs = DEFAULT_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_SOCKET_TIMEOUT_USECS);
 		void sendPacket(void *data, u32 size, const std::string &ip, u16 port);
-		void recvPacket(void *data, u32 size, const std::string &ip = "", u16 port = 0);
+		u32 recvPacket(void *data, u32 size, const std::string &ip = "", u16 port = 0);
 		void bindTo(u16 port);
 		virtual ~UdpSocket();
 };

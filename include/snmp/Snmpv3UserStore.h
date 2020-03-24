@@ -13,6 +13,10 @@
 // Includes 3DS
 #include <3ds.h>
 
+// Own includes
+#include "Snmpv3AuthProto.h"
+#include "Snmpv3PrivProto.h"
+
 // Defines authentication protocols
 #define SNMPV3_AUTHPROTO_NONE   0
 #define SNMPV3_AUTHPROTO_MD5    1
@@ -27,8 +31,8 @@ namespace NetMan {
 typedef struct {
     std::string authPass;
     std::string privPass;
-    u8 authProto;
-    u8 privProto;
+    u32 authProto;
+    u32 privProto;
 }Snmpv3UserStoreEntry;
 
 /**
@@ -46,6 +50,8 @@ class Snmpv3UserStore {
         void addUser(const std::string &name, const Snmpv3UserStoreEntry &entry);
         void removeUser(const std::string &name);
         Snmpv3UserStoreEntry &getUser(const std::string &name);
+        std::shared_ptr<Snmpv3AuthProto> getAuthProto(const Snmpv3UserStoreEntry &user);
+        std::shared_ptr<Snmpv3PrivProto> getPrivProto(const Snmpv3UserStoreEntry &user);
         static Snmpv3UserStore &getInstance();
 };
 

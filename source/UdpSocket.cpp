@@ -64,8 +64,9 @@ void UdpSocket::sendPacket(void *data, u32 size, const std::string &ip, u16 port
  * @param size Size of the incoming data
  * @param ip IPv4 address of the source
  * @param port Expected source port
+ * @return The number of bytes received
  */
-void UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port) {
+u32 UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port) {
 
 	struct sockaddr_in src;
 	socklen_t src_len = sizeof(src);
@@ -78,7 +79,8 @@ void UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port
 		throw std::runtime_error("Socket timeout");
 	}
 
-	if(recvfrom(this->fd, data, size, 0, (struct sockaddr*)&src, &src_len) <= 0) {
+	u32 recvSize;
+	if((recvSize = recvfrom(this->fd, data, size, 0, (struct sockaddr*)&src, &src_len)) <= 0) {
 		throw std::runtime_error("recvfrom() failed");
 	}
 
@@ -92,6 +94,8 @@ void UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port
 
 	this->lastOrigin = src.sin_addr.s_addr;
 	this->lastPort = src.sin_port;
+
+	return recvSize;
 }
 
 /**
