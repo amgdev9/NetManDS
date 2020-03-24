@@ -40,9 +40,11 @@ void BerPdu::addField(std::shared_ptr<BerField> field) {
 
 /**
  * @brief Serialize a BerPdu
+ * @param size		Serialized data size (input)
+ * @param alignment	Data alignment (in bytes)
  * @return The serialized BerPdu
  */
-std::unique_ptr<u8> BerPdu::serialize(u32 *size) {
+std::unique_ptr<u8> BerPdu::serialize(u32 *size, u8 alignment) {
 	
 	// Variables
 	u32 pdu_size = 0;
@@ -50,6 +52,12 @@ std::unique_ptr<u8> BerPdu::serialize(u32 *size) {
 	// Calculate total PDU size
 	for(u32 i = 0; i < fields.size(); i++) {
 		pdu_size += fields[i]->getTotalSize();
+	}
+
+	// Align the PDU size
+	u32 r = pdu_size % alignment;
+	if(r > 0) {
+		pdu_size += (alignment - r);
 	}
 
 	// Create the PDU buffer

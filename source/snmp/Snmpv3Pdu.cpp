@@ -315,7 +315,7 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 		std::shared_ptr<BerPdu> serializerPdu = std::make_shared<BerPdu>();
 		u32 serializedPduSize;
 		serializerPdu->addField(scopedPdu);
-        std::unique_ptr<u8> serializedPdu = serializerPdu->serialize(&serializedPduSize);
+        std::unique_ptr<u8> serializedPdu = serializerPdu->serialize(&serializedPduSize, 8);	// Because of CBC-DES alignment
 
 		// Get the authentication and privacy protocols
 		Snmpv3UserStore &userStore = Snmpv3UserStore::getInstance();
@@ -330,7 +330,8 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 		// Encrypt the PDU, if needed
 		std::shared_ptr<BerOctetString> encryptedPdu = nullptr;
 		if(authProto != nullptr && privProto != nullptr) {
-			encryptedPdu = privProto->encrypt(serializedPdu.get(), serializedPduSize, user.privPass, this->secParams, authProto);
+			std::shared_ptr<u8> userCryptKey = authProto->passwordToKey(user.privPass, this->secParams);
+			encryptedPdu = privProto->encrypt(serializedPdu.get(), serializedPduSize, this->secParams, userCryptKey);
 		}
 
 		// Generate a header
@@ -350,7 +351,8 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 			serializerPdu->clear();
 			serializerPdu->addField(message);
         	serializedPdu = serializerPdu->serialize(&serializedPduSize);
-			authProto->createHash(serializedPdu.get(), serializedPduSize, user.authPass, this->secParams);
+			std::shared_ptr<u8> userAuthKey = authProto->passwordToKey(user.authPass, this->secParams);
+			authProto->createHash(serializedPdu.get(), serializedPduSize, this->secParams, userAuthKey);
 
 			// Regenerate the header
 			Snmpv3Pdu::requestID --;
@@ -419,10 +421,12 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 		std::shared_ptr<Snmpv3AuthProto> authProto = userStore.getAuthProto(user);
 
 		// Authenticate the PDU
+		std::unique_ptr<u8> decryptedPdu = nullptr;
 		if(flags &SNMPV3_FLAG_AUTH && authProto != nullptr) {
 
 			// Check the authentication status
-			bool authResult = authProto->authenticate(data.get(), packetSize, user.authPass, params);
+			std::shared_ptr<u8> userAuthKey = authProto->passwordToKey(user.authPass, params);
+			bool authResult = authProto->authenticate(data.get(), packetSize, params, userAuthKey);
 			if(!authResult) {
 				if(reportable) {
 					Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_AUTH_WRONG, secParams);
@@ -432,10 +436,9 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 
 			// Decrypt the PDU
 			if(flags &SNMPV3_FLAG_PRIV && privProto != nullptr) {
-				u32 decryptedPduSize;
-				std::unique_ptr<u8> decryptedPdu = nullptr;
 				try {
-					decryptedPdu = privProto->decrypt(encryptedPdu, &decryptedPduSize, user.privPass, params, authProto);
+					std::shared_ptr<u8> userPrivKey = authProto->passwordToKey(user.privPass, params);
+					decryptedPdu = privProto->decrypt(encryptedPdu, params, userPrivKey);
 				} catch (const std::runtime_error &e) {
 					if(reportable) {
 						Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_PRIV_WRONG, secParams);

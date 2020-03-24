@@ -32,13 +32,12 @@ Snmpv3AuthSHA1::~Snmpv3AuthSHA1() { }
  * @param params    Security parameters
  * @note The hash is stored in the security parameters
  */
-void Snmpv3AuthSHA1::createHash(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) {
+void Snmpv3AuthSHA1::createHash(const u8 *data, u32 length, Snmpv3SecurityParams &params, std::shared_ptr<u8> keyptr) {
 
     try {
 
         // Generate the key
         u8 digest[20];      // Final digest
-        std::unique_ptr<u8> keyptr = this->passwordToKey(password, params);
         std::unique_ptr<u8> message(new u8[SNMPV3_AUTH_KEYLENGTH + length]);
         u8 *messagePtr = message.get();
         u8 *key = keyptr.get();
@@ -91,7 +90,7 @@ void Snmpv3AuthSHA1::createHash(const u8 *data, u32 length, const std::string &p
  * @param params    Security parameters
  * @return The key for that password
  */
-std::unique_ptr<u8> Snmpv3AuthSHA1::passwordToKey(const std::string &password, Snmpv3SecurityParams &params) {
+std::shared_ptr<u8> Snmpv3AuthSHA1::passwordToKey(const std::string &password, Snmpv3SecurityParams &params) {
     
     // Adapted from https://tools.ietf.org/html/rfc3414#appendix-A.2.2
 
@@ -103,7 +102,7 @@ std::unique_ptr<u8> Snmpv3AuthSHA1::passwordToKey(const std::string &password, S
 
     // Create the key buffer
     try {
-        std::unique_ptr<u8> keybuffer(new u8[SNMPV3_AUTH_KEYLENGTH]);
+        std::shared_ptr<u8> keybuffer(new u8[SNMPV3_AUTH_KEYLENGTH]);
         u8 *key = keybuffer.get();
         memset(key, 0, SNMPV3_AUTH_KEYLENGTH);
 

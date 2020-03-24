@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <time.h>
 
 // Includes 3DS
 #include <3ds.h>
@@ -31,6 +32,9 @@ void Application::initialize() {
 
 	if(init) return;
 
+	// Initialize random seed
+	srand(time(NULL));
+	
 	// Initialize graphics
 	gfxInitDefault();
 

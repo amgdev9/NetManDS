@@ -15,7 +15,6 @@
 
 // Own includes
 #include "Snmpv3Pdu.h"
-#include "Snmpv3AuthProto.h"
 
 namespace NetMan {
 
@@ -24,8 +23,8 @@ namespace NetMan {
  */
 class Snmpv3PrivProto {
     public:
-        virtual std::shared_ptr<BerOctetString> encrypt(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params, std::shared_ptr<Snmpv3AuthProto> authProto) = 0;
-        virtual std::unique_ptr<u8> decrypt(std::shared_ptr<BerOctetString> data, u32 *length, const std::string &password, Snmpv3SecurityParams &params, std::shared_ptr<Snmpv3AuthProto> authProto) = 0;
+        virtual std::shared_ptr<BerOctetString> encrypt(const u8 *data, u32 length, Snmpv3SecurityParams &params, std::shared_ptr<u8> userKey) = 0;
+        virtual std::unique_ptr<u8> decrypt(std::shared_ptr<BerOctetString> data, Snmpv3SecurityParams &params, std::shared_ptr<u8> userKey) = 0;
 };
 
 }

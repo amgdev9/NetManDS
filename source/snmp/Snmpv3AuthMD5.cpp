@@ -28,17 +28,16 @@ Snmpv3AuthMD5::~Snmpv3AuthMD5() { }
  * @brief Create a HMAC-96-MD5 hash
  * @param data      Data to be hashed
  * @param length    Length of the data
- * @param password  Password for the HMAC
  * @param params    Security parameters
+ * @param keyptr    Pointer to the user key
  * @note The hash is stored in the security parameters
  */
-void Snmpv3AuthMD5::createHash(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) {
+void Snmpv3AuthMD5::createHash(const u8 *data, u32 length, Snmpv3SecurityParams &params, std::shared_ptr<u8> keyptr) {
 
     try {
 
         // Generate the key
         u8 digest[16];      // Final digest
-        std::unique_ptr<u8> keyptr = this->passwordToKey(password, params);
         std::unique_ptr<u8> message(new u8[SNMPV3_AUTH_KEYLENGTH + length]);
         u8 *messagePtr = message.get();
         u8 *key = keyptr.get();
@@ -91,7 +90,7 @@ void Snmpv3AuthMD5::createHash(const u8 *data, u32 length, const std::string &pa
  * @param params    Security parameters
  * @return The key for that password
  */
-std::unique_ptr<u8> Snmpv3AuthMD5::passwordToKey(const std::string &password, Snmpv3SecurityParams &params) {
+std::shared_ptr<u8> Snmpv3AuthMD5::passwordToKey(const std::string &password, Snmpv3SecurityParams &params) {
 
     // Adapted from https://tools.ietf.org/html/rfc3414#appendix-A.2.1
 
@@ -103,7 +102,7 @@ std::unique_ptr<u8> Snmpv3AuthMD5::passwordToKey(const std::string &password, Sn
 
     // Create the key buffer
     try {
-        std::unique_ptr<u8> keybuffer(new u8[SNMPV3_AUTH_KEYLENGTH]);
+        std::shared_ptr<u8> keybuffer(new u8[SNMPV3_AUTH_KEYLENGTH]);
         u8 *key = keybuffer.get();
         memset(key, 0, SNMPV3_AUTH_KEYLENGTH);
 

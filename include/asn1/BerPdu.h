@@ -23,7 +23,6 @@ namespace NetMan {
 class BerPdu {
 	private:
 		void addField(std::shared_ptr<BerField> field);
-		std::unique_ptr<u8> serialize(u32 *pdu_size);
 	protected:
 		std::vector<std::shared_ptr<BerField>> fields;
 		void send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port);
@@ -31,6 +30,7 @@ class BerPdu {
 		BerPdu();
 		virtual ~BerPdu();
 		virtual void clear();
+		std::unique_ptr<u8> serialize(u32 *pdu_size, u8 alignment = 1);
 		friend class Snmpv3Pdu;
 };
 

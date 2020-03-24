@@ -16,14 +16,14 @@ namespace NetMan {
  * @param params    Security parameters
  * @return Whether the authentication was successful or not
  */
-bool Snmpv3AuthProto::authenticate(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) {
+bool Snmpv3AuthProto::authenticate(const u8 *data, u32 length, Snmpv3SecurityParams &params, std::shared_ptr<u8> keyptr) {
 
     std::string digest = params.msgAuthenticationParameters;
 
     try {
 
         // Generate the SHA1 hash
-        this->createHash(data, length, password, params);
+        this->createHash(data, length, params, keyptr);
 
         // Compare it with the previous one
         return (digest.compare(params.msgAuthenticationParameters) == 0);

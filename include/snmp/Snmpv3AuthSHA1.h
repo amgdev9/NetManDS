@@ -26,8 +26,8 @@ class Snmpv3AuthSHA1 : public Snmpv3AuthProto {
     public:
         Snmpv3AuthSHA1();
         virtual ~Snmpv3AuthSHA1();
-        void createHash(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params) override;
-        std::unique_ptr<u8> passwordToKey(const std::string &password, Snmpv3SecurityParams &params) override;
+        void createHash(const u8 *data, u32 length, Snmpv3SecurityParams &params, std::shared_ptr<u8> keyptr) override;
+        std::shared_ptr<u8> passwordToKey(const std::string &password, Snmpv3SecurityParams &params) override;
 };
 
 }

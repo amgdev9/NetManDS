@@ -212,7 +212,7 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, bool checkRespons
 
 		// Check responseID
 		std::shared_ptr<BerInteger> responseID = BerInteger::decode(ptr, false);
-		if(checkResponseID && responseID->getValueU32() != reqID) {
+		if(checkResponseID && responseID->getValueU32() != reqID && responseID->getValueU32() != 0) {
 			throw std::runtime_error("RequestID does not match");
 		}
 		if(!checkResponseID) {		// Save the request ID for the possible ACK

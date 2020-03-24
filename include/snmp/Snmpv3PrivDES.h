@@ -26,8 +26,8 @@ class Snmpv3PrivDES : public Snmpv3PrivProto {
     public:
         Snmpv3PrivDES();
         virtual ~Snmpv3PrivDES();
-        std::shared_ptr<BerOctetString> encrypt(const u8 *data, u32 length, const std::string &password, Snmpv3SecurityParams &params, std::shared_ptr<Snmpv3AuthProto> authProto) override;
-        std::unique_ptr<u8> decrypt(std::shared_ptr<BerOctetString> data, u32 *length, const std::string &password, Snmpv3SecurityParams &params, std::shared_ptr<Snmpv3AuthProto> authProto) override;
+        std::shared_ptr<BerOctetString> encrypt(const u8 *data, u32 length, Snmpv3SecurityParams &params, std::shared_ptr<u8> userKey) override;
+        std::unique_ptr<u8> decrypt(std::shared_ptr<BerOctetString> data, Snmpv3SecurityParams &params, std::shared_ptr<u8> userKey) override;
 };
 
 }
