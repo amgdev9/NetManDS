@@ -1,0 +1,88 @@
+HEADER
+    PRI
+        '<'
+        PRIVAL
+            0-191
+        '>'
+    VERSION
+        NONZERO-DIGIT
+            1-9
+        [0*2DIGIT]
+            [0-99]
+    ' '
+    TIMESTAMP
+        '-'
+        /
+        FULL-DATE
+            DATE-FULLYEAR
+                '0000-9999'
+            '-'
+            DATE-MONTH
+                '01-12'
+            '-'
+            DATE-MDAY
+                '01-31'
+        'T'
+        FULL-TIME
+            PARTIAL-TIME
+                TIME-HOUR
+                    00-23
+                ':'
+                TIME-MINUTE
+                    00-59
+                ':'
+                TIME-SECOND
+                    00-59
+                [TIME-SECFRAC]
+                    '.'
+                    0-999999
+            TIME-OFFSET
+                'Z'
+                /
+                TIME-NUMOFFSET
+                    + / -
+                    TIME-HOUR
+                        00-23
+                    ':'
+                    TIME-MINUTE
+                        00-59
+    ' '
+    HOSTNAME
+        '-' / 1-255 ASCII (33-126 CADA CARACTER)
+    ' '
+    APP-NAME
+        '-' / 1-48 PRINTUSASCII
+    ' '
+    PROCID
+        '-' / 1-128 PRINTUSASCII
+    ' '
+    MSGID
+        '-' / 1-32 PRINTUSASCII
+' '
+STRUCTURED-DATA
+    '-'
+    /
+    SD-ELEMENT (AL MENOS UNO)
+        '['
+        SD-ID
+            SD-NAME
+                1-32 ASCII (33-126 CADA CARACTER) NO PUEDE TENER = ESPACIO ] "
+        (LISTA DE ' ' SD-PARAM, PUEDE NO HABER NADA)
+            PARAM-NAME
+                SD-NAME
+                    1-32 ASCII (33-126 CADA CARACTER)
+            '='
+            '"'
+            PARAM-VALUE
+                [UTF-8-STRING]  CARACTERES " \ Y ] DEBEN ESCAPARSE
+            '"'
+        ']'
+[' ']
+[MSG]
+    [MSG-ANY]
+        CUALQUIER NUMERO DE OCTETOS (QUE NO EMPIECE POR 0XEFBBBF)
+    /
+    MSG-UTF8
+        0XEFBBBF
+        [UTF-8-STRING]
+
