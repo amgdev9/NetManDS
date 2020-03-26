@@ -121,7 +121,7 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateHeader(u32 type, bool reportable
  * @param flags			SNMPv3 header flags
  * @return Encrypted PDU, or nullptr if it is not encrypted
  */
-std::shared_ptr<BerOctetString> Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock, u8 *flags) {
+std::shared_ptr<BerOctetString> Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<Socket> sock, u8 *flags) {
 
     try {
 
@@ -291,7 +291,7 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateScopedPdu(std::shared_ptr<BerSeq
  * @param nonRepeaters		Non-repeaters field for GetBulkRequest
  * @param maxRepetitions	Max-repetitions field for GetBulkRequest
  */
-void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 nonRepeaters, u32 maxRepetitions) {
+void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<Socket> sock, const std::string &ip, u16 port, u32 nonRepeaters, u32 maxRepetitions) {
 
     try {
 		
@@ -388,7 +388,7 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
  * @param expectedPduType	Expected PDU type
  * @return The received PDU type
  */
-u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
+u8 Snmpv3Pdu::recvResponse(std::shared_ptr<Socket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
     
     try {
 		// Create recv buffer
@@ -503,7 +503,7 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
  * @brief Receive a trap or inform-request
  * @param sock Socket used for reception
  */
-void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
+void Snmpv3Pdu::recvTrap(std::shared_ptr<Socket> sock) {
 
 	try {
 
@@ -534,7 +534,7 @@ void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
  * @param ip				Destination IP
  * @param port				Destination port
  */
-void Snmpv3Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port) {
+void Snmpv3Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<Socket> sock, const std::string &ip, u16 port) {
 	this->sendRequest(SNMPV2_GETBULKREQUEST, sock, ip, port, nonRepeaters, maxRepetitions);
 }
 
@@ -564,7 +564,7 @@ Snmpv3Pdu::~Snmpv3Pdu() { }
  * @param reasonOid	OID indicating the reason for the report
  * @param params	Security parameters
  */
-void Snmpv3Pdu::sendReportTo(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params) {
+void Snmpv3Pdu::sendReportTo(std::shared_ptr<Socket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params) {
 	try {
 		std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(params.msgAuthoritativeEngineID, "", params.msgUserName);
 		std::shared_ptr<BerOid> oid = std::make_shared<BerOid>(reasonOid);

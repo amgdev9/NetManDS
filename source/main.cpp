@@ -12,10 +12,13 @@
 #include "snmp/Snmpv2Pdu.h"
 #include "snmp/Snmpv3Pdu.h"
 #include "snmp/Snmpv3UserStore.h"
+#include "syslog/SyslogPdu.h"
+#include "socket/UdpSocket.h"
 
 using namespace NetMan;
 
 // Test scenarios
+void syslog_test();
 void snmpv1_test();
 void snmpv3_test();
 
@@ -30,11 +33,9 @@ int main(int argc, char **argv) {
 
 	app.initialize();
 
-	Snmpv3UserStore &store = Snmpv3UserStore::getInstance();
-	store.load("userStore.txt");
-
+	syslog_test();
 	//snmpv1_test();
-	snmpv3_test();
+	//snmpv3_test();
 
 	app.run();
 
@@ -42,10 +43,38 @@ int main(int argc, char **argv) {
 }
 
 /**
+ * @brief Test the syslog stuff
+ */
+void syslog_test() {
+	
+	FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+
+	std::shared_ptr<Socket> sock = std::make_shared<UdpSocket>(30);
+	sock->bindTo(SYSLOG_PORT);
+
+	try {
+		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
+		for(u8 i = 0; i < 10; i++) {
+			syslogPdu->recvLog(sock);
+			syslogPdu->print();
+		}
+	} catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
+}
+
+/**
  * @brief Test the SNMPv3 stuff
  */
 void snmpv3_test() {
-	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>();
+
+	Snmpv3UserStore &store = Snmpv3UserStore::getInstance();
+	store.load("userStore.txt");
+
+	std::shared_ptr<Socket> sock = std::make_shared<UdpSocket>();
 
 	FILE *f = fopen("sdmc:/log.txt", "wb");
 	fprintf(f, "Initialized\n");
@@ -113,7 +142,7 @@ void snmpv3_test() {
  * @brief Test the SNMPv1 stuff
  */
 void snmpv1_test() {
-	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>();
+	std::shared_ptr<Socket> sock = std::make_shared<UdpSocket>();
 
 	FILE *f = fopen("sdmc:/log.txt", "wb");
 	fprintf(f, "Initialized\n");

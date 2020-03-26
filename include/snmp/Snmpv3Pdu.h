@@ -54,16 +54,16 @@ class Snmpv3Pdu: public BerPdu {
 		u32 reqID;
 		std::shared_ptr<BerSequence> generateHeader(u32 type, bool reportable, std::shared_ptr<BerField> scopedPDU);
 		std::shared_ptr<BerSequence> generateScopedPdu(std::shared_ptr<BerSequence> pdu);
-		std::shared_ptr<BerOctetString> checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<UdpSocket> sock, u8 *flags);
-		static void sendReportTo(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params);
+		std::shared_ptr<BerOctetString> checkHeader(u8 **ptr, bool checkMsgID, Snmpv3SecurityParams &params, std::shared_ptr<Socket> sock, u8 *flags);
+		static void sendReportTo(std::shared_ptr<Socket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params);
 	public:
 		Snmpv3Pdu(const std::string &engineID, const std::string &contextName, const std::string &userName);
 		void clear() override;
 		void addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
-		void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 nonRepeaters = 0, u32 maxRepetitions = 0);
-		u8 recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
-		void recvTrap(std::shared_ptr<UdpSocket> sock);
-		void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port);
+		void sendRequest(u32 type, std::shared_ptr<Socket> sock, const std::string &ip, u16 port, u32 nonRepeaters = 0, u32 maxRepetitions = 0);
+		u8 recvResponse(std::shared_ptr<Socket> sock, const std::string &ip, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
+		void recvTrap(std::shared_ptr<Socket> sock);
+		void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<Socket> sock, const std::string &ip, u16 port);
 		std::shared_ptr<BerField> getVarBind(u16 i);
 		~Snmpv3Pdu();
 };

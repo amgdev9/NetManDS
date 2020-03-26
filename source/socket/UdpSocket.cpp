@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 // Own includes
-#include "UdpSocket.h"
+#include "socket/UdpSocket.h"
 
 namespace NetMan {
 

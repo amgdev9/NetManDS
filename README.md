@@ -5,12 +5,15 @@ Makefile rules:
 	- make cia		: Compiles and links to a cia package and places it in release/ folder
 	- make run		: Run the 3DSX binary using Citra3DS
 
+Finished modules:
+	- SNMPv3
+
 ToDo List:
-	- Implement SNMPv3
-	- MIB Browser
 	- Syslog
+	- SSH
+	- MIB Browser
 	- Agent discovery
-	- CoAP/MQtt
+	- RESTCONF y CoAP
 	
 Known bugs/issues:
 	- SNMPv3 user keys should be calculated and saved in the user store
