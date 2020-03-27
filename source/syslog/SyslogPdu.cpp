@@ -25,7 +25,7 @@ SyslogPdu::~SyslogPdu() { }
  * @brief Receive a log message
  * @param sock	Socket to use for reception
  */
-void SyslogPdu::recvLog(std::shared_ptr<Socket> sock) {
+void SyslogPdu::recvLog(std::shared_ptr<UdpSocket> sock) {
 
 #ifdef SYSLOG_DEBUG
 	char path[128];

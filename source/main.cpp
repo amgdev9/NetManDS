@@ -14,10 +14,12 @@
 #include "snmp/Snmpv3UserStore.h"
 #include "syslog/SyslogPdu.h"
 #include "socket/UdpSocket.h"
+#include "ssh/SshHelper.h"
 
 using namespace NetMan;
 
 // Test scenarios
+void ssh_test();
 void syslog_test();
 void snmpv1_test();
 void snmpv3_test();
@@ -33,13 +35,39 @@ int main(int argc, char **argv) {
 
 	app.initialize();
 
-	syslog_test();
+	//ssh_test();
+	//syslog_test();
 	//snmpv1_test();
 	//snmpv3_test();
 
 	app.run();
 
 	return 0;
+}
+
+/**
+ * @brief Test the SSH stuff
+ */
+void ssh_test() {
+
+	FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+
+	try {
+		std::shared_ptr<SshHelper> sshHelper = std::make_shared<SshHelper>();
+		//sshHelper->connect(...);
+		sshHelper->sendData("ls -l\n");
+		if(sshHelper->recvData()) {
+			f = fopen("log.txt", "a+");
+			fprintf(f, sshHelper->getRecvData().c_str());
+			fclose(f);
+		}
+		sshHelper->disconnect();
+	} catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
 }
 
 /**
@@ -50,7 +78,7 @@ void syslog_test() {
 	FILE *f = fopen("log.txt", "wb");
 	fclose(f);
 
-	std::shared_ptr<Socket> sock = std::make_shared<UdpSocket>(30);
+	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>(30);
 	sock->bindTo(SYSLOG_PORT);
 
 	try {
@@ -74,7 +102,7 @@ void snmpv3_test() {
 	Snmpv3UserStore &store = Snmpv3UserStore::getInstance();
 	store.load("userStore.txt");
 
-	std::shared_ptr<Socket> sock = std::make_shared<UdpSocket>();
+	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>();
 
 	FILE *f = fopen("sdmc:/log.txt", "wb");
 	fprintf(f, "Initialized\n");
@@ -142,7 +170,7 @@ void snmpv3_test() {
  * @brief Test the SNMPv1 stuff
  */
 void snmpv1_test() {
-	std::shared_ptr<Socket> sock = std::make_shared<UdpSocket>();
+	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>();
 
 	FILE *f = fopen("sdmc:/log.txt", "wb");
 	fprintf(f, "Initialized\n");

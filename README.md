@@ -7,12 +7,12 @@ Makefile rules:
 
 Finished modules:
 	- SNMPv3
+	- SSH
 
 ToDo List:
 	- Syslog
-	- SSH
-	- MIB Browser
 	- Agent discovery
+	- MIB Browser
 	- RESTCONF y CoAP
 	
 Known bugs/issues:

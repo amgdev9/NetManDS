@@ -46,7 +46,7 @@ std::shared_ptr<BerSequence> Snmpv2Pdu::generateBulkRequest(u32 nonRepeaters, u3
  * @param sock              Socket used for transmission
  * @param ip                Destination IP address
  */
-void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<Socket> sock, const std::string &ip) {
+void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip) {
 
 	try {
 
@@ -80,7 +80,7 @@ void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::share
  * @brief Receive a SNMPv2 trap or inform-request (acknowledged trap)
  * @param sock Socket used for reception
  */
-void Snmpv2Pdu::recvTrap(std::shared_ptr<Socket> sock) {
+void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 
     try {
 

@@ -132,7 +132,7 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::generateRequest(u32 type) {
  * @param socket Socket used when sending the PDU
  * @param ip Destination IP. If empty, last socket's remote host IP-port will be used
  */
-void Snmpv1Pdu::sendRequest(u32 type, std::shared_ptr<Socket> sock, const std::string &ip) {
+void Snmpv1Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip) {
 
 	try {
 
@@ -288,7 +288,7 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, bool checkRespons
  * @param expectedPduType Expected PDU type
  * @return Type of response PDU obtained (=expectedPduType, or obtained PDU if SNMP_PDU_ANY)
  */
-u8 Snmpv1Pdu::recvResponse(std::shared_ptr<Socket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
+u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
 
 	try {
 		// Create recv buffer
@@ -317,7 +317,7 @@ u8 Snmpv1Pdu::recvResponse(std::shared_ptr<Socket> sock, const std::string &ip, 
  * @brief Receive a TRAP pdu
  * @param sock Socket listening to some udp port
  */
-void Snmpv1Pdu::recvTrap(std::shared_ptr<Socket> sock) {
+void Snmpv1Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 
 	try {
 		// Create recv buffer

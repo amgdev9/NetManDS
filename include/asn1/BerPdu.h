@@ -12,7 +12,7 @@
 
 // Own includes
 #include "asn1/BerField.h"
-#include "socket/Socket.h"
+#include "socket/UdpSocket.h"
 
 namespace NetMan {
 
@@ -25,7 +25,7 @@ class BerPdu {
 		void addField(std::shared_ptr<BerField> field);
 	protected:
 		std::vector<std::shared_ptr<BerField>> fields;
-		void send(std::shared_ptr<Socket> sock, const std::string &ip, u16 port);
+		void send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port);
 	public:
 		BerPdu();
 		virtual ~BerPdu();
