@@ -16,6 +16,23 @@ namespace NetMan {
 
 /**
  * @brief Constructor for a TCP socket
+ * @param timeoutSecs   Timeout, in seconds
+ * @param timeoutUsecs  Remaining microseconds of the timeout
+ */
+TcpSocket::TcpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
+
+	this->fd = socket(AF_INET, SOCK_STREAM, 0);
+
+	if(this->fd < 0) {
+		throw std::runtime_error("socket() failed");
+	}
+
+	this->tv.tv_sec = timeoutSecs;
+	this->tv.tv_usec = timeoutUsecs;
+}
+
+/**
+ * @brief Constructor for a TCP socket
  * @param addr          Address information
  * @param timeoutSecs   Timeout, in seconds
  * @param timeoutUsecs  Remaining microseconds of the timeout
@@ -33,22 +50,62 @@ TcpSocket::TcpSocket(const struct addrinfo &addr, u32 timeoutSecs, u32 timeoutUs
 }
 
 /**
+ * @brief Constructor for a TcpSocket
+ * @param fd			File descriptor for the socket
+ * @param timeoutSecs   Timeout, in seconds
+ * @param timeoutUsecs  Remaining microseconds of the timeout
+ */
+TcpSocket::TcpSocket(int fd, u32 timeoutSecs, u32 timeoutUsecs) {
+	this->fd = fd;
+	this->tv.tv_sec = timeoutSecs;
+	this->tv.tv_usec = timeoutUsecs;
+}
+
+/**
  * @brief Connect to a host
  * @param addr  Host information
  */
 void TcpSocket::connectToHost(const struct addrinfo &addr) {
 
-    if (connect(this->fd, addr.ai_addr, addr.ai_addrlen) != 0) {
+    if(connect(this->fd, addr.ai_addr, addr.ai_addrlen) != 0) {
 		throw std::runtime_error("Error connecting to host");
 	}
 }
 
 /**
- * @brief Send a TCP packet
- * @param data Data to be sent
- * @param size Size of the outcoming data
+ * @brief Put the socket in a listen state
+ * @param queueLength	Length of the request queue
  */
-void TcpSocket::sendPacket(void *data, u32 size) {
+void TcpSocket::listenState(u32 queueLength) {
+	if(listen(this->fd, queueLength) < 0) {
+		throw std::runtime_error("Error listening to clients");
+	}
+}
+
+/**
+ * @brief Accept a connection from a client
+ * @return The accepted connection, or nullptr if no connection was requested
+ */
+std::shared_ptr<TcpSocket> TcpSocket::acceptConnection() {
+
+	if(this->dataReceived()) {
+		int client_fd = accept(this->fd, NULL, NULL);
+		if(client_fd > 0) {
+			return std::make_shared<TcpSocket>(client_fd, this->tv.tv_sec, this->tv.tv_usec);
+		}
+	}
+
+	return nullptr;
+}
+
+/**
+ * @brief Send a TCP packet
+ * @param data 	Data to be sent
+ * @param size 	Size of the outcoming data
+ * @param ip	Unused for TCP sockets
+ * @param port	Unused for TCP sockets
+ */
+void TcpSocket::sendPacket(void *data, u32 size, const std::string &ip, u16 port) {
 
 	if(send(this->fd, data, size, 0) < 0) {
 		throw std::runtime_error("send() failed");
@@ -71,11 +128,13 @@ bool TcpSocket::dataReceived() {
 
 /**
  * @brief Receive a TCP packet
- * @param data Data to be received
- * @param size Size of the incoming data
+ * @param data 	Data to be received
+ * @param size 	Size of the incoming data
+ * @param ip	Unused for TCP sockets
+ * @param port	Unused for TCP sockets
  * @return The number of bytes received
  */
-u32 TcpSocket::recvPacket(void *data, u32 size) {
+u32 TcpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port) {
 
 	if(!this->dataReceived()) {
 		throw std::runtime_error("Socket timeout");

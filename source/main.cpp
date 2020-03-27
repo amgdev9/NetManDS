@@ -20,7 +20,8 @@ using namespace NetMan;
 
 // Test scenarios
 void ssh_test();
-void syslog_test();
+void syslog_test_udp();
+void syslog_test_tcp();
 void snmpv1_test();
 void snmpv3_test();
 
@@ -35,10 +36,11 @@ int main(int argc, char **argv) {
 
 	app.initialize();
 
-	//ssh_test();
-	//syslog_test();
 	//snmpv1_test();
 	//snmpv3_test();
+	//syslog_test_udp();
+	syslog_test_tcp();
+	//ssh_test();	// Edit sshHelper->connect() line
 
 	app.run();
 
@@ -71,10 +73,10 @@ void ssh_test() {
 }
 
 /**
- * @brief Test the syslog stuff
+ * @brief Test the syslog stuff (UDP)
  */
-void syslog_test() {
-	
+void syslog_test_udp() {
+
 	FILE *f = fopen("log.txt", "wb");
 	fclose(f);
 
@@ -84,8 +86,43 @@ void syslog_test() {
 	try {
 		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
 		for(u8 i = 0; i < 10; i++) {
-			syslogPdu->recvLog(sock);
+			syslogPdu->recvLog(sock, false);
 			syslogPdu->print();
+		}
+	} catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
+}
+
+/**
+ * @brief Test the syslog stuff (TCP)
+ */
+void syslog_test_tcp() {
+	
+	FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+
+	std::shared_ptr<TcpSocket> sock = std::make_shared<TcpSocket>(10);
+	sock->bindTo(SYSLOG_PORT);
+	sock->listenState(10);
+
+	try {
+		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
+		for(u8 i = 0; i < 3; i++) {
+			f = fopen("log.txt", "a+");
+			fprintf(f, "Connection\n");
+			fclose(f);
+			std::shared_ptr<TcpSocket> conn = sock->acceptConnection();
+			if(conn != nullptr) {
+				if(syslogPdu->recvLog(conn, true)) {
+					syslogPdu->print();
+				}
+				if(syslogPdu->recvLog(conn, true)) {
+					syslogPdu->print();
+				}
+			}
 		}
 	} catch (const std::runtime_error &e) {
 		f = fopen("log.txt", "a+");

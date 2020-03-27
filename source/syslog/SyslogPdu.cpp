@@ -24,8 +24,10 @@ SyslogPdu::~SyslogPdu() { }
 /**
  * @brief Receive a log message
  * @param sock	Socket to use for reception
+ * @param tcp	Using a TCP socket?
+ * @return Whether it is a valid (not probe) PDU
  */
-void SyslogPdu::recvLog(std::shared_ptr<UdpSocket> sock) {
+bool SyslogPdu::recvLog(std::shared_ptr<Socket> sock, bool tcp) {
 
 #ifdef SYSLOG_DEBUG
 	char path[128];
@@ -33,11 +35,26 @@ void SyslogPdu::recvLog(std::shared_ptr<UdpSocket> sock) {
 #endif
 
     try {
+
+		// If using TCP, read first the "packet" length from the flow
+		u32 packetSize = SYSLOG_MAX_PDU_SIZE;
+		if(tcp) {
+			char n = 0;
+			char sizeString[8];
+			u8 sizeIndex = 0;
+			do {
+				sock->recvPacket(&n, 1);
+				sizeString[sizeIndex++] = n;
+			} while(n >= '0' && n <= '9');
+			sizeString[sizeIndex] = '\0';
+			packetSize = atoi(sizeString);
+		}
+
 		// Create recv buffer
-		std::unique_ptr<u8> data(new u8[SYSLOG_MAX_PDU_SIZE]);
+		std::unique_ptr<u8> data(new u8[packetSize]);
 
 		// Receive packet data
-		u32 dataSize = sock->recvPacket(data.get(), SYSLOG_MAX_PDU_SIZE);
+		u32 dataSize = sock->recvPacket(data.get(), packetSize);
 		u8 *ptr = data.get();
 
 		// Read priority
@@ -204,6 +221,7 @@ void SyslogPdu::recvLog(std::shared_ptr<UdpSocket> sock) {
 #ifdef SYSLOG_DEBUG
 	fclose(f);
 #endif
+	return true;
 }
 
 /**
@@ -230,7 +248,7 @@ bool SyslogPdu::checkAlternative(u8 **ptr, char c) {
 void SyslogPdu::checkCharacter(u8 **ptr, char c) {
 
 	if((char)**ptr != c) {
-		throw std::runtime_error("No match: " + std::string(1, c));
+		throw std::runtime_error("No match: " + std::string(1, c) + " vs " + std::string(1, (char)**ptr));
 	}
 
 	*ptr += 1;
