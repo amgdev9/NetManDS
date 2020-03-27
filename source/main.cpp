@@ -86,7 +86,7 @@ void syslog_test_udp() {
 	try {
 		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
 		for(u8 i = 0; i < 10; i++) {
-			syslogPdu->recvLog(sock, false);
+			syslogPdu->recvLog(sock);
 			syslogPdu->print();
 		}
 	} catch (const std::runtime_error &e) {
@@ -116,12 +116,10 @@ void syslog_test_tcp() {
 			fclose(f);
 			std::shared_ptr<TcpSocket> conn = sock->acceptConnection();
 			if(conn != nullptr) {
-				if(syslogPdu->recvLog(conn, true)) {
-					syslogPdu->print();
-				}
-				if(syslogPdu->recvLog(conn, true)) {
-					syslogPdu->print();
-				}
+				syslogPdu->recvLog(conn);
+				syslogPdu->print();
+				syslogPdu->recvLog(conn);
+				syslogPdu->print();
 			}
 		}
 	} catch (const std::runtime_error &e) {

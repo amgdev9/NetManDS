@@ -21,40 +21,9 @@ SyslogPdu::SyslogPdu() { }
  */
 SyslogPdu::~SyslogPdu() { }
 
-/**
- * @brief Receive a log message
- * @param sock	Socket to use for reception
- * @param tcp	Using a TCP socket?
- * @return Whether it is a valid (not probe) PDU
- */
-bool SyslogPdu::recvLog(std::shared_ptr<Socket> sock, bool tcp) {
+void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
 
-#ifdef SYSLOG_DEBUG
-	char path[128];
-	FILE *f = fopen("log.txt", "wb");
-#endif
-
-    try {
-
-		// If using TCP, read first the "packet" length from the flow
-		u32 packetSize = SYSLOG_MAX_PDU_SIZE;
-		if(tcp) {
-			char n = 0;
-			char sizeString[8];
-			u8 sizeIndex = 0;
-			do {
-				sock->recvPacket(&n, 1);
-				sizeString[sizeIndex++] = n;
-			} while(n >= '0' && n <= '9');
-			sizeString[sizeIndex] = '\0';
-			packetSize = atoi(sizeString);
-		}
-
-		// Create recv buffer
-		std::unique_ptr<u8> data(new u8[packetSize]);
-
-		// Receive packet data
-		u32 dataSize = sock->recvPacket(data.get(), packetSize);
+	try {
 		u8 *ptr = data.get();
 
 		// Read priority
@@ -221,7 +190,62 @@ bool SyslogPdu::recvLog(std::shared_ptr<Socket> sock, bool tcp) {
 #ifdef SYSLOG_DEBUG
 	fclose(f);
 #endif
-	return true;
+}
+
+void SyslogPdu::recvLog(std::shared_ptr<TcpSocket> sock) {
+
+	// If using TCP, read first the "packet" length from the flow
+	u32 packetSize = SYSLOG_MAX_PDU_SIZE;
+	char n = 0;
+	char sizeString[8];
+	u8 sizeIndex = 0;
+	do {
+		sock->recvData(&n, 1);
+		sizeString[sizeIndex++] = n;
+	} while(n >= '0' && n <= '9');
+	sizeString[sizeIndex] = '\0';
+	packetSize = atoi(sizeString);
+
+	try {
+
+		// Create recv buffer
+		std::shared_ptr<u8> data(new u8[packetSize]);
+
+		// Receive packet data
+		u32 dataSize = sock->recvData(data.get(), packetSize);
+
+		// Decode the log PDU
+		this->decodeLog(data, dataSize);
+
+	} catch (const std::bad_alloc &e) {
+		throw;
+	} catch (const std::runtime_error &e) {
+		throw;
+	}
+}
+
+/**
+ * @brief Receive a log message
+ * @param sock	Socket to use for reception
+ */
+void SyslogPdu::recvLog(std::shared_ptr<UdpSocket> sock) {
+
+    try {
+
+		// Create recv buffer
+		std::shared_ptr<u8> data(new u8[SYSLOG_MAX_PDU_SIZE]);
+
+		// Receive packet data
+		u32 dataSize = sock->recvPacket(data.get(), SYSLOG_MAX_PDU_SIZE);
+		
+		// Decode PDU data
+		this->decodeLog(data, dataSize);
+
+	} catch (const std::runtime_error &e) {
+		throw;
+	} catch (const std::bad_alloc &e) {
+		throw;
+	}
 }
 
 /**

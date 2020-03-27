@@ -21,7 +21,7 @@ namespace NetMan {
  */
 TcpSocket::TcpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
 
-	this->fd = socket(AF_INET, SOCK_STREAM, 0);
+	this->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 
 	if(this->fd < 0) {
 		throw std::runtime_error("socket() failed");
@@ -99,13 +99,11 @@ std::shared_ptr<TcpSocket> TcpSocket::acceptConnection() {
 }
 
 /**
- * @brief Send a TCP packet
+ * @brief Send TCP data to the flow
  * @param data 	Data to be sent
  * @param size 	Size of the outcoming data
- * @param ip	Unused for TCP sockets
- * @param port	Unused for TCP sockets
  */
-void TcpSocket::sendPacket(void *data, u32 size, const std::string &ip, u16 port) {
+void TcpSocket::sendData(void *data, u32 size) {
 
 	if(send(this->fd, data, size, 0) < 0) {
 		throw std::runtime_error("send() failed");
@@ -127,14 +125,12 @@ bool TcpSocket::dataReceived() {
 }
 
 /**
- * @brief Receive a TCP packet
+ * @brief Receive TCP data from the flow
  * @param data 	Data to be received
  * @param size 	Size of the incoming data
- * @param ip	Unused for TCP sockets
- * @param port	Unused for TCP sockets
  * @return The number of bytes received
  */
-u32 TcpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port) {
+u32 TcpSocket::recvData(void *data, u32 size) {
 
 	if(!this->dataReceived()) {
 		throw std::runtime_error("Socket timeout");

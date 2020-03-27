@@ -10,7 +10,8 @@
 #include <vector>
 
 // Own includes
-#include "socket/Socket.h"
+#include "socket/UdpSocket.h"
+#include "socket/TcpSocket.h"
 
 // Defines
 //#define SYSLOG_DEBUG                true
@@ -115,9 +116,11 @@ class SyslogPdu {
         void checkCharacter(u8 **ptr, char c);
         u32 getNumber(u8 **ptr, u8 mindigits, u8 maxdigits, u32 minrange, u32 maxrange, bool nonzero);
         std::string getString(u8 **ptr, u16 minlength, u16 maxlength, const char *separator, bool escape = false, u8 mincode = 33, u8 maxcode = 126);
+        void decodeLog(std::shared_ptr<u8> data, u32 dataSize);
     public:
         SyslogPdu();
-        bool recvLog(std::shared_ptr<Socket> sock, bool tcp);
+        void recvLog(std::shared_ptr<UdpSocket> sock);
+        void recvLog(std::shared_ptr<TcpSocket> sock);
         void print();
         virtual ~SyslogPdu();
 };
