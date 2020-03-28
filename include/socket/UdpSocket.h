@@ -29,9 +29,11 @@ class UdpSocket {
         in_port_t lastPort;		/**< Last received packet's origin port */
     public:
         UdpSocket(u32 timeoutSecs = DEFAULT_UDP_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_UDP_SOCKET_TIMEOUT_USECS);
-        void sendPacket(void *data, u32 size, const std::string &ip, u16 port);
-        u32 recvPacket(void *data, u32 size, const std::string &ip = "", u16 port = 0);
+        void sendPacket(void *data, u32 size, in_addr_t ip, u16 port);
+        u32 recvPacket(void *data, u32 size, in_addr_t ip = 0, u16 port = 0);
         void bindTo(u16 port);
+        inline in_addr_t getLastOrigin() { return this->lastOrigin; }
+        inline in_port_t getLastPort() { return this->lastPort; }
         virtual ~UdpSocket();
 };
 

@@ -68,11 +68,12 @@ class Snmpv1Pdu: public BerPdu {
 		void clear() override;
 		void emptyVarBindList();
 		void addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
-		virtual void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip);
-		virtual u8 recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
+		virtual void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port);
+		virtual u8 recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
 		virtual void recvTrap(std::shared_ptr<UdpSocket> sock);
 		std::shared_ptr<BerField> getVarBind(u16 i);
 		~Snmpv1Pdu();
+        inline static void setGlobalRequestID(u32 rid) { Snmpv1Pdu::requestID = rid; }
 };
 
 }

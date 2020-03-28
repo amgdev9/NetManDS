@@ -24,7 +24,7 @@ namespace NetMan {
  * @class TcpSocket
  */
 class TcpSocket {
-	private:
+	protected:
 		int fd;					/**< File descriptor for UDP socket */
 		struct timeval tv;		/**< Timeout for UDP socket */
 	public:

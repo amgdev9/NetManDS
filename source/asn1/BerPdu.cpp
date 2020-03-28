@@ -86,7 +86,7 @@ std::unique_ptr<u8> BerPdu::serialize(u32 *size, u8 alignment) {
  * @param ip Destination IP address
  * @param port Destination port
  */
-void BerPdu::send(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port) {
+void BerPdu::send(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port) {
 
 	// Create the PDU buffer
 	try {

@@ -130,9 +130,10 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::generateRequest(u32 type) {
  * @brief Send a GET REQUEST
  * @param type Type of SNMP PDU
  * @param socket Socket used when sending the PDU
- * @param ip Destination IP. If empty, last socket's remote host IP-port will be used
+ * @param ip Destination IP. If zero, last socket's remote host IP-port will be used
+ * @param port  Destination port
  */
-void Snmpv1Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip) {
+void Snmpv1Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port) {
 
 	try {
 
@@ -147,7 +148,7 @@ void Snmpv1Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
 		message->addChild(getRequest);
 
 		this->fields.push_back(message);
-		BerPdu::send(sock, ip, SNMP_PORT);
+		BerPdu::send(sock, ip, port);
 
 	} catch (const std::bad_alloc &e) {
 		this->fields.clear();
@@ -288,7 +289,7 @@ std::shared_ptr<BerSequence> Snmpv1Pdu::recvResponse(u8 **ptr, bool checkRespons
  * @param expectedPduType Expected PDU type
  * @return Type of response PDU obtained (=expectedPduType, or obtained PDU if SNMP_PDU_ANY)
  */
-u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
+u8 Snmpv1Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 expectedPduType) {
 
 	try {
 		// Create recv buffer
@@ -397,7 +398,7 @@ Snmpv1Pdu::~Snmpv1Pdu() { }
  */
 std::shared_ptr<BerField> Snmpv1Pdu::getVarBind(u16 i) {
 	try {
-		return static_cast<BerSequence*>(this->varBindList->getChild(i).get())->getChild(1);
+		return std::static_pointer_cast<BerSequence>(this->varBindList->getChild(i))->getChild(1);
 	} catch (const std::out_of_range &e){
 		throw;
 	}

@@ -158,7 +158,7 @@ std::shared_ptr<BerOctetString> Snmpv3Pdu::checkHeader(u8 **ptr, bool checkMsgID
 		std::shared_ptr<BerInteger> msgSecurityModel = BerInteger::decode(ptr, false);
 		if(msgSecurityModel->getValueU32() != SNMPV3_USM_MODEL) {
 			if(*flags &SNMPV3_FLAG_REPORTABLE) {
-				Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_SECMODEL_MISMATCH, this->secParams);
+				Snmpv3Pdu::sendReportTo(sock, 0, 0, SNMPV3_SECMODEL_MISMATCH, this->secParams);
 			}
 			throw std::runtime_error("msgSecurityModel does not match");
 		}
@@ -286,12 +286,12 @@ std::shared_ptr<BerSequence> Snmpv3Pdu::generateScopedPdu(std::shared_ptr<BerSeq
  * @brief Send a SNMPv3 request
  * @param type				Type of SNMP request
  * @param sock				Socket used for transmission
- * @param ip				Destination IP
+ * @param ip				Destination IP. If zero, it uses the last socket's origin IP
  * @param port				Destination port
  * @param nonRepeaters		Non-repeaters field for GetBulkRequest
  * @param maxRepetitions	Max-repetitions field for GetBulkRequest
  */
-void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 nonRepeaters, u32 maxRepetitions) {
+void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 nonRepeaters, u32 maxRepetitions) {
 
     try {
 		
@@ -388,7 +388,7 @@ void Snmpv3Pdu::sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, const std
  * @param expectedPduType	Expected PDU type
  * @return The received PDU type
  */
-u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, u32 expectedPduType) {
+u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 expectedPduType) {
     
     try {
 		// Create recv buffer
@@ -411,7 +411,7 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 			user = userStore.getUser(params.msgUserName);
 		} catch (std::runtime_error &e) {
 			if(reportable) {
-				Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_USERNAME_MISMATCH, secParams);
+				Snmpv3Pdu::sendReportTo(sock, 0, 0, SNMPV3_USERNAME_MISMATCH, secParams);
 			}
 			throw;
 		}
@@ -429,7 +429,7 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 			bool authResult = authProto->authenticate(data.get(), packetSize, params, userAuthKey);
 			if(!authResult) {
 				if(reportable) {
-					Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_AUTH_WRONG, secParams);
+					Snmpv3Pdu::sendReportTo(sock, 0, 0, SNMPV3_AUTH_WRONG, secParams);
 				}
 				throw std::runtime_error("Authentication failed");
 			}
@@ -441,7 +441,7 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 					decryptedPdu = privProto->decrypt(encryptedPdu, params, userPrivKey);
 				} catch (const std::runtime_error &e) {
 					if(reportable) {
-						Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_PRIV_WRONG, secParams);
+						Snmpv3Pdu::sendReportTo(sock, 0, 0, SNMPV3_PRIV_WRONG, secParams);
 					}
 					throw;
 				}
@@ -475,7 +475,7 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, const std::string &i
 				// Send report if engineID does not match
 				if(secParams.msgAuthoritativeEngineID.compare(params.msgAuthoritativeEngineID) != 0) {
 					if(reportable) {
-						Snmpv3Pdu::sendReportTo(sock, "", 0, SNMPV3_ENGINEID_MISMATCH, secParams);
+						Snmpv3Pdu::sendReportTo(sock, 0, 0, SNMPV3_ENGINEID_MISMATCH, secParams);
 					}
 					throw std::runtime_error("EngineID does not match");
 				}
@@ -508,7 +508,7 @@ void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 	try {
 
         // Receive a trap or inform-request PDU
-        u8 pduType = this->recvResponse(sock, "", 0, SNMP_PDU_ANY);
+        u8 pduType = this->recvResponse(sock, INADDR_ANY, 0, SNMP_PDU_ANY);
 
         // Error if not a notification was received
         if(pduType != SNMPV2_TRAP && pduType != SNMPV2_INFORMREQUEST) {
@@ -517,7 +517,7 @@ void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 
         // If it was an inform-request, send back the acknowledgement
         if(pduType == SNMPV2_INFORMREQUEST) {
-            this->sendRequest(SNMPV2_GETRESPONSE, sock, "", 0);    // Use inform-request origin IP-port as destination IP-port
+            this->sendRequest(SNMPV2_GETRESPONSE, sock, 0, 0);    // Use inform-request origin IP-port as destination IP-port
         }
     } catch (const std::runtime_error &e) {
 		throw;
@@ -534,7 +534,7 @@ void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
  * @param ip				Destination IP
  * @param port				Destination port
  */
-void Snmpv3Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port) {
+void Snmpv3Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port) {
 	this->sendRequest(SNMPV2_GETBULKREQUEST, sock, ip, port, nonRepeaters, maxRepetitions);
 }
 
@@ -545,7 +545,7 @@ void Snmpv3Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::share
  */
 std::shared_ptr<BerField> Snmpv3Pdu::getVarBind(u16 i) {
     try {
-		return static_cast<BerSequence*>(this->varBindList->getChild(i).get())->getChild(1);
+		return std::static_pointer_cast<BerSequence>(this->varBindList->getChild(i))->getChild(1);
 	} catch (const std::out_of_range &e){
 		throw;
 	}
@@ -559,12 +559,12 @@ Snmpv3Pdu::~Snmpv3Pdu() { }
 /**
  * @brief Send a report PDU to some agent
  * @param sock		Socket used for transmission
- * @param ip		Destination IP
+ * @param ip		Destination IP. If zero, it uses the last socket's origin IP
  * @param port		Destination port
  * @param reasonOid	OID indicating the reason for the report
  * @param params	Security parameters
  */
-void Snmpv3Pdu::sendReportTo(std::shared_ptr<UdpSocket> sock, const std::string &ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params) {
+void Snmpv3Pdu::sendReportTo(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, const std::string &reasonOid, const Snmpv3SecurityParams &params) {
 	try {
 		std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(params.msgAuthoritativeEngineID, "", params.msgUserName);
 		std::shared_ptr<BerOid> oid = std::make_shared<BerOid>(reasonOid);

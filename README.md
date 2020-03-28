@@ -8,10 +8,10 @@ Makefile rules:
 Finished modules:
 	- SNMPv3
 	- SSH
-
+    - Agent discovery
+    
 ToDo List:
 	- Syslog
-	- Agent discovery
 	- MIB Browser
 	- RESTCONF y CoAP
 	

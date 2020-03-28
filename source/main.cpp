@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+#include <arpa/inet.h>
 
 // Includes 3DS
 #include <3ds.h>
@@ -15,6 +16,8 @@
 #include "syslog/SyslogPdu.h"
 #include "socket/UdpSocket.h"
 #include "ssh/SshHelper.h"
+#include "socket/TlsSocket.h"
+#include "snmp/SnmpAgentScanner.h"
 
 using namespace NetMan;
 
@@ -24,6 +27,7 @@ void syslog_test_udp();
 void syslog_test_tcp();
 void snmpv1_test();
 void snmpv3_test();
+void snmpagent_test();
 
 /**
  * @brief Main function
@@ -39,12 +43,69 @@ int main(int argc, char **argv) {
 	//snmpv1_test();
 	//snmpv3_test();
 	//syslog_test_udp();
-	syslog_test_tcp();
+	//syslog_test_tcp();
 	//ssh_test();	// Edit sshHelper->connect() line
+    snmpagent_test();
 
 	app.run();
 
 	return 0;
+}
+
+/**
+ * @brief Test the SNMP agent discovery
+ */
+void snmpagent_test() {
+
+    FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+
+    try {
+		std::shared_ptr<SnmpAgentScanner> agentScanner = std::make_shared<SnmpAgentScanner>();
+        agentScanner->scanAgents(inet_addr("192.168.100.1"), 254, SNMP_PORT, SNMPV1_VERSION, 15, 2);
+        agentScanner->print();
+	} catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
+}
+
+/**
+ * @brief Test the syslog stuff (TCP)
+ */
+void syslog_test_tcp() {
+	
+	FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+
+    //TlsSocket::initialize();
+
+	std::shared_ptr<TcpSocket> sock = std::make_shared<TcpSocket>(10);
+	sock->bindTo(SYSLOG_PORT);
+	sock->listenState(10);
+
+	try {
+		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
+		for(u8 i = 0; i < 3; i++) {
+			f = fopen("log.txt", "a+");
+			fprintf(f, "Connection\n");
+			fclose(f);
+			std::shared_ptr<TcpSocket> conn = sock->acceptConnection();
+			if(conn != nullptr) {
+				syslogPdu->recvLog(conn);
+				syslogPdu->print();
+				syslogPdu->recvLog(conn);
+				syslogPdu->print();
+			}
+		}
+	} catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
+
+    //TlsSocket::finish();
 }
 
 /**
@@ -97,39 +158,6 @@ void syslog_test_udp() {
 }
 
 /**
- * @brief Test the syslog stuff (TCP)
- */
-void syslog_test_tcp() {
-	
-	FILE *f = fopen("log.txt", "wb");
-	fclose(f);
-
-	std::shared_ptr<TcpSocket> sock = std::make_shared<TcpSocket>(10);
-	sock->bindTo(SYSLOG_PORT);
-	sock->listenState(10);
-
-	try {
-		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
-		for(u8 i = 0; i < 3; i++) {
-			f = fopen("log.txt", "a+");
-			fprintf(f, "Connection\n");
-			fclose(f);
-			std::shared_ptr<TcpSocket> conn = sock->acceptConnection();
-			if(conn != nullptr) {
-				syslogPdu->recvLog(conn);
-				syslogPdu->print();
-				syslogPdu->recvLog(conn);
-				syslogPdu->print();
-			}
-		}
-	} catch (const std::runtime_error &e) {
-		f = fopen("log.txt", "a+");
-		fprintf(f, e.what());
-		fclose(f);
-	}
-}
-
-/**
  * @brief Test the SNMPv3 stuff
  */
 void snmpv3_test() {
@@ -159,9 +187,9 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1", SNMP_PORT);
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), SNMP_PORT);
 		try{
-			pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+			pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
 		} catch (std::runtime_error &e) {
 			f = fopen("sdmc:/log.txt", "a+");
 			fprintf(f, "Error: %s\n", e.what());
@@ -171,8 +199,8 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1", SNMP_PORT);
-		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
 
 		// Pruebas SNMP GET BULK
 		pdu->clear();
@@ -182,8 +210,8 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 3; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendBulkRequest(2, 5, sock, "127.0.0.1", SNMP_PORT);
-		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+		pdu->sendBulkRequest(2, 5, sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
 
 		// Pruebas SNMP TRAP e INFORM
 		pdu = std::make_shared<Snmpv3Pdu>("engineid", "", "manager");
@@ -227,8 +255,8 @@ void snmpv1_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, "127.0.0.1");
-		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
 
 		// Pruebas SNMP SET
 		/*pdu->clear();
@@ -250,8 +278,8 @@ void snmpv1_test() {
 		for(u8 i = 0; i < 3; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendBulkRequest(2, 5, sock, "127.0.0.1");
-		pdu->recvResponse(sock, "127.0.0.1", SNMP_PORT);
+		pdu->sendBulkRequest(2, 5, sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
 
 		// Pruebas SNMP TRAP
 		sock = std::make_shared<UdpSocket>(30);

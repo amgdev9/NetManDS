@@ -3,6 +3,9 @@
  * @brief SNMPv2c PDU handler
  */
 
+// Includes C/C++
+#include <netinet/in.h>
+
 // Own includes
 #include "asn1/BerInteger.h"
 #include "snmp/Snmpv2Pdu.h"
@@ -45,8 +48,9 @@ std::shared_ptr<BerSequence> Snmpv2Pdu::generateBulkRequest(u32 nonRepeaters, u3
  * @param maxRepetitions    Number of rows to get for the remaining objects
  * @param sock              Socket used for transmission
  * @param ip                Destination IP address
+ * @param port              Destination port
  */
-void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip) {
+void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port) {
 
 	try {
 
@@ -61,7 +65,7 @@ void Snmpv2Pdu::sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::share
 		message->addChild(getBulkRequest);
 
 		this->fields.push_back(message);
-		BerPdu::send(sock, ip, SNMP_PORT);
+		BerPdu::send(sock, ip, port);
 
 	} catch (const std::bad_alloc &e) {
 		this->fields.clear();
@@ -85,7 +89,7 @@ void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
     try {
 
         // Receive a trap or inform-request PDU
-        u8 pduType = this->recvResponse(sock, "", 0, SNMP_PDU_ANY);
+        u8 pduType = this->recvResponse(sock, INADDR_ANY, 0, SNMP_PDU_ANY);
 
         // Error if not a notification was received
         if(pduType != SNMPV2_TRAP && pduType != SNMPV2_INFORMREQUEST) {
@@ -94,7 +98,7 @@ void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 
         // If it was an inform-request, send the acknowledgement
         if(pduType == SNMPV2_INFORMREQUEST) {
-            this->sendRequest(SNMPV2_GETRESPONSE, sock, "");    // Use inform-request origin IP-port as destination IP-port
+            this->sendRequest(SNMPV2_GETRESPONSE, sock, 0, 0);    // Use inform-request origin IP-port as destination IP-port
         }
     } catch (const std::runtime_error &e) {
 		throw;

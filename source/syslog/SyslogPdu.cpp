@@ -21,6 +21,11 @@ SyslogPdu::SyslogPdu() { }
  */
 SyslogPdu::~SyslogPdu() { }
 
+/**
+ * @brief Decode a syslog PDU
+ * @param data      Data buffer
+ * @param dataSize  Data size
+ */
 void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
 
 	try {
@@ -192,6 +197,10 @@ void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
 #endif
 }
 
+/**
+ * @brief Receive a syslog PDU from a TCP stream
+ * @param sock  TCP socket to use for reception
+ */
 void SyslogPdu::recvLog(std::shared_ptr<TcpSocket> sock) {
 
 	// If using TCP, read first the "packet" length from the flow
@@ -225,8 +234,8 @@ void SyslogPdu::recvLog(std::shared_ptr<TcpSocket> sock) {
 }
 
 /**
- * @brief Receive a log message
- * @param sock	Socket to use for reception
+ * @brief Receive a log message from a UDP socket
+ * @param sock	UDP Socket to use for reception
  */
 void SyslogPdu::recvLog(std::shared_ptr<UdpSocket> sock) {
 

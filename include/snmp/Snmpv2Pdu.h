@@ -60,7 +60,7 @@ class Snmpv2Pdu: public Snmpv1Pdu {
 		std::shared_ptr<BerSequence> generateBulkRequest(u32 nonRepeaters, u32 maxRepetitions);
 	public:
 		Snmpv2Pdu(const std::string &community);
-        virtual void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, const std::string &ip);
+        virtual void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port);
 		virtual void recvTrap(std::shared_ptr<UdpSocket> sock) override;
 		~Snmpv2Pdu();
 		friend class Snmpv3Pdu;

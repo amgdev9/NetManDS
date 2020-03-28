@@ -37,19 +37,19 @@ UdpSocket::UdpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
  * @brief Send a UDP datagram
  * @param data Data to be sent
  * @param size Size of the outcoming data
- * @param ip IPv4 address of the destination. If empty string, last received packet's origin IP-port will be used
+ * @param ip IPv4 address of the destination. If zero, last received packet's origin IP-port will be used
  * @param port Destination port
  */
-void UdpSocket::sendPacket(void *data, u32 size, const std::string &ip, u16 port) {
+void UdpSocket::sendPacket(void *data, u32 size, in_addr_t ip, u16 port) {
 
 	struct sockaddr_in dest;
 	memset(&dest, 0, sizeof(sockaddr_in));
 	dest.sin_family = AF_INET;
-	if(ip.compare("") == 0) {
+	if(ip == 0) {
 		dest.sin_addr.s_addr = this->lastOrigin;
 		dest.sin_port = this->lastPort;
 	} else {
-		dest.sin_addr.s_addr = inet_addr(ip.c_str());
+		dest.sin_addr.s_addr = ip;
 		dest.sin_port = htons(port);
 	}
 
@@ -66,7 +66,7 @@ void UdpSocket::sendPacket(void *data, u32 size, const std::string &ip, u16 port
  * @param port Expected source port
  * @return The number of bytes received
  */
-u32 UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port) {
+u32 UdpSocket::recvPacket(void *data, u32 size, in_addr_t ip, u16 port) {
 
 	struct sockaddr_in src;
 	socklen_t src_len = sizeof(src);
@@ -84,7 +84,7 @@ u32 UdpSocket::recvPacket(void *data, u32 size, const std::string &ip, u16 port)
 		throw std::runtime_error("recvfrom() failed");
 	}
 
-	if(ip.compare("") != 0 && src.sin_addr.s_addr != inet_addr(ip.c_str())) {
+	if(ip != 0 && src.sin_addr.s_addr != ip) {
 		throw std::runtime_error("Source IP does not match");
 	}
 
