@@ -86,7 +86,7 @@ void TcpSocket::listenState(u32 queueLength) {
  * @brief Accept a connection from a client
  * @return The accepted connection, or nullptr if no connection was requested
  */
-std::shared_ptr<TcpSocket> TcpSocket::acceptConnection() {
+std::shared_ptr<TcpSocketInterface> TcpSocket::acceptConnection() {
 
 	if(this->dataReceived()) {
 		int client_fd = accept(this->fd, NULL, NULL);

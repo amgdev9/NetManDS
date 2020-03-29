@@ -108,6 +108,9 @@ std::shared_ptr<TcpSocket> SshHelper::connect(const std::string &hostname, u16 p
 	    libssh2_channel_set_blocking(channel, 0);
         libssh2_channel_flush(channel);
 
+        // Free DNS result
+        freeaddrinfo(res);
+
         // Return the connection socket
         return this->sock;
 	 

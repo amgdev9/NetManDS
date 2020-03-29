@@ -9,9 +9,9 @@ Finished modules:
 	- SNMPv3
 	- SSH
     - Agent discovery
+    - Syslog
     
 ToDo List:
-	- Syslog
 	- MIB Browser
 	- RESTCONF y CoAP
 	

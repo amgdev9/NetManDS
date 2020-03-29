@@ -15,6 +15,9 @@
 
 namespace NetMan {
 
+/**
+ * @brief Constructor for a SNMP Agent Scanner
+ */
 SnmpAgentScanner::SnmpAgentScanner() {
     sock = std::make_shared<UdpSocket>(0, 0);
 
@@ -26,6 +29,17 @@ SnmpAgentScanner::SnmpAgentScanner() {
     agents = std::unordered_map<in_addr_t, SnmpAgentEntry>();
 }
 
+/**
+ * @brief Perform an IP scan
+ * @param baseIP        Initial IP for the scan
+ * @param nhosts        Number of hosts to scan
+ * @param port          Port to be requested
+ * @param version       SNMP Version to use (1 or 2)
+ * @param maxRequests   Maximum number of requests without checking responses
+ * @param timeout       Response timeout (in seconds)
+ * @note The estimated delay should be ~ timeout * nhosts / maxRequests (seconds).
+ *       If maxRequests grows, the memory used at a time will grow (for reception queues)
+ */
 void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 version, u8 maxRequests, u8 timeout) {
     
     // Initialize agents map
@@ -102,6 +116,12 @@ void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 ver
     }
 }
 
+/**
+ * @brief Get a string from a varbind
+ * @param pdu   SNMP pdu to use
+ * @param i     Index of the varbind
+ * @return The retrieved string
+ */
 std::string &SnmpAgentScanner::getStringFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i) {
     std::shared_ptr<BerField> varBind = pdu->getVarBind(i);
     if(typeid(*varBind.get()) == typeid(BerOctetString)) {
@@ -111,6 +131,12 @@ std::string &SnmpAgentScanner::getStringFromVarBind(std::shared_ptr<Snmpv1Pdu> p
     throw std::runtime_error("Error retrieving OCTET STRING");
 }
 
+/**
+ * @brief Get an OID from a varbind
+ * @param pdu   SNMP pdu to use
+ * @param i     Index of the varbind
+ * @return The retrieved OID (ready to be printed)
+ */
 std::shared_ptr<std::string> SnmpAgentScanner::getOidFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i) {
     std::shared_ptr<BerField> varBind = pdu->getVarBind(i);
     if(typeid(*varBind.get()) == typeid(BerOid)) {
@@ -120,6 +146,12 @@ std::shared_ptr<std::string> SnmpAgentScanner::getOidFromVarBind(std::shared_ptr
     throw std::runtime_error("Error retrieving OID");
 }
 
+/**
+ * @brief Get an integer from a varbind
+ * @param pdu   SNMP pdu to use
+ * @param i     Index of the varbind
+ * @return The retrieved integer
+ */
 std::shared_ptr<BerInteger> SnmpAgentScanner::getIntegerFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i) {
     std::shared_ptr<BerField> varBind = pdu->getVarBind(i);
     if(typeid(*varBind.get()) == typeid(BerInteger)) {
@@ -129,6 +161,9 @@ std::shared_ptr<BerInteger> SnmpAgentScanner::getIntegerFromVarBind(std::shared_
     throw std::runtime_error("Error retrieving INTEGER");
 }
 
+/**
+ * @brief Print the scanner results
+ */
 void SnmpAgentScanner::print() {
     FILE *f = fopen("log.txt", "a+");
     fprintf(f, "SNMP Agent Discovery: %d\n", this->agents.size());
@@ -148,6 +183,9 @@ void SnmpAgentScanner::print() {
     fclose(f);
 }
 
+/**
+ * @brief Destructor for a SNMP Agent Scanner
+ */
 SnmpAgentScanner::~SnmpAgentScanner() { }
 
 }
