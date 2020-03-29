@@ -158,37 +158,6 @@ void Application::fatalError(const std::string &text, u32 errorCode) {
 }
 
 /**
- * @brief Load a file
- * @param path  File path
- * @param size  Size of the file (output)
- * @return Pointer to the loaded file
- */
-std::shared_ptr<u8> Application::loadFile(const std::string &path, u32 *size) {
-
-    FILE *f = fopen(path.c_str(), "rb");
-    if(f == NULL) {
-        throw std::runtime_error("Couldn't open " + path);
-    }
-
-    fseek(f, 0, SEEK_END);
-    *size = ftell(f);
-    rewind(f);
-
-    std::shared_ptr<u8> data = nullptr;
-    try {
-        data = std::shared_ptr<u8>(new u8[*size]);
-    } catch (const std::bad_alloc &e) {
-        throw;
-    }
-
-    fread(data.get(), *size, 1, f);
-    
-    fclose(f);
-
-    return data;
-}
-
-/**
  * @brief Get the singleton instance for an Application
  * @return The singleton instance
  */

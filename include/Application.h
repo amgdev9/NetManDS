@@ -39,7 +39,6 @@ class Application {
 		void initialize();
 		void run();
 		void fatalError(const std::string &text, u32 errorCode);
-        std::shared_ptr<u8> loadFile(const std::string &path, u32 *size);
 };
 
 }

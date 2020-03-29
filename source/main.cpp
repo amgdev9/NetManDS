@@ -17,6 +17,7 @@
 #include "socket/UdpSocket.h"
 #include "ssh/SshHelper.h"
 #include "snmp/SnmpAgentScanner.h"
+#include "snmp/MibLoader.h"
 
 using namespace NetMan;
 
@@ -43,10 +44,10 @@ int main(int argc, char **argv) {
 	//snmpv1_test();
 	//snmpv3_test();
 	//syslog_test_udp();
-	syslog_test_tcp();
+	//syslog_test_tcp();
 	//ssh_test();	// Edit sshHelper->connect() line
     //snmpagent_test();
-    //mibloader_test();
+    mibloader_test();
 
 	app.run();
 
@@ -58,6 +59,17 @@ int main(int argc, char **argv) {
  */
 void mibloader_test() {
 
+    FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+    
+    try {
+        std::shared_ptr<MibLoader> mibLoader = std::make_shared<MibLoader>();
+        mibLoader->load("mibs/IF-MIB.txt");
+    } catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
 }
 
 /**
