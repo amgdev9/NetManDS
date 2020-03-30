@@ -63,8 +63,12 @@ void mibloader_test() {
 	fclose(f);
     
     try {
-        std::shared_ptr<MibLoader> mibLoader = std::make_shared<MibLoader>();
-        mibLoader->load("mibs/IF-MIB.txt");
+        MibLoader &mibLoader = MibLoader::getInstance();
+        mibLoader.loadSMI("mibs/SNMPv2-SMI.txt");
+        std::shared_ptr<Mib> mib = mibLoader.load("mibs/IF-MIB.txt");
+        mib->print();
+        std::shared_ptr<BerOid> oid = mib->resolve("ifTestOwner");
+        oid->print();
     } catch (const std::runtime_error &e) {
 		f = fopen("log.txt", "a+");
 		fprintf(f, e.what());

@@ -26,7 +26,7 @@ BerOid::BerOid(u8 tagOptions, u32 tag) : BerField(tagOptions, tag){ }
  * @param tagOptions Tag options (optional)
  * @param tag Tag (optional)
  */
-BerOid::BerOid(const std::string &oidString, u8 tagOptions, u32 tag) : BerField(tagOptions, tag){
+BerOid::BerOid(const std::string &oidString, u8 tagOptions, u32 tag) : BerField(tagOptions, tag) {
 
 	std::vector<u32> oid = std::vector<u32>();
 
@@ -55,6 +55,30 @@ BerOid::BerOid(const std::string &oidString, u8 tagOptions, u32 tag) : BerField(
 
 	try {
 		this->parseOid(oid);
+	} catch (const std::runtime_error &e) {
+		throw;
+	}
+}
+
+/**
+ * @brief Constructor for a BerOid
+ * @param oid Vector with the OID data
+ * @param tagOptions Tag options (optional)
+ * @param tag Tag (optional)
+ */
+BerOid::BerOid(const std::vector<u32> &oid, u8 tagOptions, u32 tag) : BerField(tagOptions, tag) {
+
+    std::vector<u32> realOid = std::vector<u32>();
+    if(oid.size() < 2) {
+        throw std::runtime_error("OID length < 2");
+    }
+    realOid.push_back(oid[0] * 40 + oid[1]);
+    for(u32 i = 2; i < oid.size(); i++) {
+        realOid.push_back(oid[i]);
+    }
+
+	try {
+		this->parseOid(realOid);
 	} catch (const std::runtime_error &e) {
 		throw;
 	}

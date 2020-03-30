@@ -11,6 +11,7 @@
 // Own includes
 #include "snmp/MibLoader.h"
 
+// List of tokens
 static const char *tokenList[] = {
     "DEFINITIONS",
     "::=",
@@ -24,8 +25,17 @@ static const char *tokenList[] = {
     "CONTACT-INFO",
     "DESCRIPTION",
     "REVISION",
+    "SYNTAX",
+    "UNITS",
+    "MAX-ACCESS",
+    "STATUS",
+    "REFERENCE",
+    "INDEX",
+    "AUGMENTS",
+    "DEFVAL",
 };
 
+// Enumeration with all the tokens
 enum tokenListEnum {
     TOKEN_DEFINITIONS = 0,
     TOKEN_EQUAL,
@@ -39,8 +49,18 @@ enum tokenListEnum {
     TOKEN_CONTACT_INFO,
     TOKEN_DESCRIPTION,
     TOKEN_REVISION,
+    TOKEN_SYNTAX,
+    TOKEN_UNITS,
+    TOKEN_MAX_ACCESS,
+    TOKEN_STATUS,
+    TOKEN_REFERENCE,
+    TOKEN_INDEX,
+    TOKEN_AUGMENTS,
+    TOKEN_DEFVAL,
 };
 
+// List of specific tokens to be scanned
+// If a token is not included here it is ignored
 static const char *wantedTokens[] = {
     "OBJECT",
     "MODULE-IDENTITY",
@@ -50,6 +70,7 @@ static const char *wantedTokens[] = {
     "MODULE-COMPLIANCE",
 };
 
+// Enumeration with all the wanted tokens
 enum wantedTokensEnum {
     WTOKEN_OBJECT = 0,
     WTOKEN_MODULE_IDENTITY,
@@ -59,14 +80,29 @@ enum wantedTokensEnum {
     WTOKEN_MODULE_COMPLIANCE,
 };
 
-static const char *forbiddenTokens[] = {
-    "IMPORTS",
-};
-
 namespace NetMan {
 
-MibLoader::MibLoader() { }
+/**
+ * @brief Constructor for a MIB loader
+ */
+MibLoader::MibLoader() {
+    smiMib = nullptr;
+}
 
+/**
+ * @brief Load the SMI MIB
+ * @param path      Path to the SMI MIB
+ * @note It is used for resolving OIDs
+ */
+void MibLoader::loadSMI(const std::string &path) {
+    smiMib = load(path);
+}
+
+/**
+ * @brief Load a MIB, scanning the wanted tokens
+ * @param path  Path to the MIB file
+ * @return The loaded MIB
+ */
 std::shared_ptr<Mib> MibLoader::load(const std::string &path) {
 
     // Open file
@@ -79,10 +115,22 @@ std::shared_ptr<Mib> MibLoader::load(const std::string &path) {
     char token[MIBLOADER_TOKEN_SIZE];
     char oldToken[MIBLOADER_TOKEN_SIZE];
     memset(token, 0, MIBLOADER_TOKEN_SIZE);
-    auto mibOids = std::unordered_map<std::string, MibOid>();
-    MibOid mibOid;
+
+    // Create the OID tree
+    auto mibOidsPtr = std::make_shared<std::unordered_map<std::string, std::shared_ptr<MibOid>>>();
+    std::unordered_map<std::string, std::shared_ptr<MibOid>> &mibOids = *mibOidsPtr.get();
+    std::shared_ptr<MibOid> mibOid = std::shared_ptr<MibOid>(new MibOid);
     std::string mibOidName;
 
+    // Append the SMI tree, if it has been loaded
+    if(smiMib != nullptr) {
+        auto &smiMibTree = *smiMib->getOidTree();
+        for(auto it = smiMibTree.begin(), it_end = smiMibTree.end(); it != it_end; ++it) {
+            mibOids.insert(*it);
+        }
+    }
+
+    // Create a buffer for string parsing
     std::unique_ptr<char> quotedString = nullptr;
     try {
         quotedString = std::unique_ptr<char>(new char[MIBLOADER_STR_SIZE]);
@@ -117,34 +165,27 @@ std::shared_ptr<Mib> MibLoader::load(const std::string &path) {
         }
         if(!found) continue;
 
-        // Continue if last token has a forbidden word
-        found = false;
-        for(u32 i = 0; i < sizeof(forbiddenTokens) / sizeof(char*); i++) {
-            if(compareToken(oldToken, forbiddenTokens[i])) {
-                found = true;
-                i = sizeof(forbiddenTokens) / sizeof(char*);
-            }
-        }
-        if(found) continue;
-
         // Save "possible" expression name
         // If decoding fails, this won't be saved
         mibOidName = std::string(oldToken);
 
         try {
-            // Decode expression type
+            // Decode an OBJECT IDENTIFIER
             if(compareToken(token, wantedTokens[WTOKEN_OBJECT])) {
                 getToken(f, token);
                 if(compareToken(token, tokenList[TOKEN_IDENTIFIER])) {
-                    checkToken(f, TOKEN_EQUAL);
-                    decodeOID(f, token, &mibOid);
-                    mibOid.macroType = MACRO_NONE;
-                    mibOid.macroData = nullptr;
-                    mibOids[mibOidName] = mibOid;
+                    decodeOID(f, token, mibOid.get());
+                    mibOid = addOid(mibOids, mibOidName, mibOid, MACRO_NONE, nullptr);
                 }
-            } else if(compareToken(token, wantedTokens[WTOKEN_MODULE_IDENTITY])) {
+            } 
+            
+            // Decode a MODULE-IDENTITY
+            else if(compareToken(token, wantedTokens[WTOKEN_MODULE_IDENTITY])) {
+
                 std::shared_ptr<u8> moduleIdentityPtr = std::shared_ptr<u8>((u8*)new MibModuleIdentity());
                 MibModuleIdentity *moduleIdentity = (MibModuleIdentity*)moduleIdentityPtr.get();
+
+                // Read compulsory fields
                 checkToken(f, TOKEN_LAST_UPDATED);
                 getQuotedString(f, quotedString.get());
                 moduleIdentity->lastUpdated = std::string(quotedString.get());
@@ -158,6 +199,7 @@ std::shared_ptr<Mib> MibLoader::load(const std::string &path) {
                 getQuotedString(f, quotedString.get());
                 moduleIdentity->description = std::string(quotedString.get());
 
+                // Read MIB revisions
                 getToken(f, token);
                 while(compareToken(token, tokenList[TOKEN_REVISION])) {
                     MibRevision revision;
@@ -170,17 +212,77 @@ std::shared_ptr<Mib> MibLoader::load(const std::string &path) {
                     getToken(f, token);
                 }
                 
-                fseek(f, -1, SEEK_CUR);     // TODO FIX
-                checkToken(f, TOKEN_EQUAL);
-                decodeOID(f, token, &mibOid);
-                mibOid.macroType = MACRO_MODULE_IDENTITY;
-                mibOid.macroData = moduleIdentityPtr;
-                mibOids[mibOidName] = mibOid;
-                
+                fseek(f, -1, SEEK_CUR);     // getToken() reads an additional character to skip ::=, { ...
+                decodeOID(f, token, mibOid.get());
+                mibOid = addOid(mibOids, mibOidName, mibOid, MACRO_MODULE_IDENTITY, moduleIdentityPtr);
             } else if(compareToken(token, wantedTokens[WTOKEN_OBJECT_IDENTITY])) {
                 // TODO
-            } else if(compareToken(token, wantedTokens[WTOKEN_OBJECT_TYPE])) {
-                // TODO
+            } 
+            
+            // Decode an OBJECT-TYPE
+            else if(compareToken(token, wantedTokens[WTOKEN_OBJECT_TYPE])) {
+
+                std::shared_ptr<u8> objectTypePtr = std::shared_ptr<u8>((u8*)new MibObjectType());
+                MibObjectType *objectType = (MibObjectType*)objectTypePtr.get();
+
+                // Read syntax field
+                objectType->syntax = std::string();
+                checkToken(f, TOKEN_SYNTAX);
+                getToken(f, token);
+                while(!compareToken(token, tokenList[TOKEN_UNITS]) && !compareToken(token, tokenList[TOKEN_MAX_ACCESS]) && !feof(f)) {
+                    objectType->syntax.append(std::string(token) + " ");
+                    getToken(f, token);
+                }
+
+                // Read units
+                if(compareToken(token, tokenList[TOKEN_UNITS])) {
+                    getQuotedString(f, quotedString.get());
+                    objectType->units = std::string(quotedString.get());
+                    getToken(f, token);
+                }
+
+                // Read max-access
+                if(!compareToken(token, tokenList[TOKEN_MAX_ACCESS])) {
+                    throw std::runtime_error("Expected MAX-ACCESS");
+                }
+                getToken(f, token);
+                objectType->maxAccess = std::string(token);
+
+                // Read status
+                checkToken(f, TOKEN_STATUS);
+                getToken(f, token);
+                objectType->status = std::string(token);
+
+                // Read description
+                checkToken(f, TOKEN_DESCRIPTION);
+                getQuotedString(f, quotedString.get());
+                objectType->description = std::string(quotedString.get());
+
+                // Read reference
+                getToken(f, token);
+                if(compareToken(token, tokenList[TOKEN_REFERENCE])) {
+                    getQuotedString(f, quotedString.get());
+                    objectType->reference = std::string(quotedString.get());
+                    getToken(f, token);
+                }
+
+                // Read index
+                if(compareToken(token, tokenList[TOKEN_INDEX]) || compareToken(token, tokenList[TOKEN_AUGMENTS])) {
+                    getQuotedString(f, quotedString.get(), '{', '}');
+                    objectType->indexPart = std::string(quotedString.get());
+                    getToken(f, token);
+                }
+
+                // Read default value
+                if(compareToken(token, tokenList[TOKEN_DEFVAL])) {
+                    getQuotedString(f, quotedString.get(), '{', '}');
+                    objectType->defaultValue = std::string(quotedString.get());
+                    getToken(f, token);
+                }
+
+                fseek(f, -1, SEEK_CUR);
+                decodeOID(f, token, mibOid.get());
+                mibOid = addOid(mibOids, mibOidName, mibOid, MACRO_OBJECT_TYPE, objectTypePtr);
             } else if(compareToken(token, wantedTokens[WTOKEN_OBJECT_GROUP])) {
                 // TODO
             } else if(compareToken(token, wantedTokens[WTOKEN_MODULE_COMPLIANCE])) {
@@ -196,32 +298,41 @@ std::shared_ptr<Mib> MibLoader::load(const std::string &path) {
     // Close file
     fclose(f);
 
-    f = fopen("log.txt", "wb");
-    for(auto element : mibOids) {
-        fprintf(f, "%s: { %s %ld }\n", element.first.c_str(), element.second.parentName.c_str(), element.second.value);
-        switch(element.second.macroType) {
-            case MACRO_MODULE_IDENTITY:
-            {
-                auto moduleIdentity = (MibModuleIdentity*)element.second.macroData.get();
-                fprintf(f, "\tLastUpdated: %s\n", moduleIdentity->lastUpdated.c_str());
-                fprintf(f, "\tOrganization: %s\n", moduleIdentity->organization.c_str());
-                fprintf(f, "\tContactInfo: %s\n", moduleIdentity->contactInfo.c_str());
-                fprintf(f, "\tDescription: %s\n", moduleIdentity->description.c_str());
-                for(auto revision : moduleIdentity->revisions) {
-                    fprintf(f, "\tRevisionDate: %s\n", revision.date.c_str());
-                    fprintf(f, "\tRevision: %s\n", revision.description.c_str());
-                }
-            } break;
-            default:
-                break;
-        }
-    }
-    fclose(f);
-
-    return nullptr;
+    // Return the loaded MIB
+    return std::make_shared<Mib>(mibOidsPtr);
 }
 
+/**
+ * @brief Add an OID to a MIB tree
+ * @param oidMap    OID tree
+ * @param name      OID name
+ * @param oid       OID structure
+ * @param macroType Embedded macro type
+ * @param macroData Embedded macro data
+ * @return A new MibOid for further loading
+ */
+std::shared_ptr<MibOid> MibLoader::addOid(std::unordered_map<std::string, std::shared_ptr<MibOid>> &oidMap, const std::string &name, std::shared_ptr<MibOid> oid, MibMacroType macroType, std::shared_ptr<u8> macroData) {
+    oid->macroType = macroType;
+    oid->macroData = macroData;
+    oidMap[name] = oid;
+    
+    auto it = oidMap.find(oid->parentName);
+    if(it != oidMap.end()) {
+        it->second->children[name] = oid;
+    }
+
+    return std::shared_ptr<MibOid>(new MibOid);
+}
+
+
+/**
+ * @brief Decode an OID from the MIB file
+ * @param f     File handle
+ * @param token Buffer to hold tokens
+ * @param oid   Where to save the OID (output)
+ */
 void MibLoader::decodeOID(FILE *f, char *token, MibOid *oid) {
+    checkToken(f, TOKEN_EQUAL);
     checkToken(f, TOKEN_OPENBRACKET);
     getToken(f, token);
     oid->parentName = std::string(token);
@@ -230,31 +341,40 @@ void MibLoader::decodeOID(FILE *f, char *token, MibOid *oid) {
     checkToken(f, TOKEN_CLOSEBRACKET);
 }
 
-bool MibLoader::compareToken(char *token, const char *compToken) {
-    return (strcmp(token, compToken) == 0);
-}
-
+/**
+ * @brief Check if a token is present
+ * @param f             File handle
+ * @param compToken     One of tokenListEnum
+ */
 void MibLoader::checkToken(FILE *f, u32 compToken) {
-    skipUntilReadable(f);
+    char c = skipUntilReadable(f);
     
     u32 length = strlen(tokenList[compToken]);
     for(u32 i = 0; i < length; i++) {
-        if((fgetc(f) != tokenList[compToken][i]) || feof(f)) {
+        if((c != tokenList[compToken][i]) || feof(f)) {
             throw std::runtime_error(std::string("Expected ") + tokenList[compToken]);
         }
+        c = fgetc(f);
     }
 }
 
-void MibLoader::getQuotedString(FILE *f, char *str) {
-    skipUntilReadable(f);
+/**
+ * @brief Get a quoted string
+ * @param f     File handle
+ * @param str   Buffer to hold the string (output)
+ * @param start Start delimiter
+ * @param end   End delimiter
+ */
+void MibLoader::getQuotedString(FILE *f, char *str, char start, char end) {
+    char c = skipUntilReadable(f);
 
     u32 i = 0;
-    if(fgetc(f) != '\"') {
+    if(c != start) {
         throw std::runtime_error("No quotation mark");
     }
-    char c = fgetc(f);
+    c = fgetc(f);
 
-    while(c != '\"') {
+    while(c != end) {
         if(i >= MIBLOADER_STR_SIZE - 1) {
             throw std::runtime_error("Error decoding quoted string");
         }
@@ -265,9 +385,13 @@ void MibLoader::getQuotedString(FILE *f, char *str) {
     str[i] = '\0';
 }
 
+/**
+ * @brief Get a token from the MIB file
+ * @param f     File handle
+ * @param token Output buffer to hold the token
+ */
 void MibLoader::getToken(FILE *f, char *token) {
-    skipUntilReadable(f);
-    char c = fgetc(f);
+    char c = skipUntilReadable(f);
     u16 i = 0;
     char lastC = 0;
     while(((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '-')) && !feof(f) && i < MIBLOADER_TOKEN_SIZE - 1) {
@@ -281,34 +405,52 @@ void MibLoader::getToken(FILE *f, char *token) {
         }
     }
     token[i] = '\0';
-    /*if(i == 0) {
-        fseek(f, -1, SEEK_CUR);
-    }*/
+    
+    // We don't go back 1 character so
+    // we can skip ::=, { ... if needed
 }
 
-void MibLoader::skipUntilReadable(FILE *f) {
-    bool readable = false;
-    while(!readable && !feof(f)) {
+/**
+ * @brief Skip file content until readable data is found
+ * @param f     File handle
+ * @return The next readable character
+ */
+char MibLoader::skipUntilReadable(FILE *f) {
+
+    while(!feof(f)) {
 
         char c = fgetc(f);
 
         // Skip fillers
         if(c != ' ' && c != '\t' && c != '\n' && c != '\r' && !feof(f)) {
-            fseek(f, -1, SEEK_CUR);
 
             // Skip comments
-            char c1 = fgetc(f);
             char c2 = fgetc(f);
-            if(c1 == '-' && c2 == '-') {
+            if(c == '-' && c2 == '-') {
                 while(fgetc(f) != '\n' && !feof(f));    // Go to next line
             } else {
-                fseek(f, -2, SEEK_CUR);
-                readable = true;    // No fillers and no comment
+                fseek(f, -1, SEEK_CUR);
+                return c;    // No fillers and no comment
             }
         }
     }
+
+    return 0;
 }
 
+/**
+ * @brief Destructor for a MIB loader
+ */
 MibLoader::~MibLoader() { }
+
+/**
+ * @brief Get the singleton instance for a MibLoader
+ * @return The singleton instance
+ */
+MibLoader &MibLoader::getInstance() {
+
+	static MibLoader mibLoader;
+	return mibLoader;
+}
 
 }

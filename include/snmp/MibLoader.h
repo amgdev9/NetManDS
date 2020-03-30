@@ -22,16 +22,20 @@ namespace NetMan {
  */
 class MibLoader {
     private:
-        void skipUntilReadable(FILE *f);
+        char skipUntilReadable(FILE *f);
         void getToken(FILE *f, char *token);
         void checkToken(FILE *f, u32 compToken);
-        bool compareToken(char *token, const char *compToken);
-        void getQuotedString(FILE *f, char *str);
+        inline bool compareToken(char *token, const char *compToken) { return (strcmp(token, compToken) == 0); }
+        void getQuotedString(FILE *f, char *str, char start = '\"', char end = '\"');
         void decodeOID(FILE *f, char *token, MibOid *oid);
-    public:
+        std::shared_ptr<MibOid> addOid(std::unordered_map<std::string, std::shared_ptr<MibOid>> &oidMap, const std::string &name, std::shared_ptr<MibOid> oid, MibMacroType macroType, std::shared_ptr<u8> macroData);
+        std::shared_ptr<Mib> smiMib;
         MibLoader();
-        std::shared_ptr<Mib> load(const std::string &path);
         virtual ~MibLoader();
+    public:
+        void loadSMI(const std::string &path);
+        static MibLoader &getInstance();
+        std::shared_ptr<Mib> load(const std::string &path);
 };
 
 }
