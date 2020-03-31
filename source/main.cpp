@@ -95,7 +95,7 @@ void syslog_test_tcp() {
 			f = fopen("log.txt", "a+");
 			fprintf(f, "Connection\n");
 			fclose(f);
-			std::shared_ptr<TcpSocketInterface> conn = sock->acceptConnection();
+			std::shared_ptr<TcpSocket> conn = sock->acceptConnection();
 			if(conn != nullptr) {
 				syslogPdu->recvLog(conn);
 				syslogPdu->print();

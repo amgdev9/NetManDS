@@ -120,7 +120,7 @@ class SyslogPdu {
     public:
         SyslogPdu();
         void recvLog(std::shared_ptr<UdpSocket> sock);
-        void recvLog(std::shared_ptr<TcpSocketInterface> sock);
+        void recvLog(std::shared_ptr<TcpSocket> sock);
         void print();
         virtual ~SyslogPdu();
 };

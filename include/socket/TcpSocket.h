@@ -9,16 +9,21 @@
 // Includes C/C++
 #include <sys/socket.h>
 #include <netdb.h>
+#include <memory>
 
-// Own includes
-#include "socket/TcpSocketInterface.h"
+// Includes 3DS
+#include <3ds/types.h>
+
+// Defines
+#define DEFAULT_TCP_SOCKET_TIMEOUT_SECS		5
+#define DEFAULT_TCP_SOCKET_TIMEOUT_USECS	0
 
 namespace NetMan {
 
 /**
  * @class TcpSocket
  */
-class TcpSocket : public TcpSocketInterface {
+class TcpSocket {
 	protected:
 		int fd;					/**< File descriptor for TCP socket */
 		struct timeval tv;		/**< Timeout for TCP socket */
@@ -26,15 +31,15 @@ class TcpSocket : public TcpSocketInterface {
 		TcpSocket(int fd, u32 timeoutSecs, u32 timeoutUsecs);
 		TcpSocket(u32 timeoutSecs = DEFAULT_TCP_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_TCP_SOCKET_TIMEOUT_USECS);
 		TcpSocket(const struct addrinfo &addr, u32 timeoutSecs = DEFAULT_TCP_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_TCP_SOCKET_TIMEOUT_USECS);
-		void connectToHost(const struct addrinfo &addr) override;
-		void sendData(void *data, u32 size) override;
-		u32 recvData(void *data, u32 size) override;
-        void bindTo(u16 port) override;
-		bool dataReceived() override;
+		virtual void connectToHost(const struct addrinfo &addr);
+		virtual void sendData(void *data, u32 size);
+		virtual u32 recvData(void *data, u32 size);
+        void bindTo(u16 port);
+		bool dataReceived();
 		inline int getDescriptor() { return this->fd; }
 		inline void setTimeout(u32 secs, u32 usecs) { tv.tv_sec = secs; tv.tv_usec = usecs; }
-		void listenState(u32 queueLength) override;
-		std::shared_ptr<TcpSocketInterface> acceptConnection() override;
+		void listenState(u32 queueLength);
+		std::shared_ptr<TcpSocket> acceptConnection();
 		virtual ~TcpSocket();
 };
 

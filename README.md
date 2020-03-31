@@ -10,9 +10,9 @@ Finished modules:
 	- SSH
     - Agent discovery
     - Syslog
+    - MIB Browser
     
 ToDo List:
-	- MIB Browser
 	- RESTCONF y CoAP
 	
 Known bugs/issues:

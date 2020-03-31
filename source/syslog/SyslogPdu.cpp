@@ -201,7 +201,7 @@ void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
  * @brief Receive a syslog PDU from a TCP stream
  * @param sock  TCP socket to use for reception
  */
-void SyslogPdu::recvLog(std::shared_ptr<TcpSocketInterface> sock) {
+void SyslogPdu::recvLog(std::shared_ptr<TcpSocket> sock) {
 
 	// If using TCP, read first the "packet" length from the flow
 	u32 packetSize = SYSLOG_MAX_PDU_SIZE;
