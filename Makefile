@@ -123,7 +123,7 @@ CXXFLAGS	:= $(CFLAGS) -frtti -fexceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -ljansson -lssh2 -lmbedtls -lmbedx509 -lmbedcrypto -lz -lcitro2d -lcitro3d -lctru -lm
+LIBS	:= -ltinyxml2 -ljansson -lssh2 -lmbedtls -lmbedx509 -lmbedcrypto -lz -lcitro2d -lcitro3d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -254,6 +254,9 @@ cia:	all $(OUTPUT).cia
 #---------------------------------------------------------------------------------
 run: all
 	@citra $(RELEASE)/$(TARGET).3dsx
+
+ftp: all
+	@ftp-upload -h 192.168.100.11:5000 -u amg --password amg -d /3ds/NetManDS $(RELEASE)/$(TARGET).3dsx
 
 #---------------------------------------------------------------------------------
 $(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s

@@ -56,6 +56,12 @@ void Application::initialize() {
 		this->fatalError("Could not initialize sockets", (u32)rc);
 	}
 
+    // Initializa http service
+    rc = httpcInit(HTTP_BUFFERSIZE);
+    if(rc) {
+		this->fatalError("Could not initialzie http service", (u32)rc);
+	}
+
 	// Initialize renderer
 	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
@@ -121,6 +127,7 @@ Application::~Application() {
 
 	// Terminate sockets
 	socExit();
+    httpcExit();
 
 	// Delete render targets
 	C3D_RenderTargetDelete(this->screen[0]);
@@ -155,6 +162,37 @@ void Application::fatalError(const std::string &text, u32 errorCode) {
 		gspWaitForVBlank();
 		gfxSwapBuffers();
 	}
+}
+
+/**
+ * @brief Load a file
+ * @param path  File path
+ * @param size  File size (output)
+ * @return The loaded file data
+ */
+std::shared_ptr<u8> Application::loadFile(const std::string &path, u32 &size) {
+
+    FILE *f = fopen(path.c_str(), "rb");
+    if(f == NULL) {
+        throw std::runtime_error("No such file: " + path);
+    }
+
+    fseek(f, 0, SEEK_END);
+    size = ftell(f);
+    rewind(f);
+
+    std::shared_ptr<u8> ptr = nullptr;
+    try {
+        ptr = std::shared_ptr<u8>(new u8[size]);
+    } catch (const std::bad_alloc &e) {
+        throw;
+    }
+
+    fread(ptr.get(), size, 1, f);
+
+    fclose(f);
+
+    return ptr;
 }
 
 /**

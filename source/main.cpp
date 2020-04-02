@@ -18,6 +18,8 @@
 #include "ssh/SshHelper.h"
 #include "snmp/SnmpAgentScanner.h"
 #include "snmp/MibLoader.h"
+#include "restconf/RestConfClient.h"
+#include "restconf/YinHelper.h"
 
 using namespace NetMan;
 
@@ -29,6 +31,7 @@ void snmpv1_test();
 void snmpv3_test();
 void snmpagent_test();
 void mibloader_test();
+void restconf_test();
 
 /**
  * @brief Main function
@@ -47,7 +50,8 @@ int main(int argc, char **argv) {
 	//syslog_test_tcp();
 	//ssh_test();	// Edit sshHelper->connect() line
     //snmpagent_test();
-    mibloader_test();
+    //mibloader_test();
+    restconf_test();
 
 	app.run();
 
@@ -55,20 +59,83 @@ int main(int argc, char **argv) {
 }
 
 /**
- * @brief Test the MIB loader
+ * @brief Test the restconf stuff
  */
-void mibloader_test() {
+void restconf_test() {
 
     FILE *f = fopen("log.txt", "wb");
-	fclose(f);
+    fclose(f);
     
     try {
-        MibLoader &mibLoader = MibLoader::getInstance();
-        mibLoader.loadSMI("mibs/SNMPv2-SMI.txt");
-        std::shared_ptr<Mib> mib = mibLoader.load("mibs/IF-MIB.txt");
-        mib->print();
-        std::shared_ptr<BerOid> oid = mib->resolve("ifTestOwner");
-        oid->print();
+        std::shared_ptr<YinHelper> yinHelper = std::make_shared<YinHelper>("yin/ietf-interfaces.xml");
+        tinyxml2::XMLElement *root = yinHelper->getRoot();
+        tinyxml2::XMLElement *containerNode = root->FirstChildElement("container");
+        tinyxml2::XMLElement *reqNode = containerNode->FirstChildElement("list");
+        auto restConfClient = std::make_shared<RestConfClient>("https://ios-xe-mgmt.cisco.com:9443", "root", "D_Vay!_10&");
+        
+        // Test 1 - Get all interfaces
+        auto jsonData = restConfClient->request(yinHelper->getRestConfURL(reqNode), HTTPC_METHOD_GET);
+        char *data = json_dumps(jsonData.get(), 0);
+        f = fopen("log.txt", "a+");
+        fprintf(f, "Test 1 - Get all interfaces\n");
+        fprintf(f, "%s\n", yinHelper->getRestConfURL(reqNode).c_str());
+        fprintf(f, data);
+        fclose(f);
+        free(data);
+
+        // Test 2 - Create a new interface
+        auto newInterface = std::shared_ptr<json_t>(json_object(), [=](json_t* data) { json_decref(data); });
+        json_t *interface = json_object();
+        json_t *ipConfig = json_object();
+        json_t *addresses = json_array();
+        json_t *address = json_object();
+        json_object_set_new(newInterface.get(), "ietf-interfaces:interface", interface);
+            json_object_set_new(interface, "name", json_string("Loopback100"));
+            json_object_set_new(interface, "description", json_string("Added with RESTCONF"));
+            json_object_set_new(interface, "type", json_string("iana-if-type:softwareLoopback"));
+            json_object_set_new(interface, "enabled", json_true());
+            json_object_set_new(interface, "ietf-ip:ipv4", ipConfig);
+                json_object_set_new(ipConfig, "address", addresses);
+                    json_array_append(addresses, address);
+                        json_object_set_new(address, "ip", json_string("172.16.100.1"));
+                        json_object_set_new(address, "netmask", json_string("255.255.255.0"));
+        f = fopen("log.txt", "a+");
+        fprintf(f, "\nTest 2 - Create a new interface\n");
+        data = json_dumps(newInterface.get(), 0);
+        fprintf(f, "%s\n", yinHelper->getRestConfContainerURL(containerNode).c_str());
+        fprintf(f, data);
+        fclose(f);
+        free(data);
+        restConfClient->request(yinHelper->getRestConfContainerURL(containerNode), HTTPC_METHOD_POST, newInterface);
+
+        // Test 3 - Get created interface
+        jsonData = restConfClient->request(yinHelper->getRestConfURL(reqNode, "Loopback100"), HTTPC_METHOD_GET);
+        data = json_dumps(jsonData.get(), 0);
+        f = fopen("log.txt", "a+");
+        fprintf(f, "\nTest 3 - Get created interface\n");
+        fprintf(f, data);
+        fclose(f);
+        free(data);
+
+        // Test 4 - Delete created interface
+        restConfClient->request(yinHelper->getRestConfURL(reqNode, "Loopback100"), HTTPC_METHOD_DELETE);
+        f = fopen("log.txt", "a+");
+        fprintf(f, "\nTest 4 - Delete created interface\n");
+        fclose(f);
+
+        // Test 5 - Get all interfaces (check we deleted the interface)
+        jsonData = restConfClient->request(yinHelper->getRestConfURL(reqNode), HTTPC_METHOD_GET);
+        data = json_dumps(jsonData.get(), 0);
+        f = fopen("log.txt", "a+");
+        fprintf(f, "\nTest 5 - Get all interfaces\n");
+        fprintf(f, data);
+        fclose(f);
+        free(data);
+
+    } catch(const std::bad_alloc &e) {
+        f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
     } catch (const std::runtime_error &e) {
 		f = fopen("log.txt", "a+");
 		fprintf(f, e.what());
@@ -103,7 +170,30 @@ void syslog_test_tcp() {
 				syslogPdu->print();
 			}
 		}
+
 	} catch (const std::runtime_error &e) {
+		f = fopen("log.txt", "a+");
+		fprintf(f, e.what());
+		fclose(f);
+	}
+}
+
+/**
+ * @brief Test the MIB loader
+ */
+void mibloader_test() {
+
+    FILE *f = fopen("log.txt", "wb");
+	fclose(f);
+    
+    try {
+        MibLoader &mibLoader = MibLoader::getInstance();
+        mibLoader.loadSMI("mibs/SNMPv2-SMI.txt");
+        std::shared_ptr<Mib> mib = mibLoader.load("mibs/IF-MIB.txt");
+        mib->print();
+        std::shared_ptr<BerOid> oid = mib->resolve("ifTestOwner");
+        oid->print();
+    } catch (const std::runtime_error &e) {
 		f = fopen("log.txt", "a+");
 		fprintf(f, e.what());
 		fclose(f);

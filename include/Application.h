@@ -16,6 +16,7 @@
 // Defines
 #define SOC_ALIGN       0x1000
 #define SOC_BUFFERSIZE  0x100000		// 1MB
+#define HTTP_BUFFERSIZE 0x100000        // 1MB
 
 namespace NetMan {
 
@@ -36,6 +37,7 @@ class Application {
 		virtual ~Application();
 	public:
 		static Application &getInstance();
+        std::shared_ptr<u8> loadFile(const std::string &path, u32 &size);
 		void initialize();
 		void run();
 		void fatalError(const std::string &text, u32 errorCode);
