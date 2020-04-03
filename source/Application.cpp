@@ -27,8 +27,10 @@ Application::Application() {
 
 /**
  * @brief Inicialize the Application
+ * @param topLayoutPath     Initial layout path for the top screen
+ * @param bottomLayoutPath  Initial layout path for the bottom screen
  */
-void Application::initialize() {
+void Application::initialize(const std::string &topLayoutPath, const std::string &bottomLayoutPath) {
 
 	if(init) return;
 
@@ -72,6 +74,16 @@ void Application::initialize() {
 		this->fatalError("Could not create render targets", 1);
 	}
 
+    // Load initial layouts
+    try {
+        topLayout = std::make_shared<GuiLayout>(topLayoutPath);
+        bottomLayout = std::make_shared<GuiLayout>(bottomLayoutPath);
+    } catch (const std::bad_alloc &e) {
+        this->fatalError(e.what(), 1);
+    } catch (const std::runtime_error &e) {
+        this->fatalError(e.what(), 1);
+    }
+
 	// Inicialization done
 	init = true;
 }
@@ -97,20 +109,19 @@ void Application::run() {
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 
 		// Draw top screen scene
-		C3D_RenderTargetClear(this->screen[0], C3D_CLEAR_ALL, C2D_Color32f(1.0f, 0.0f, 0.0f, 1.0f), 0);
+		C3D_RenderTargetClear(this->screen[0], C3D_CLEAR_ALL, C2D_Color32f(1.0f, 0.4f, 0.4f, 0.4f), 0);
 		C3D_FrameDrawOn(this->screen[0]);
 		C2D_SceneTarget(this->screen[0]);
-			// TODO Draw top 3D
 		C2D_Prepare();
-			// TODO Draw top 2D
+			topLayout->draw();
 		C2D_Flush();
 
 		// Draw bottom screen scene
-		C3D_RenderTargetClear(this->screen[1], C3D_CLEAR_ALL, C2D_Color32f(0.0f, 0.0f, 1.0f, 1.0f), 0);
+		C3D_RenderTargetClear(this->screen[1], C3D_CLEAR_ALL, C2D_Color32f(1.0f, 0.2f, 0.2f, 0.2f), 0);
 		C3D_FrameDrawOn(this->screen[1]);
 		C2D_SceneTarget(this->screen[1]);
 		C2D_Prepare();
-			// TODO Draw bottom 2D
+			bottomLayout->draw();
 		C2D_Flush();
 
 		// Swap buffers

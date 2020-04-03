@@ -76,9 +76,8 @@ SOURCES		:=	$(sort $(dir $(wildcard ./source/*/)))
 DATA		:=	data
 INCLUDES	:=	include
 GRAPHICS	:=	gfx
-#GFXBUILD	:=	$(BUILD)
 ROMFS		:=	romfs
-#GFXBUILD	:=	$(ROMFS)/gfx
+GFXBUILD	:=	$(ROMFS)/gfx
 RELEASE		:=	release
 
 # Project attributes

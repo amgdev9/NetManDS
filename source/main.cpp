@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
 	Application &app = Application::getInstance();
 
-	app.initialize();
+	app.initialize("top", "bottom");
 
 	//snmpv1_test();
 	//snmpv3_test();
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 	//ssh_test();	// Edit sshHelper->connect() line
     //snmpagent_test();
     //mibloader_test();
-    restconf_test();
+    //restconf_test();
 
 	app.run();
 

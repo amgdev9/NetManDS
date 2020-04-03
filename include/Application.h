@@ -13,6 +13,9 @@
 #include <3ds.h>
 #include <citro2d.h>
 
+// Own includes
+#include "gui/GuiLayout.h"
+
 // Defines
 #define SOC_ALIGN       0x1000
 #define SOC_BUFFERSIZE  0x100000		// 1MB
@@ -32,13 +35,14 @@ class Application {
 		bool init;										/**< Initialized? */
 		C3D_RenderTarget *screen[2];					/**< Render targets */
 		std::unique_ptr<u32> socket_buffer;				/**< Socket buffer */
-
+        std::shared_ptr<GuiLayout> topLayout;
+        std::shared_ptr<GuiLayout> bottomLayout;
 		Application();
 		virtual ~Application();
 	public:
 		static Application &getInstance();
         std::shared_ptr<u8> loadFile(const std::string &path, u32 &size);
-		void initialize();
+		void initialize(const std::string &topLayoutPath, const std::string &bottomLayoutPath);
 		void run();
 		void fatalError(const std::string &text, u32 errorCode);
 };
