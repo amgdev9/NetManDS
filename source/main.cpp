@@ -20,6 +20,7 @@
 #include "snmp/MibLoader.h"
 #include "restconf/RestConfClient.h"
 #include "restconf/YinHelper.h"
+#include "controller/MainController.h"
 
 using namespace NetMan;
 
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
 
 	Application &app = Application::getInstance();
 
-	app.initialize("top", "bottom");
+	app.initialize("main");
 
 	//snmpv1_test();
 	//snmpv3_test();

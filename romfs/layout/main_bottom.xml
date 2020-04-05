@@ -1,0 +1,5 @@
+<root controller="MainController">
+    <ButtonView name="bottomScreen" x="160" y="120" onClick="gotoMenu"/>
+    <TextView text="Touch to start!" x="100" y="100"/>
+</root>
+

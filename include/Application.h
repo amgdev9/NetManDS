@@ -3,11 +3,12 @@
  * @brief Application singleton
  */
 
-#ifndef SOURCE_APPLICATION_H_
-#define SOURCE_APPLICATION_H_
+#ifndef _APPLICATION_H_
+#define _APPLICATION_H_
 
 // Includes C/C++
 #include <memory>
+#include <unordered_map>
 
 // Includes 3DS
 #include <3ds.h>
@@ -17,11 +18,26 @@
 #include "gui/GuiLayout.h"
 
 // Defines
-#define SOC_ALIGN       0x1000
-#define SOC_BUFFERSIZE  0x100000		// 1MB
-#define HTTP_BUFFERSIZE 0x100000        // 1MB
+#define SOC_ALIGN               0x1000
+#define SOC_BUFFERSIZE          0x100000		// 1MB
+#define HTTP_BUFFERSIZE         0x100000        // 1MB
+#define FADE_SPEED              4
+#define SCREEN_WIDTH_TOP        400
+#define SCREEN_HEIGHT_TOP       240
+#define SCREEN_WIDTH_BOTTOM     320
+#define SCREEN_HEIGHT_BOTTOM    240
 
 namespace NetMan {
+
+/**
+ * @enum LoadingState
+ */
+enum LoadingState {
+    LOADINGSTATE_FADEOUT = 0,
+    LOADINGSTATE_LOADING,
+    LOADINGSTATE_FADEIN,
+    LOADINGSTATE_NONE,
+};
 
 /**
  * @class Application
@@ -37,14 +53,28 @@ class Application {
 		std::unique_ptr<u32> socket_buffer;				/**< Socket buffer */
         std::shared_ptr<GuiLayout> topLayout;
         std::shared_ptr<GuiLayout> bottomLayout;
+        LoadingState loadingState;
+        std::string loadingLayoutName;
+        s16 fadeAlpha;
+        std::unordered_map<std::string, C2D_SpriteSheet> resourceManager;
+        std::shared_ptr<void> contextData;
 		Application();
 		virtual ~Application();
+        void processLoadingScreen();
+        void unloadResources();
 	public:
 		static Application &getInstance();
-        std::shared_ptr<u8> loadFile(const std::string &path, u32 &size);
-		void initialize(const std::string &topLayoutPath, const std::string &bottomLayoutPath);
+		void initialize(const std::string &layoutPath);
 		void run();
 		void fatalError(const std::string &text, u32 errorCode);
+        void requestLayoutChange(const std::string &layoutName);
+        inline u32 getHeldKeys() { return held; }
+        inline u32 getDownKeys() { return down; }
+        inline u32 getUpKeys() { return up; }
+        inline touchPosition &getTouch() { return touch; }
+        C2D_SpriteSheet getImageResource(const char *resourceName);
+        inline std::shared_ptr<void> getContextData() { return this->contextData; }
+        inline void setContextData(std::shared_ptr<void> contextData) { this->contextData = contextData; }
 };
 
 }

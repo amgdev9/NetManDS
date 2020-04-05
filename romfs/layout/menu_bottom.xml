@@ -1,0 +1,22 @@
+<root controller="MenuController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <ButtonView name="menuButton" x="60" y="60" onClick="goto"/>
+    <TextView text="SNMP" x="60" y="60"/>
+
+    <ButtonView name="menuButton" x="160" y="60" onClick="goto"/>
+    <TextView text="REST\nCONF" x="160" y="60"/>
+
+    <ButtonView name="menuButton" x="260" y="60" onClick="goto"/>
+    <TextView text="Logs" x="260" y="60"/>
+
+    <ButtonView name="menuButton" x="60" y="160" onClick="goto"/>
+    <TextView text="SSH" x="60" y="160"/>
+
+    <ButtonView name="menuButton" x="160" y="160" onClick="goto"/>
+    <TextView text="Config" x="160" y="160"/>
+
+    <ButtonView name="menuButton" x="260" y="160" onClick="goto"/>
+    <TextView text="Credits" x="260" y="160"/>
+</root>
+

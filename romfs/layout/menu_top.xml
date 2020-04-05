@@ -1,0 +1,6 @@
+<root>
+    <ImageView name="topMenu" x="200" y="120"/>
+    <TextView text="NetManDS v1.0 Final" x="20" y="10" size="0.6"/>
+    <TextView text="Nothing happened... yet" x="40" y="180" size="0.6"/>
+</root>
+

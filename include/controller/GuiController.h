@@ -8,12 +8,19 @@
 
 // Includes C/C++
 #include <string>
+#include <memory>
+#include <vector>
+
+// Own includes
+#include "gui/GuiView.h"
 
 namespace NetMan {
 
 class GuiController {
 	public:
-        virtual void callMethod(const std::string &method) = 0;
+        static std::shared_ptr<GuiController> createController(const std::string &className);
+        virtual void initialize(std::vector<std::shared_ptr<GuiView>> &views) = 0;
+        virtual void callMethod(const std::string &method, void *args) = 0;
 };
 
 }

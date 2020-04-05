@@ -5,11 +5,12 @@
 
 // Includes C/C++
 #include <stdexcept>
-#include <unordered_map>
 
 // Own includes
 #include "gui/GuiLayout.h"
 #include "gui/ImageView.h"
+#include "gui/ButtonView.h"
+#include "gui/TextView.h"
 
 // Includes tinyxml2
 #include <tinyxml2.h>
@@ -18,12 +19,14 @@ using namespace tinyxml2;
 
 namespace NetMan {
 
-// Auxiliar view baker
-template<typename T> GuiView *bakeView(XMLElement *node) { return new T(node); }
+// Auxiliar bakers
+template<typename T> static GuiView *bakeView(XMLElement *node, std::shared_ptr<GuiController> controller) { return new T(node, controller); }
 
 // Map to emulate reflection on cpp
-const static std::unordered_map<std::string, GuiView*(*)(XMLElement*)> viewFactory = {
+const static std::unordered_map<std::string, GuiView*(*)(XMLElement*, std::shared_ptr<GuiController>)> viewFactory = {
     {"ImageView", &bakeView<ImageView>},
+    {"ButtonView", &bakeView<ButtonView>},
+    {"TextView", &bakeView<TextView>},
 };
 
 /**
@@ -42,6 +45,19 @@ GuiLayout::GuiLayout(const std::string &path) {
     // Get the root element
     XMLElement *root = doc.RootElement();
 
+    // Create the controller, if any
+    controller = nullptr;
+    const char *controllerClass = root->Attribute("controller");
+    if(controllerClass != NULL) {
+        try {
+            controller = GuiController::createController(controllerClass);
+        } catch (const std::bad_alloc &e) {
+            throw;
+        } catch (const std::runtime_error &e) {
+            throw;
+        }
+    }
+
     // Initialize views vector
     views = std::vector<std::shared_ptr<GuiView>>();
 
@@ -50,7 +66,7 @@ GuiLayout::GuiLayout(const std::string &path) {
         auto view = viewFactory.find(child->Name());
         if(view != viewFactory.end()) {
             try {
-                views.push_back(std::shared_ptr<GuiView>(view->second(child)));
+                views.push_back(std::shared_ptr<GuiView>(view->second(child, controller)));
             } catch (const std::bad_alloc &e) {
                 throw;
             } catch (const std::runtime_error &e) {
@@ -59,6 +75,11 @@ GuiLayout::GuiLayout(const std::string &path) {
         } else {
             throw std::runtime_error(std::string("Not found: ") + child->Name());
         }
+    }
+
+    // Call the controller initializer, if any
+    if(controller != nullptr) {
+        controller->initialize(views);
     }
 }
 

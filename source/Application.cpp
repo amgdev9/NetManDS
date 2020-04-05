@@ -23,14 +23,15 @@ namespace NetMan {
 Application::Application() {
 
 	this->init = false;
+    this->resourceManager = std::unordered_map<std::string, C2D_SpriteSheet>();
+    this->contextData = nullptr;
 }
 
 /**
  * @brief Inicialize the Application
- * @param topLayoutPath     Initial layout path for the top screen
- * @param bottomLayoutPath  Initial layout path for the bottom screen
+ * @param topLayoutPath     Initial layout path
  */
-void Application::initialize(const std::string &topLayoutPath, const std::string &bottomLayoutPath) {
+void Application::initialize(const std::string &layoutPath) {
 
 	if(init) return;
 
@@ -75,14 +76,9 @@ void Application::initialize(const std::string &topLayoutPath, const std::string
 	}
 
     // Load initial layouts
-    try {
-        topLayout = std::make_shared<GuiLayout>(topLayoutPath);
-        bottomLayout = std::make_shared<GuiLayout>(bottomLayoutPath);
-    } catch (const std::bad_alloc &e) {
-        this->fatalError(e.what(), 1);
-    } catch (const std::runtime_error &e) {
-        this->fatalError(e.what(), 1);
-    }
+    topLayout = nullptr;
+    bottomLayout = nullptr;
+    requestLayoutChange(layoutPath);
 
 	// Inicialization done
 	init = true;
@@ -97,6 +93,9 @@ void Application::run() {
 
 	// Application main loop
 	while (aptMainLoop()) {
+
+        // Process the loading screen
+        processLoadingScreen();
 
 		// Scan input
 		hidScanInput();
@@ -113,7 +112,8 @@ void Application::run() {
 		C3D_FrameDrawOn(this->screen[0]);
 		C2D_SceneTarget(this->screen[0]);
 		C2D_Prepare();
-			topLayout->draw();
+			if(topLayout != nullptr) topLayout->draw();
+            C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32(0, 0, 0, fadeAlpha));
 		C2D_Flush();
 
 		// Draw bottom screen scene
@@ -121,7 +121,8 @@ void Application::run() {
 		C3D_FrameDrawOn(this->screen[1]);
 		C2D_SceneTarget(this->screen[1]);
 		C2D_Prepare();
-			bottomLayout->draw();
+			if(bottomLayout != nullptr) bottomLayout->draw();
+            C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_BOTTOM, SCREEN_HEIGHT_BOTTOM, C2D_Color32(0, 0, 0, fadeAlpha));
 		C2D_Flush();
 
 		// Swap buffers
@@ -130,11 +131,81 @@ void Application::run() {
 }
 
 /**
+ * @brief Process the loading screen
+ */
+void Application::processLoadingScreen() {
+
+    switch(loadingState) {
+        case LOADINGSTATE_FADEOUT:
+            fadeAlpha += FADE_SPEED;
+            if(fadeAlpha >= 0xFF) {
+                fadeAlpha = 0xFF;
+                loadingState = LOADINGSTATE_LOADING;
+            }
+            break;
+        case LOADINGSTATE_LOADING:
+
+            // Unload resources
+            unloadResources();
+
+            // Load new layout
+            try {
+                topLayout = std::make_shared<GuiLayout>(loadingLayoutName + "_top");
+                bottomLayout = std::make_shared<GuiLayout>(loadingLayoutName + "_bottom");
+            } catch (const std::bad_alloc &e) {
+                this->fatalError(e.what(), 1);
+            } catch (const std::runtime_error &e) {
+                this->fatalError(e.what(), 1);
+            }
+            loadingState = LOADINGSTATE_FADEIN;
+            break;
+        case LOADINGSTATE_FADEIN:
+            fadeAlpha -= FADE_SPEED;
+            if(fadeAlpha <= 0) {
+                fadeAlpha = 0;
+                loadingState = LOADINGSTATE_NONE;
+            }
+            break;
+        default: break;
+    }
+}
+
+/**
+ * @brief Unload image resources
+ */
+void Application::unloadResources() {
+    for(auto resource : resourceManager) {
+        C2D_SpriteSheetFree(resource.second);
+    }
+    resourceManager.clear();
+}
+
+/**
+ * @brief Request a layout change
+ * @param layoutName    Name of the layout
+ */
+void Application::requestLayoutChange(const std::string &layoutName) {
+
+    if(topLayout == nullptr || bottomLayout == nullptr) {
+        loadingState = LOADINGSTATE_LOADING;
+        fadeAlpha = 0xFF;
+    } else {
+        loadingState = LOADINGSTATE_FADEOUT;
+        fadeAlpha = 0;
+    }
+
+    loadingLayoutName = layoutName;
+}
+
+/**
  * @brief Destructor for an Application
  */
 Application::~Application() {
 
 	if(!init) return;
+
+    // Unload resources
+    unloadResources();
 
 	// Terminate sockets
 	socExit();
@@ -148,6 +219,26 @@ Application::~Application() {
 	C2D_Fini();
 	C3D_Fini();
 	gfxExit();
+}
+
+/**
+ * @brief Get an image resource
+ * @param resourceName  Name of the image resource (without extension, lookup folder is romfs:/gfx/)
+ * @return The loaded image resource
+ */
+C2D_SpriteSheet Application::getImageResource(const char *resourceName) {
+    auto it = resourceManager.find(resourceName);
+    if(it == resourceManager.end()) {
+        std::string path = std::string("romfs:/gfx/") + resourceName + ".t3x";
+        C2D_SpriteSheet imageData = C2D_SpriteSheetLoad(path.c_str());
+        if(imageData == NULL) {
+            throw std::runtime_error(std::string("Can't load: ") + resourceName);
+        }
+        resourceManager[resourceName] = imageData;
+        return imageData;
+    } else {
+        return it->second;
+    }
 }
 
 /**
@@ -173,37 +264,6 @@ void Application::fatalError(const std::string &text, u32 errorCode) {
 		gspWaitForVBlank();
 		gfxSwapBuffers();
 	}
-}
-
-/**
- * @brief Load a file
- * @param path  File path
- * @param size  File size (output)
- * @return The loaded file data
- */
-std::shared_ptr<u8> Application::loadFile(const std::string &path, u32 &size) {
-
-    FILE *f = fopen(path.c_str(), "rb");
-    if(f == NULL) {
-        throw std::runtime_error("No such file: " + path);
-    }
-
-    fseek(f, 0, SEEK_END);
-    size = ftell(f);
-    rewind(f);
-
-    std::shared_ptr<u8> ptr = nullptr;
-    try {
-        ptr = std::shared_ptr<u8>(new u8[size]);
-    } catch (const std::bad_alloc &e) {
-        throw;
-    }
-
-    fread(ptr.get(), size, 1, f);
-
-    fclose(f);
-
-    return ptr;
 }
 
 /**

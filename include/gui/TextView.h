@@ -1,10 +1,10 @@
 /**
- * @file ImageView.h
- * @brief View for images
+ * @file TextView.h
+ * @brief View for text
  */
 
-#ifndef _IMAGE_VIEW_H_
-#define _IMAGE_VIEW_H_
+#ifndef _TEXT_VIEW_H_
+#define _TEXT_VIEW_H_
 
 // Includes C/C++
 #include <memory>
@@ -22,17 +22,18 @@
 namespace NetMan {
 
 /**
- * @class ImageView
+ * @class TextView
  */
-class ImageView : public GuiView {
+class TextView : public GuiView {
     protected:
-        C2D_SpriteSheet imageData;
-        C2D_Sprite imageParams;
+        C2D_TextBuf textBuffer;
+        C2D_Text text;
         std::shared_ptr<GuiController> controller;
+        float x, y, scale;
     public:
-        ImageView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
+        TextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         virtual void draw() override;
-        virtual ~ImageView();
+        virtual ~TextView();
 };
 
 }
