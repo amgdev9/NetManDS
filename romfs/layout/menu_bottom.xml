@@ -2,21 +2,21 @@
     <ImageView name="bottomScreen" x="160" y="120"/>
 
     <ButtonView name="menuButton" x="60" y="60" onClick="goto"/>
-    <TextView text="SNMP" x="60" y="60"/>
+    <TextView text="SNMP" x="30" y="45" size="0.8"/>
 
     <ButtonView name="menuButton" x="160" y="60" onClick="goto"/>
-    <TextView text="REST\nCONF" x="160" y="60"/>
+    <TextView text="REST&#xA;CONF" x="130" y="30" size="0.8"/>
 
     <ButtonView name="menuButton" x="260" y="60" onClick="goto"/>
-    <TextView text="Logs" x="260" y="60"/>
+    <TextView text="Logs" x="232" y="45" size="0.8"/>
 
     <ButtonView name="menuButton" x="60" y="160" onClick="goto"/>
-    <TextView text="SSH" x="60" y="160"/>
+    <TextView text="SSH" x="35" y="145" size="0.8"/>
 
     <ButtonView name="menuButton" x="160" y="160" onClick="goto"/>
-    <TextView text="Config" x="160" y="160"/>
+    <TextView text="Config" x="125" y="145" size="0.8"/>
 
     <ButtonView name="menuButton" x="260" y="160" onClick="goto"/>
-    <TextView text="Credits" x="260" y="160"/>
+    <TextView text="Credits" x="225" y="145" size="0.8"/>
 </root>
 

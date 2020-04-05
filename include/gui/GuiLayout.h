@@ -28,6 +28,7 @@ class GuiLayout {
 	public:
         GuiLayout(const std::string &path);
         virtual ~GuiLayout();
+        void input(u32 held, u32 down, u32 up, touchPosition &touch);
 		void draw();
 };
 

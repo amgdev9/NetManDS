@@ -84,6 +84,19 @@ GuiLayout::GuiLayout(const std::string &path) {
 }
 
 /**
+ * @brief Process input
+ * @param held  Held keys
+ * @param down  Down keys
+ * @param up    Up keys
+ * @param touch Touchpad state
+ */
+void GuiLayout::input(u32 held, u32 down, u32 up, touchPosition &touch) {
+    for(auto& view : views) {
+        view->input(held, down, up, touch);
+    }
+}
+
+/**
  * @brief Draw a layout
  */
 void GuiLayout::draw() {

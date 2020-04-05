@@ -30,8 +30,12 @@ class TextView : public GuiView {
         C2D_Text text;
         std::shared_ptr<GuiController> controller;
         float x, y, scale;
+        u32 color;
     public:
+        TextView(const std::string &text, std::shared_ptr<TextView> textView);
         TextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
+        inline void setX(float x) { this->x = x; }
+        inline float getX() { return x; }
         virtual void draw() override;
         virtual ~TextView();
 };

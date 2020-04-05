@@ -10,6 +10,7 @@
 #include "controller/GuiController.h"
 #include "controller/MainController.h"
 #include "controller/MenuController.h"
+#include "controller/MenuTopController.h"
 
 namespace NetMan {
 
@@ -19,6 +20,7 @@ template<typename T> static GuiController *bakeController() { return new T; }
 const static std::unordered_map<std::string, GuiController*(*)()> controllerFactory = {
     {"MainController", &bakeController<MainController>},
     {"MenuController", &bakeController<MenuController>},
+    {"MenuTopController", &bakeController<MenuTopController>},
 };
 
 /**

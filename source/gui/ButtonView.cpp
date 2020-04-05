@@ -24,15 +24,11 @@ ButtonView::ButtonView(XMLElement *node, std::shared_ptr<GuiController> controll
 }
 
 /**
- * @brief Draw a button view
+ * @brief Process input
  */
-void ButtonView::draw() {
-    C2D_DrawSpriteTinted(&imageParams, &tint);
-
+void ButtonView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
+    
     auto &pos = imageParams.params.pos;
-    touchPosition &touch = Application::getInstance().getTouch();
-    u32 down = Application::getInstance().getDownKeys();
-    u32 up = Application::getInstance().getUpKeys();
 
     if(touch.px >= (pos.x - pos.w/2.0f) && touch.px <= (pos.x + pos.w/2.0f) &&
        touch.py >= (pos.y - pos.h/2.0f) && touch.py <= (pos.y + pos.h/2.0f) && (down &KEY_TOUCH)) {
@@ -45,6 +41,13 @@ void ButtonView::draw() {
     if(up &KEY_TOUCH) {
         C2D_PlainImageTint(&tint, C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF), 0.0f);
     }
+}
+
+/**
+ * @brief Draw a button view
+ */
+void ButtonView::draw() {
+    C2D_DrawSpriteTinted(&imageParams, &tint);
 }
 
 /**

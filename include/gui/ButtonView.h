@@ -19,6 +19,7 @@ class ButtonView : public ImageView {
         C2D_ImageTint tint;
     public:
         ButtonView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
+        void input(u32 held, u32 down, u32 up, touchPosition &touch) override;
         void draw() override;
         virtual ~ButtonView();
 };

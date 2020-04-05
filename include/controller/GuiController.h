@@ -19,7 +19,7 @@ namespace NetMan {
 class GuiController {
 	public:
         static std::shared_ptr<GuiController> createController(const std::string &className);
-        virtual void initialize(std::vector<std::shared_ptr<GuiView>> &views) = 0;
+        virtual void initialize(std::vector<std::shared_ptr<GuiView>> &views) { }
         virtual void callMethod(const std::string &method, void *args) = 0;
 };
 

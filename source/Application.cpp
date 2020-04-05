@@ -80,6 +80,23 @@ void Application::initialize(const std::string &layoutPath) {
     bottomLayout = nullptr;
     requestLayoutChange(layoutPath);
 
+    // Initialize audio
+    rc = ndspInit();
+    if(rc) {
+        this->fatalError("ndspInit", (u32)rc);
+    }
+    ndspSetOutputMode(NDSP_OUTPUT_STEREO);
+	ndspSetOutputCount(1);
+
+    // Load beep sound (used for trap and log receiving)
+    try {
+        beepAudio = std::unique_ptr<WaveAudio>(new WaveAudio("romfs:/snd/beep.wav"));
+    } catch (const std::bad_alloc &e) {
+        this->fatalError(e.what(), 0);
+    } catch (const std::runtime_error &e) {
+        this->fatalError(e.what(), 0);
+    }
+
 	// Inicialization done
 	init = true;
 }
@@ -103,6 +120,11 @@ void Application::run() {
 		this->down = hidKeysDown();
 		this->up = hidKeysUp();
 		hidTouchRead(&this->touch);
+
+        // Process input on bottom screen
+        if(bottomLayout != nullptr && loadingState == LOADINGSTATE_NONE) {
+            bottomLayout->input(held, down, up, touch);
+        }
 
 		// Start new frame
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -210,6 +232,10 @@ Application::~Application() {
 	// Terminate sockets
 	socExit();
     httpcExit();
+
+    // Terminate audio
+    ndspChnWaveBufClear(BEEP_AUDIO_CHANNEL);
+    ndspExit();
 
 	// Delete render targets
 	C3D_RenderTargetDelete(this->screen[0]);

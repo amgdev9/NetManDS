@@ -6,6 +6,9 @@
 #ifndef _GUI_VIEW_H_
 #define _GUI_VIEW_H_
 
+// Includes 3DS
+#include <3ds.h>
+
 namespace NetMan {
 
 /**
@@ -14,6 +17,7 @@ namespace NetMan {
 class GuiView {
     public:
         virtual void draw() = 0;
+        virtual void input(u32 held, u32 down, u32 up, touchPosition &touch) {}
 };
 
 }

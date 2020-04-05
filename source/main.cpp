@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
 
 	app.initialize("main");
 
+    app.beep();
+
 	//snmpv1_test();
 	//snmpv3_test();
 	//syslog_test_udp();

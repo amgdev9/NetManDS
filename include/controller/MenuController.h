@@ -17,7 +17,6 @@ class MenuController : public GuiController {
     public:
         MenuController();
         virtual ~MenuController();
-        void initialize(std::vector<std::shared_ptr<GuiView>> &views) override;
         void callMethod(const std::string &method, void *args) override;
 };
 

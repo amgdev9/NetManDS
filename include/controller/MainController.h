@@ -17,7 +17,6 @@ class MainController : public GuiController {
     public:
         MainController();
         virtual ~MainController();
-        void initialize(std::vector<std::shared_ptr<GuiView>> &views) override;
         void callMethod(const std::string &method, void *args) override;
 };
 
