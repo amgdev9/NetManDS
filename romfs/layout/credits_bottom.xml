@@ -38,6 +38,7 @@
             <TextView text="KnightFox" x="185" y="90" size="0.75"/>
             <TextView text="gdljjrod" x="185" y="120" size="0.75"/>
             <TextView text="Mills" x="185" y="150" size="0.75"/>
+            <TextView text="Icon made by Freepik&#xA;from www.flaticon.com" x="60" y="180" size="0.75"/>
         </HSlideScreen>
         <HSlideScreen>
             <TextView text="Thank you so much!" x="35" y="90" size="1.0"/>
