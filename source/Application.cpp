@@ -88,15 +88,6 @@ void Application::initialize(const std::string &layoutPath) {
     ndspSetOutputMode(NDSP_OUTPUT_STEREO);
 	ndspSetOutputCount(1);
 
-    // Load beep sound (used for trap and log receiving)
-    try {
-        beepAudio = std::unique_ptr<WaveAudio>(new WaveAudio("romfs:/snd/beep.wav"));
-    } catch (const std::bad_alloc &e) {
-        this->fatalError(e.what(), 0);
-    } catch (const std::runtime_error &e) {
-        this->fatalError(e.what(), 0);
-    }
-
 	// Inicialization done
 	init = true;
 }
@@ -245,7 +236,6 @@ Application::~Application() {
     httpcExit();
 
     // Terminate audio
-    ndspChnWaveBufClear(BEEP_AUDIO_CHANNEL);
     ndspExit();
 
 	// Delete render targets

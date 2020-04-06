@@ -64,9 +64,6 @@ TextView::TextView(const std::string &textValue, std::shared_ptr<TextView> textV
     y = textView->y;
     scale = textView->scale;
     color = textView->color;
-
-    // Save controller
-    this->controller = controller;
 }
 
 /**

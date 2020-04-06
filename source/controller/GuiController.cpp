@@ -12,6 +12,7 @@
 #include "controller/MenuController.h"
 #include "controller/MenuTopController.h"
 #include "controller/SshController.h"
+#include "controller/CreditsController.h"
 
 namespace NetMan {
 
@@ -23,6 +24,7 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"MenuController", &bakeController<MenuController>},
     {"MenuTopController", &bakeController<MenuTopController>},
     {"SshController", &bakeController<SshController>},
+    {"CreditsController", &bakeController<CreditsController>},
 };
 
 /**
@@ -36,7 +38,13 @@ std::shared_ptr<GuiController> GuiController::createController(const std::string
         throw std::runtime_error("Controller " + className + " not found");
     }
 
-    return std::shared_ptr<GuiController>(it->second());
+    try {
+        return std::shared_ptr<GuiController>(it->second());
+    } catch (const std::bad_alloc &e) {
+        throw;
+    } catch (const std::runtime_error &e) {
+        throw;
+    }
 }
 
 /**

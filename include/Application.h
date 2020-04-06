@@ -16,7 +16,6 @@
 
 // Own includes
 #include "gui/GuiLayout.h"
-#include "WaveAudio.h"
 
 // Defines
 #define SOC_ALIGN               0x1000
@@ -27,7 +26,6 @@
 #define SCREEN_HEIGHT_TOP       240
 #define SCREEN_WIDTH_BOTTOM     320
 #define SCREEN_HEIGHT_BOTTOM    240
-#define BEEP_AUDIO_CHANNEL      8
 
 namespace NetMan {
 
@@ -60,7 +58,6 @@ class Application {
         s16 fadeAlpha;
         std::unordered_map<std::string, C2D_SpriteSheet> resourceManager;
         std::shared_ptr<void> contextData;
-        std::unique_ptr<WaveAudio> beepAudio;
 		Application();
 		virtual ~Application();
         void processLoadingScreen();
@@ -75,7 +72,6 @@ class Application {
         void messageBox(const std::string &text);
         inline std::shared_ptr<void> getContextData() { return this->contextData; }
         inline void setContextData(std::shared_ptr<void> contextData) { this->contextData = contextData; }
-        inline void beep() { beepAudio->play(BEEP_AUDIO_CHANNEL); }
 };
 
 }

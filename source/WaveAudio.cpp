@@ -18,7 +18,7 @@ namespace NetMan {
  */
 WaveAudio::WaveAudio(const std::string &path) {
 
-	FILE* f = fopen(path.c_str(), "rb");
+	FILE* f = fopen(std::string("romfs:/snd/" + path + ".wav").c_str(), "rb");
 	if(f == NULL) {
         throw std::runtime_error(path + " not found");
     }

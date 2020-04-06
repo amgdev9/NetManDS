@@ -12,9 +12,7 @@
 #include "gui/ButtonView.h"
 #include "gui/TextView.h"
 #include "gui/EditTextView.h"
-
-// Includes tinyxml2
-#include <tinyxml2.h>
+#include "gui/HSlideView.h"
 
 using namespace tinyxml2;
 
@@ -29,26 +27,16 @@ const static std::unordered_map<std::string, GuiView*(*)(XMLElement*, std::share
     {"ButtonView", &bakeView<ButtonView>},
     {"TextView", &bakeView<TextView>},
     {"EditTextView", &bakeView<EditTextView>},
+    {"HSlideView", &bakeView<HSlideView>},
 };
 
 /**
- * @brief Load a XML layout
- * @param path  Path for the XML layout file (without extension, lookup directory is romfs:/layout/)
+ * @brief Load a GUI layout
+ * @param root  Layout root node
  */
-GuiLayout::GuiLayout(const std::string &path) {
-
-    // Load the layout
-    XMLDocument doc;
-    XMLError res = doc.LoadFile(std::string("romfs:/layout/" + path + ".xml").c_str());
-    if(res != XML_SUCCESS) {
-        throw std::runtime_error(std::string("Couldn't load ") + path);
-    }
-
-    // Get the root element
-    XMLElement *root = doc.RootElement();
+void GuiLayout::loadFromNode(tinyxml2::XMLElement *root) {
 
     // Create the controller, if any
-    controller = nullptr;
     const char *controllerClass = root->Attribute("controller");
     if(controllerClass != NULL) {
         try {
@@ -59,9 +47,6 @@ GuiLayout::GuiLayout(const std::string &path) {
             throw;
         }
     }
-
-    // Initialize views vector
-    views = std::vector<std::shared_ptr<GuiView>>();
 
     // Load every view
     for(XMLElement* child = root->FirstChildElement(); child != NULL; child = child->NextSiblingElement()) {
@@ -83,6 +68,31 @@ GuiLayout::GuiLayout(const std::string &path) {
     if(controller != nullptr) {
         controller->initialize(views);
     }
+}
+
+/**
+ * @brief Constructor for a GuiLayout
+ */
+GuiLayout::GuiLayout() {
+    views = std::vector<std::shared_ptr<GuiView>>();
+    controller = nullptr;
+}
+
+/**
+ * @brief Load a XML layout
+ * @param path  Path for the XML layout file (without extension, lookup directory is romfs:/layout/)
+ */
+GuiLayout::GuiLayout(const std::string &path) : GuiLayout() {
+
+    // Load the layout
+    XMLDocument doc;
+    XMLError res = doc.LoadFile(std::string("romfs:/layout/" + path + ".xml").c_str());
+    if(res != XML_SUCCESS) {
+        throw std::runtime_error(std::string("Couldn't load ") + path);
+    }
+
+    // Load its views
+    loadFromNode(doc.RootElement());
 }
 
 /**

@@ -15,6 +15,9 @@
 // Includes 3DS
 #include <3ds/types.h>
 
+// Includes tinyxml2
+#include <tinyxml2.h>
+
 // Own includes
 #include "GuiView.h"
 #include "controller/GuiController.h"
@@ -26,6 +29,8 @@ class GuiLayout {
         std::vector<std::shared_ptr<GuiView>> views;
         std::shared_ptr<GuiController> controller;
 	public:
+        void loadFromNode(tinyxml2::XMLElement *root);
+        GuiLayout();
         GuiLayout(const std::string &path);
         virtual ~GuiLayout();
         void input(u32 held, u32 down, u32 up, touchPosition &touch);

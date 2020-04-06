@@ -28,9 +28,9 @@ class TextView : public GuiView {
     protected:
         C2D_TextBuf textBuffer;
         C2D_Text text;
-        std::shared_ptr<GuiController> controller;
         float x, y, scale;
         u32 color;
+        std::shared_ptr<GuiController> controller;
     public:
         TextView(const std::string &text, std::shared_ptr<TextView> textView);
         TextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);

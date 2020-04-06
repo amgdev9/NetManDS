@@ -1,0 +1,49 @@
+<root controller="CreditsController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <HSlideView>
+        <HSlideScreen>
+            <TextView text="Project Author" x="75" y="20" size="1.0"/>
+            <ImageView name="me" x="160" y="130" sx="0.7" sy="0.7"/>
+            <TextView text="Andrés Martínez" x="60" y="200" size="1.0"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Project Tutor" x="75" y="20" size="1.0"/>
+            <ImageView name="tutor" x="160" y="130" />
+            <TextView text="Antonio Estepa" x="65" y="200" size="1.0"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Powered by" x="90" y="20" size="1.0"/>
+            <ImageView name="devkitlogo" x="160" y="110" sx="0.6" sy="0.6"/>
+            <TextView text="www.devkitpro.org" x="60" y="150" size="0.9"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Additional libraries" x="45" y="10" size="1.0"/>
+            <TextView text="libctru" x="60" y="60" size="0.75"/>
+            <TextView text="libcitro3d" x="60" y="90" size="0.75"/>
+            <TextView text="libcitro2d" x="60" y="120" size="0.75"/>
+            <TextView text="mbedtls" x="60" y="150" size="0.75"/>
+            <TextView text="libssh2" x="185" y="60" size="0.75"/>
+            <TextView text="jansson" x="185" y="90" size="0.75"/>
+            <TextView text="tinyxml2" x="185" y="120" size="0.75"/>
+            <TextView text="libtmt" x="185" y="150" size="0.75"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Special thanks" x="45" y="10" size="1.0"/>
+            <TextView text="Sir Lanhu" x="60" y="60" size="0.75"/>
+            <TextView text="Marti" x="60" y="90" size="0.75"/>
+            <TextView text="Serginho" x="60" y="120" size="0.75"/>
+            <TextView text="Alexelcapo" x="60" y="150" size="0.75"/>
+            <TextView text="Alfonso" x="185" y="60" size="0.75"/>
+            <TextView text="KnightFox" x="185" y="90" size="0.75"/>
+            <TextView text="gdljjrod" x="185" y="120" size="0.75"/>
+            <TextView text="Mills" x="185" y="150" size="0.75"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Thank you so much!" x="35" y="90" size="1.0"/>
+        </HSlideScreen>
+    </HSlideView>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="gotoMenu" sx="-0.75" sy="0.75"/>
+</root>
+

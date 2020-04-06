@@ -16,7 +16,7 @@
     <ButtonView name="menuButton" x="160" y="160" onClick="goto"/>
     <TextView text="Config" x="125" y="145" size="0.8"/>
 
-    <ButtonView name="menuButton" x="260" y="160" onClick="goto"/>
+    <ButtonView name="menuButton" x="260" y="160" onClick="goCredits"/>
     <TextView text="Credits" x="225" y="145" size="0.8"/>
 </root>
 

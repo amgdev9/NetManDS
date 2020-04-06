@@ -31,7 +31,6 @@ class EditTextView : public GuiView {
     protected:
         C2D_TextBuf textBuffer;
         C2D_Text text;
-        std::shared_ptr<GuiController> controller;
         float x, y, width, height;
         float textScale;
         u32 textColor;
@@ -39,6 +38,7 @@ class EditTextView : public GuiView {
         bool numeric;
         bool password;
         std::string onEdit;
+        std::shared_ptr<GuiController> controller;
     public:
         EditTextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         virtual void input(u32 held, u32 down, u32 up, touchPosition &touch) override;

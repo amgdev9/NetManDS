@@ -20,7 +20,6 @@
 #include "snmp/MibLoader.h"
 #include "restconf/RestConfClient.h"
 #include "restconf/YinHelper.h"
-#include "controller/MainController.h"
 
 using namespace NetMan;
 
