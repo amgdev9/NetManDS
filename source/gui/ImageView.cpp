@@ -39,6 +39,7 @@ ImageView::ImageView(XMLElement *node, std::shared_ptr<GuiController> controller
     C2D_SpriteSetCenter(&imageParams, 0.5f, 0.5f);
     C2D_SpriteSetPos(&imageParams, node->FloatAttribute("x", 200.0f), node->FloatAttribute("y", 120.0f));
     C2D_SpriteSetRotation(&imageParams, 0.0f);
+    C2D_SpriteSetScale(&imageParams, node->FloatAttribute("sx", 1.0f), node->FloatAttribute("sy", 1.0f));
 
     // Save controller
     this->controller = controller;

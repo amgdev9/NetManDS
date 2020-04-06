@@ -5,6 +5,7 @@
 
 // Includes
 #include <stdexcept>
+#include <math.h>
 
 // Own includes
 #include "gui/ButtonView.h"
@@ -21,6 +22,11 @@ namespace NetMan {
  */
 ButtonView::ButtonView(XMLElement *node, std::shared_ptr<GuiController> controller) : ImageView(node, controller) {
     C2D_PlainImageTint(&tint, C2D_Color32(0xFF, 0xFF, 0xFF, 0xFF), 0.0f);
+
+    const char *onClickStr = node->Attribute("onClick");
+    if(onClickStr) {
+        onClick = std::string(onClickStr);
+    }
 }
 
 /**
@@ -30,11 +36,14 @@ void ButtonView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
     
     auto &pos = imageParams.params.pos;
 
-    if(touch.px >= (pos.x - pos.w/2.0f) && touch.px <= (pos.x + pos.w/2.0f) &&
-       touch.py >= (pos.y - pos.h/2.0f) && touch.py <= (pos.y + pos.h/2.0f) && (down &KEY_TOUCH)) {
+    float hw = fabs(pos.w) / 2.0f;
+    float hh = fabs(pos.h) / 2.0f;
+
+    if(touch.px >= (pos.x - hw) && touch.px <= (pos.x + hw) &&
+       touch.py >= (pos.y - hh) && touch.py <= (pos.y + hh) && (down &KEY_TOUCH)) {
         C2D_PlainImageTint(&tint, C2D_Color32(0x0F, 0x0F, 0x0F, 0xFF), 0.2f);
-        if(controller != nullptr) {
-            controller->callMethod("onClick", NULL);
+        if(controller != nullptr && !onClick.empty()) {
+            controller->callMethod(onClick, NULL);
         }
     }
 

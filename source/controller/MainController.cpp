@@ -8,16 +8,16 @@
 
 namespace NetMan {
 
-MainController::MainController() {
-
-}
-
-MainController::~MainController() {
-
-}
-
-void MainController::callMethod(const std::string &method, void *args) {
+static void gotoMenu(void *args) {
     Application::getInstance().requestLayoutChange("menu");
 }
+
+MainController::MainController() {
+    this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
+        {"gotoMenu", gotoMenu},
+    };
+}
+
+MainController::~MainController() { }
 
 }

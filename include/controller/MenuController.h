@@ -17,7 +17,6 @@ class MenuController : public GuiController {
     public:
         MenuController();
         virtual ~MenuController();
-        void callMethod(const std::string &method, void *args) override;
 };
 
 }

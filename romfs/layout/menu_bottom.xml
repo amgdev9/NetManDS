@@ -10,7 +10,7 @@
     <ButtonView name="menuButton" x="260" y="60" onClick="goto"/>
     <TextView text="Logs" x="232" y="45" size="0.8"/>
 
-    <ButtonView name="menuButton" x="60" y="160" onClick="goto"/>
+    <ButtonView name="menuButton" x="60" y="160" onClick="goSSH"/>
     <TextView text="SSH" x="35" y="145" size="0.8"/>
 
     <ButtonView name="menuButton" x="160" y="160" onClick="goto"/>

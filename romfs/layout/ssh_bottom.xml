@@ -1,0 +1,21 @@
+<root controller="SshController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <TextView text="Host" x="20" y="45" size="0.8"/>
+    <EditTextView x="130" y="50" width="170" height="20" length="14" onEdit="edit"/>
+
+    <TextView text="Port" x="20" y="70" size="0.8"/>
+    <EditTextView x="130" y="75" width="170" height="20" numeric="true" onEdit="edit"/>
+
+    <TextView text="Username" x="20" y="95" size="0.8"/>
+    <EditTextView x="130" y="100" width="170" height="20" length="14" onEdit="edit"/>
+
+    <TextView text="Password" x="20" y="120" size="0.8"/>
+    <EditTextView x="130" y="125" width="170" height="20" length="14" password="true" onEdit="edit"/>
+
+    <ButtonView name="menuButton" x="170" y="200" onClick="connect" sx="1.25" sy="0.6" onEdit="edit"/>
+    <TextView text="Connect" x="125" y="185" size="0.8"/>
+
+    <ButtonView name="backArrow" x="32" y="208" onClick="goMenu" sx="-1.0"/>
+</root>
+

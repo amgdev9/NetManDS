@@ -17,7 +17,6 @@ class MainController : public GuiController {
     public:
         MainController();
         virtual ~MainController();
-        void callMethod(const std::string &method, void *args) override;
 };
 
 }

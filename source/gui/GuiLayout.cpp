@@ -11,6 +11,7 @@
 #include "gui/ImageView.h"
 #include "gui/ButtonView.h"
 #include "gui/TextView.h"
+#include "gui/EditTextView.h"
 
 // Includes tinyxml2
 #include <tinyxml2.h>
@@ -27,6 +28,7 @@ const static std::unordered_map<std::string, GuiView*(*)(XMLElement*, std::share
     {"ImageView", &bakeView<ImageView>},
     {"ButtonView", &bakeView<ButtonView>},
     {"TextView", &bakeView<TextView>},
+    {"EditTextView", &bakeView<EditTextView>},
 };
 
 /**

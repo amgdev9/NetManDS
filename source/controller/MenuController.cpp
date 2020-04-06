@@ -11,19 +11,22 @@
 // Own includes
 #include "controller/MenuController.h"
 #include "Application.h"
-#include "gui/TextView.h"
 
 // Defines
 #define MENUTEXT_X      140
 
 namespace NetMan {
 
-MenuController::MenuController() { }
+static void goSSH(void *args) {
+    Application::getInstance().requestLayoutChange("ssh");
+}
+
+MenuController::MenuController() {
+    this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
+        {"goSSH", goSSH},
+    };
+}
 
 MenuController::~MenuController() { }
-
-void MenuController::callMethod(const std::string &method, void *args) {
-    
-}
 
 }

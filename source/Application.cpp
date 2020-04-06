@@ -193,6 +193,17 @@ void Application::processLoadingScreen() {
 }
 
 /**
+ * @brief Show a message box
+ * @param text  Message box text
+ */
+void Application::messageBox(const std::string &text) {
+    errorConf conf;
+    errorInit(&conf, ERROR_TEXT_WORD_WRAP, CFG_LANGUAGE_EN);
+    errorText(&conf, text.c_str());
+    errorDisp(&conf);
+}
+
+/**
  * @brief Unload image resources
  */
 void Application::unloadResources() {

@@ -72,6 +72,7 @@ class Application {
 		void fatalError(const std::string &text, u32 errorCode);
         void requestLayoutChange(const std::string &layoutName);
         C2D_SpriteSheet getImageResource(const char *resourceName);
+        void messageBox(const std::string &text);
         inline std::shared_ptr<void> getContextData() { return this->contextData; }
         inline void setContextData(std::shared_ptr<void> contextData) { this->contextData = contextData; }
         inline void beep() { beepAudio->play(BEEP_AUDIO_CHANNEL); }

@@ -17,6 +17,7 @@ namespace NetMan {
 class ButtonView : public ImageView {
     protected:
         C2D_ImageTint tint;
+        std::string onClick;
     public:
         ButtonView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         void input(u32 held, u32 down, u32 up, touchPosition &touch) override;

@@ -59,6 +59,4 @@ void MenuTopController::initialize(std::vector<std::shared_ptr<GuiView>> &views)
     views.push_back(text);
 }
 
-void MenuTopController::callMethod(const std::string &method, void *args) { }
-
 }
