@@ -26,10 +26,15 @@ static void goCredits(void *args) {
     Application::getInstance().requestLayoutChange("credits");
 }
 
+static void goOptions(void *args) {
+    Application::getInstance().requestLayoutChange("options");
+}
+
 MenuController::MenuController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goSSH", goSSH},
         {"goCredits", goCredits},
+        {"goOptions", goOptions},
     };
 
     // Load beep sound (used for trap and log receiving)

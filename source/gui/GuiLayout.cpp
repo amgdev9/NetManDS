@@ -13,6 +13,9 @@
 #include "gui/TextView.h"
 #include "gui/EditTextView.h"
 #include "gui/HSlideView.h"
+#include "gui/CheckboxView.h"
+#include "gui/BinaryButtonView.h"
+#include "gui/ListView.h"
 
 using namespace tinyxml2;
 
@@ -28,19 +31,24 @@ const static std::unordered_map<std::string, GuiView*(*)(XMLElement*, std::share
     {"TextView", &bakeView<TextView>},
     {"EditTextView", &bakeView<EditTextView>},
     {"HSlideView", &bakeView<HSlideView>},
+    {"CheckboxView", &bakeView<CheckboxView>},
+    {"BinaryButtonView", &bakeView<BinaryButtonView>},
+    {"ListView", &bakeView<ListView>},
 };
 
 /**
  * @brief Load a GUI layout
- * @param root  Layout root node
+ * @param root          Layout root node
+ * @param controller    Controller to be used
  */
-void GuiLayout::loadFromNode(tinyxml2::XMLElement *root) {
+void GuiLayout::loadFromNode(tinyxml2::XMLElement *root, std::shared_ptr<GuiController> controller) {
 
     // Create the controller, if any
     const char *controllerClass = root->Attribute("controller");
-    if(controllerClass != NULL) {
+    this->controller = controller;
+    if(controllerClass != NULL && this->controller == nullptr) {
         try {
-            controller = GuiController::createController(controllerClass);
+            this->controller = GuiController::createController(controllerClass);
         } catch (const std::bad_alloc &e) {
             throw;
         } catch (const std::runtime_error &e) {
@@ -53,7 +61,7 @@ void GuiLayout::loadFromNode(tinyxml2::XMLElement *root) {
         auto view = viewFactory.find(child->Name());
         if(view != viewFactory.end()) {
             try {
-                views.push_back(std::shared_ptr<GuiView>(view->second(child, controller)));
+                views.push_back(std::shared_ptr<GuiView>(view->second(child, this->controller)));
             } catch (const std::bad_alloc &e) {
                 throw;
             } catch (const std::runtime_error &e) {
@@ -65,8 +73,8 @@ void GuiLayout::loadFromNode(tinyxml2::XMLElement *root) {
     }
 
     // Call the controller initializer, if any
-    if(controller != nullptr) {
-        controller->initialize(views);
+    if(this->controller != nullptr) {
+        this->controller->initialize(views);
     }
 }
 

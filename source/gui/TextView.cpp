@@ -46,10 +46,13 @@ TextView::TextView(XMLElement *node, std::shared_ptr<GuiController> controller) 
 
 /**
  * @brief Create a text view
- * @param text      Text to use
- * @param textView  Text view to copy position, color...
+ * @param text  Text to use
+ * @param x     X position
+ * @param y     Y position
+ * @param scale Text scale
+ * @param color Text color
  */
-TextView::TextView(const std::string &textValue, std::shared_ptr<TextView> textView) {
+TextView::TextView(const std::string &textValue, float x, float y, float scale, u32 color) {
 
     // Create text
     textBuffer = C2D_TextBufNew(textValue.length() + 1);
@@ -59,12 +62,20 @@ TextView::TextView(const std::string &textValue, std::shared_ptr<TextView> textV
 	C2D_TextParse(&text, textBuffer, textValue.c_str());
 	C2D_TextOptimize(&text);
 
-    // Get text parameters
-    x = textView->x;
-    y = textView->y;
-    scale = textView->scale;
-    color = textView->color;
+    // Initialize text parameters
+    this->x = x;
+    this->y = y;
+    this->scale = scale;
+    this->color = color;
 }
+
+/**
+ * @brief Create a text view
+ * @param text      Text to use
+ * @param textView  Text view to copy position, color...
+ */
+TextView::TextView(const std::string &textValue, std::shared_ptr<TextView> textView) 
+: TextView(textValue, textView->x, textView->y, textView->scale, textView->color) { }
 
 /**
  * @brief Draw a text view

@@ -29,7 +29,7 @@ class GuiLayout {
         std::vector<std::shared_ptr<GuiView>> views;
         std::shared_ptr<GuiController> controller;
 	public:
-        void loadFromNode(tinyxml2::XMLElement *root);
+        void loadFromNode(tinyxml2::XMLElement *root, std::shared_ptr<GuiController> controller = nullptr);
         GuiLayout();
         GuiLayout(const std::string &path);
         virtual ~GuiLayout();

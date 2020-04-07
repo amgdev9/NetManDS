@@ -59,7 +59,7 @@ void EditTextView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
         SwkbdState swkbd;
         char textstr[128];
         if(numeric) {
-            swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 1, 6);
+            swkbdInit(&swkbd, SWKBD_TYPE_NUMPAD, 1, 5);     // 5 digits for ports
 			swkbdSetValidation(&swkbd, SWKBD_ANYTHING, 0, 0);
 			swkbdSetFeatures(&swkbd, SWKBD_FIXED_WIDTH);
 			swkbdSetNumpadKeys(&swkbd, 0, 0);

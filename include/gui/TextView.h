@@ -32,7 +32,8 @@ class TextView : public GuiView {
         u32 color;
         std::shared_ptr<GuiController> controller;
     public:
-        TextView(const std::string &text, std::shared_ptr<TextView> textView);
+        TextView(const std::string &textValue, float x, float y, float scale, u32 color);
+        TextView(const std::string &textValue, std::shared_ptr<TextView> textView);
         TextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         inline void setX(float x) { this->x = x; }
         inline float getX() { return x; }

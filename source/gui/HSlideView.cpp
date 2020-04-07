@@ -51,7 +51,7 @@ HSlideView::HSlideView(XMLElement *node, std::shared_ptr<GuiController> controll
     screens = std::vector<std::shared_ptr<GuiLayout>>();
     for(XMLElement* child = node->FirstChildElement(); child != NULL; child = child->NextSiblingElement()) {
         std::shared_ptr<GuiLayout> screen = std::make_shared<GuiLayout>();
-        screen->loadFromNode(child);
+        screen->loadFromNode(child, controller);
         screens.push_back(screen);
     }
 

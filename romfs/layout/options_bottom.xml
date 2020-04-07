@@ -1,0 +1,89 @@
+<root controller="OptionsController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <HSlideView>
+        <HSlideScreen>
+            <TextView text="SNMP" x="130" y="10" size="1.0"/>
+
+            <TextView text="Port" x="20" y="50" size="0.75"/>
+            <EditTextView x="130" y="50" width="140" height="20" length="12" onEdit="editSnmpPort"/>
+
+            <TextView text="Trap v1" x="20" y="75" size="0.75"/>
+            <EditTextView x="130" y="75" width="140" height="20" length="3" onEdit="editTrapv1"/>
+            <CheckboxView name="menuButton" x="110" y="90" onClick="editTrapv1Bool" sx="0.2" sy="0.2"/>
+
+            <TextView text="Trap v2" x="20" y="100" size="0.75"/>
+            <EditTextView x="130" y="100" width="140" height="20" length="12" onEdit="editTrapv2"/>
+            <CheckboxView name="menuButton" x="110" y="113" onClick="editTrapv2Bool" sx="0.2" sy="0.2"/>
+
+            <TextView text="Trap limit" x="20" y="125" size="0.75"/>
+            <EditTextView x="130" y="125" width="140" height="20" length="3" onEdit="editTrapLimit"/>
+
+            <TextView text="SMI Path" x="20" y="150" size="0.75"/>
+            <ButtonView name="menuButton" x="160" y="165" sx="0.75" sy="0.25" onClick="setSMI" />
+            <TextView text="Search" x="135" y="155" size="0.5"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="SNMPv3" x="115" y="10" size="1.0"/>
+
+            <TextView text="Engine ID" x="20" y="50" size="0.75"/>
+            <EditTextView x="155" y="50" width="140" height="20" length="12" onEdit="editEngineID"/>
+
+            <TextView text="Context Name" x="20" y="75" size="0.75"/>
+            <EditTextView x="155" y="75" width="140" height="20" length="3" onEdit="editContextName"/>
+
+            <TextView text="Trap v3" x="20" y="100" size="0.75"/>
+            <EditTextView x="155" y="100" width="140" height="20" length="12" onEdit="editTrapv3"/>
+            <CheckboxView name="menuButton" x="125" y="113" onClick="editTrapv3Bool" sx="0.2" sy="0.2"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="SNMPv3 Users" x="70" y="10" size="1.0"/>
+
+            <ListView x="20" y="30" maxElements="5" arrowX="250" arrowY="100" onFill="fillUsers" onClick="clickUser"/>
+
+            <ButtonView name="menuButton" x="160" y="210" sx="1.25" sy="0.5" onClick="goAddUser" />
+            <TextView text="Add user" x="115" y="195" size="0.8"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Syslog" x="115" y="10" size="1.0"/>
+
+            <TextView text="Port" x="20" y="50" size="0.75"/>
+            <EditTextView x="130" y="50" width="140" height="20" length="12" onEdit="editSyslogPort"/>
+
+            <TextView text="Transport" x="20" y="75" size="0.75"/>
+            <BinaryButtonView name="menuButton" x="150" y="85" sx="0.5" sy="0.25" onClick="editSyslogTransport" />
+            <TextView text="TCP" x="135" y="78" size="0.5"/>
+            <TextView text="UDP" x="175" y="78" size="0.5"/>
+
+            <TextView text="Log limit" x="20" y="100" size="0.75"/>
+            <EditTextView x="130" y="100" width="140" height="20" length="12" onEdit="editLogLimit"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="REST Conf" x="95" y="10" size="1.0"/>
+
+            <TextView text="Timeout" x="40" y="50" size="0.75"/>
+            <EditTextView x="140" y="50" width="140" height="20" length="12" onEdit="rcTimeout"/>
+
+            <TextView text="URL" x="40" y="75" size="0.75"/>
+            <EditTextView x="140" y="75" width="140" height="20" length="3" onEdit="rcURL"/>
+
+            <TextView text="Username" x="40" y="100" size="0.75"/>
+            <EditTextView x="140" y="100" width="140" height="20" length="12" onEdit="rcUsername"/>
+
+            <TextView text="Password" x="40" y="125" size="0.75"/>
+            <EditTextView x="140" y="125" width="140" height="20" length="3" onEdit="rcPassword"/>
+        </HSlideScreen>
+        <HSlideScreen>
+            <TextView text="Sockets" x="115" y="10" size="1.0"/>
+
+            <TextView text="TCP Timeout" x="20" y="50" size="0.75"/>
+            <EditTextView x="150" y="50" width="140" height="20" length="12" onEdit="tcpTimeout"/>
+
+            <TextView text="UDP Timeout" x="20" y="75" size="0.75"/>
+            <EditTextView x="150" y="75" width="140" height="20" length="3" onEdit="udpTimeout"/>
+        </HSlideScreen>
+    </HSlideView>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="gotoMenu" sx="-0.75" sy="0.75"/>
+</root>
+
