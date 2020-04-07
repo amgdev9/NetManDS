@@ -43,7 +43,9 @@ void ButtonView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
        touch.py >= (pos.y - hh) && touch.py <= (pos.y + hh) && (down &KEY_TOUCH)) {
         C2D_PlainImageTint(&tint, C2D_Color32(0x0F, 0x0F, 0x0F, 0xFF), 0.2f);
         if(controller != nullptr && !onClick.empty()) {
-            controller->callMethod(onClick, NULL);
+            ButtonParams params;
+            params.controller = controller;
+            controller->callMethod(onClick, &params);
         }
     }
 

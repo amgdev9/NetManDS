@@ -74,16 +74,22 @@ void EditTextView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
         }
 
         // Call controller callback
+        EditTextParams params;
+        params.success = true;
+        params.text = textstr;
+        params.controller = controller;
         if(controller != nullptr && !onEdit.empty()) {
-            controller->callMethod(onEdit, textstr);
+            controller->callMethod(onEdit, &params);
         }
 
-        C2D_TextBufClear(textBuffer);
-        if(password) {
-            memset(textstr, '*', strlen(textstr));
+        if(params.success) {
+            C2D_TextBufClear(textBuffer);
+            if(password) {
+                memset(textstr, '*', strlen(textstr));
+            }
+            C2D_TextParse(&text, textBuffer, textstr);
+            C2D_TextOptimize(&text);
         }
-        C2D_TextParse(&text, textBuffer, textstr);
-        C2D_TextOptimize(&text);
     }
 }
 

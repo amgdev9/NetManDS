@@ -13,7 +13,44 @@
 #include "snmp/Snmpv3AuthSHA1.h"
 #include "snmp/Snmpv3PrivDES.h"
 
+const static std::unordered_map<std::string, u32> authProtos = {
+    {"", SNMPV3_AUTHPROTO_NONE},
+    {"MD5", SNMPV3_AUTHPROTO_MD5},
+    {"SHA", SNMPV3_AUTHPROTO_SHA1}
+};
+
+const static std::unordered_map<std::string, u32> privProtos = {
+    {"", SNMPV3_PRIVPROTO_NONE},
+    {"DES", SNMPV3_PRIVPROTO_DES},
+};
+
 namespace NetMan {
+
+/**
+ * @brief Get the authentication protocol ID
+ * @param text  Identifier text
+ * @return The protocol ID
+ */
+u32 Snmpv3UserStore::getAuthProtoID(const std::string &text) {
+    auto it = authProtos.find(text);
+    if(it == authProtos.end()) {
+        throw std::runtime_error("Wrong auth protocol");
+    }
+    return it->second;
+}
+
+/**
+ * @brief Get the privacy protocol ID
+ * @param text  Identifier text
+ * @return The protocol ID
+ */
+u32 Snmpv3UserStore::getPrivProtoID(const std::string &text) {
+    auto it = privProtos.find(text);
+    if(it == privProtos.end()) {
+        throw std::runtime_error("Wrong priv protocol");
+    }
+    return it->second;
+}
 
 /**
  * @brief Constructor for a SNMPv3 User Store
@@ -111,18 +148,19 @@ Snmpv3UserStoreEntry &Snmpv3UserStore::getUser(const std::string &name) {
 void Snmpv3UserStore::save() {
 
     // Open the file
-    std::ofstream outfile(SNMPV3_USERSTORE_PATH, std::ios::out);
+    FILE *f = fopen(SNMPV3_USERSTORE_PATH, "wb");
+    if(f == NULL) {
+        throw std::runtime_error(std::string("Couldn't open ") + SNMPV3_USERSTORE_PATH);
+    }
 
     // Write the user store
-    char line[256];
     for(std::pair<std::string, Snmpv3UserStoreEntry> user : userTable) {
         Snmpv3UserStoreEntry &entry = user.second;
-        sprintf(line, "%s %ld %s %ld %s", user.first.c_str(), entry.authProto, entry.authPass.c_str(), entry.privProto, entry.privPass.c_str());
-        outfile.write(line, 256);
+        fprintf(f, "%s %ld %s %ld %s\n", user.first.c_str(), entry.authProto, entry.authPass.c_str(), entry.privProto, entry.privPass.c_str());
     }
 
     // Close the file
-    outfile.close();
+    fclose(f);
 }
 
 /**

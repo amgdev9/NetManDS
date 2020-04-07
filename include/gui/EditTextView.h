@@ -25,6 +25,15 @@
 namespace NetMan {
 
 /**
+ * @struct EditTextParams
+ */
+typedef struct {
+    char *text;
+    std::shared_ptr<GuiController> controller;
+    bool success;
+} EditTextParams;
+
+/**
  * @class EditTextView
  */
 class EditTextView : public GuiView {

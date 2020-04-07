@@ -55,6 +55,8 @@ class Snmpv3UserStore {
         std::shared_ptr<Snmpv3AuthProto> getAuthProto(const Snmpv3UserStoreEntry &user);
         std::shared_ptr<Snmpv3PrivProto> getPrivProto(const Snmpv3UserStoreEntry &user);
         static Snmpv3UserStore &getInstance();
+        u32 getAuthProtoID(const std::string &text);
+        u32 getPrivProtoID(const std::string &text);
 };
 
 }

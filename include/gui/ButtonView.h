@@ -12,6 +12,13 @@
 namespace NetMan {
 
 /**
+ * @struct ButtonParams
+ */
+typedef struct {
+    std::shared_ptr<GuiController> controller;
+} ButtonParams;
+
+/**
  * @class ButtonView
  */
 class ButtonView : public ImageView {
