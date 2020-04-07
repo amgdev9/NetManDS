@@ -57,6 +57,7 @@ void GuiLayout::loadFromNode(tinyxml2::XMLElement *root, std::shared_ptr<GuiCont
     }
 
     // Load every view
+    views = std::vector<std::shared_ptr<GuiView>>();
     for(XMLElement* child = root->FirstChildElement(); child != NULL; child = child->NextSiblingElement()) {
         auto view = viewFactory.find(child->Name());
         if(view != viewFactory.end()) {
@@ -82,8 +83,8 @@ void GuiLayout::loadFromNode(tinyxml2::XMLElement *root, std::shared_ptr<GuiCont
  * @brief Constructor for a GuiLayout
  */
 GuiLayout::GuiLayout() {
-    views = std::vector<std::shared_ptr<GuiView>>();
-    controller = nullptr;
+    this->views = std::vector<std::shared_ptr<GuiView>>();
+    this->controller = nullptr;
 }
 
 /**

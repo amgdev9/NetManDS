@@ -25,7 +25,7 @@ ListView::ListView(XMLElement *node, std::shared_ptr<GuiController> controller) 
     // Get attributes
     fillParams.startX = node->FloatAttribute("x", 0.0f);
     fillParams.startY = node->FloatAttribute("y", 0.0f);
-    fillParams.views = std::vector<std::shared_ptr<GuiView>>();
+    fillParams.layouts = std::vector<std::shared_ptr<GuiLayout>>();
     fillParams.remaining = true;
     maxElements = node->IntAttribute("maxElements", 1);
 
@@ -82,7 +82,7 @@ void ListView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
             controller->callMethod(onFill, &fillParams);
         }
     } else if(!onClick.empty()) {
-        for(u32 i = 0; i < fillParams.views.size(); i++) {
+        for(u32 i = 0; i < fillParams.layouts.size(); i++) {
             float y = fillParams.startY + i * fillParams.elementHeight;
             if(touch.px >= fillParams.startX && touch.px <= (fillParams.startX + fillParams.elementWidth) &&
                touch.py >= y && touch.py <= (y + fillParams.elementHeight)) {
@@ -106,8 +106,8 @@ void ListView::draw() {
     if(fillParams.remaining) C2D_DrawSprite(&arrowParams);
     arrowParams.params.pos.y = tmpy;
 
-    for(auto& view : fillParams.views) {
-        view->draw();
+    for(auto& layout : fillParams.layouts) {
+        layout->draw();
     }
 }
 

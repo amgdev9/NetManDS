@@ -32,6 +32,7 @@ class GuiLayout {
         void loadFromNode(tinyxml2::XMLElement *root, std::shared_ptr<GuiController> controller = nullptr);
         GuiLayout();
         GuiLayout(const std::string &path);
+        inline void addView(std::shared_ptr<GuiView> view) { views.push_back(view); }
         virtual ~GuiLayout();
         void input(u32 held, u32 down, u32 up, touchPosition &touch);
 		void draw();

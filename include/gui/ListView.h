@@ -17,7 +17,7 @@
 #include <tinyxml2.h>
 
 // Own includes
-#include "GuiView.h"
+#include "GuiLayout.h"
 #include "controller/GuiController.h"
 
 namespace NetMan {
@@ -33,7 +33,7 @@ typedef struct {
     u32 startElement;
     u32 endElement;
     bool remaining;
-    std::vector<std::shared_ptr<GuiView>> views;
+    std::vector<std::shared_ptr<GuiLayout>> layouts;
 } ListViewFillParams;
 
 /**

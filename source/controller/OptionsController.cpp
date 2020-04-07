@@ -24,13 +24,15 @@ static void fillUsers(void *args) {
     params->elementWidth = 30;
     params->elementHeight = 30;
     params->remaining = true;
-    params->views.clear();
+    params->layouts.clear();
 
     for(u32 i = params->startElement; i < params->endElement; i++) {
         if(i < 42) {
             float y = params->startY + (i % 5) * params->elementHeight;
             std::shared_ptr<TextView> tv = std::make_shared<TextView>("Text" + std::to_string(i), params->startX, y, 1.0f, 0xFFFFFFFF);
-            params->views.push_back(tv);
+            std::shared_ptr<GuiLayout> layout = std::make_shared<GuiLayout>();
+            layout->addView(tv);
+            params->layouts.push_back(layout);
         } else {
             i = params->endElement;
             params->remaining = false;
