@@ -17,9 +17,8 @@ namespace NetMan {
 /**
  * @brief Constructor for a UDP socket
  * @param timeoutSecs Timeout, in seconds
- * @param timeoutUsecs Remaining microseconds of the timeout
  */
-UdpSocket::UdpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
+UdpSocket::UdpSocket(u32 timeoutSecs) {
 
 	this->fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
 
@@ -28,7 +27,7 @@ UdpSocket::UdpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
 	}
 
 	this->tv.tv_sec = timeoutSecs;
-	this->tv.tv_usec = timeoutUsecs;
+	this->tv.tv_usec = 0;
 	this->lastOrigin = 0;
 	this->lastPort = 0;
 }

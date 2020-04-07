@@ -18,8 +18,8 @@
 #define SYSLOG_MAX_PDU_SIZE         (4 << 10)
 #define SYSLOG_MAX_DIGITS           6
 #define SYSLOG_MAX_STRING_LENGTH    0xFFFF
-#define SYSLOG_PORT                 5140
-#define SYSLOG_SECURE_PORT          6514
+#define SYSLOG_TRANSPORT_TCP        0
+#define SYSLOG_TRANSPORT_UDP        1
 
 // Defines syslog tokens
 #define SYSLOG_NILVALUE     '-'

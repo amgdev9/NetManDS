@@ -20,6 +20,7 @@
 #include "snmp/MibLoader.h"
 #include "restconf/RestConfClient.h"
 #include "restconf/YinHelper.h"
+#include "Config.h"
 
 using namespace NetMan;
 
@@ -65,13 +66,15 @@ void restconf_test() {
 
     FILE *f = fopen("log.txt", "wb");
     fclose(f);
+
+    auto& config = Config::getInstance().getData();
     
     try {
         std::shared_ptr<YinHelper> yinHelper = std::make_shared<YinHelper>("yin/ietf-interfaces.xml");
         tinyxml2::XMLElement *root = yinHelper->getRoot();
         tinyxml2::XMLElement *containerNode = root->FirstChildElement("container");
         tinyxml2::XMLElement *reqNode = containerNode->FirstChildElement("list");
-        auto restConfClient = std::make_shared<RestConfClient>("https://ios-xe-mgmt.cisco.com:9443", "root", "D_Vay!_10&");
+        auto restConfClient = std::make_shared<RestConfClient>("https://ios-xe-mgmt.cisco.com:9443", "root", "D_Vay!_10&", config.rcTimeout);
         
         // Test 1 - Get all interfaces
         auto jsonData = restConfClient->request(yinHelper->getRestConfURL(reqNode), HTTPC_METHOD_GET);
@@ -151,10 +154,12 @@ void syslog_test_tcp() {
 	FILE *f = fopen("log.txt", "wb");
 	fclose(f);
 
+    auto& config = Config::getInstance().getData();
+
 	try {
 
 	    std::shared_ptr<TcpSocket> sock = std::make_shared<TcpSocket>(10, 0);
-	    sock->bindTo(SYSLOG_PORT);
+	    sock->bindTo(config.syslogPort);
 	    sock->listenState(10);
 
 		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
@@ -208,9 +213,11 @@ void snmpagent_test() {
     FILE *f = fopen("log.txt", "wb");
 	fclose(f);
 
+    auto& config = Config::getInstance().getData();
+
     try {
 		std::shared_ptr<SnmpAgentScanner> agentScanner = std::make_shared<SnmpAgentScanner>();
-        agentScanner->scanAgents(inet_addr("192.168.100.1"), 254, SNMP_PORT, SNMPV1_VERSION, 15, 2);
+        agentScanner->scanAgents(inet_addr("192.168.100.1"), 254, config.snmpPort, SNMPV1_VERSION, 15, 2);
         agentScanner->print();
 	} catch (const std::runtime_error &e) {
 		f = fopen("log.txt", "a+");
@@ -252,8 +259,10 @@ void syslog_test_udp() {
 	FILE *f = fopen("log.txt", "wb");
 	fclose(f);
 
+    auto& config = Config::getInstance().getData();
+
 	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>(30);
-	sock->bindTo(SYSLOG_PORT);
+	sock->bindTo(config.syslogPort);
 
 	try {
 		std::shared_ptr<SyslogPdu> syslogPdu = std::make_shared<SyslogPdu>();
@@ -273,10 +282,10 @@ void syslog_test_udp() {
  */
 void snmpv3_test() {
 
-	Snmpv3UserStore &store = Snmpv3UserStore::getInstance();
-	store.load("userStore.txt");
+	Snmpv3UserStore::getInstance();
 
-	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>();
+    auto& config = Config::getInstance().getData();
+	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>(config.udpTimeout);
 
 	FILE *f = fopen("sdmc:/log.txt", "wb");
 	fprintf(f, "Initialized\n");
@@ -298,9 +307,9 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), config.snmpPort);
 		try{
-			pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
+			pdu->recvResponse(sock, inet_addr("127.0.0.1"), config.snmpPort);
 		} catch (std::runtime_error &e) {
 			f = fopen("sdmc:/log.txt", "a+");
 			fprintf(f, "Error: %s\n", e.what());
@@ -310,8 +319,8 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), SNMP_PORT);
-		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), config.snmpPort);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), config.snmpPort);
 
 		// Pruebas SNMP GET BULK
 		pdu->clear();
@@ -321,13 +330,13 @@ void snmpv3_test() {
 		for(u8 i = 0; i < 3; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendBulkRequest(2, 5, sock, inet_addr("127.0.0.1"), SNMP_PORT);
-		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->sendBulkRequest(2, 5, sock, inet_addr("127.0.0.1"), config.snmpPort);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), config.snmpPort);
 
 		// Pruebas SNMP TRAP e INFORM
 		pdu = std::make_shared<Snmpv3Pdu>("engineid", "", "manager");
 		sock = std::make_shared<UdpSocket>(30);
-		sock->bindTo(SNMP_TRAP_PORT);
+		sock->bindTo(config.trapv2Port);
 		pdu->clear();
 		pdu->recvTrap(sock);
 		pdu->clear();
@@ -344,12 +353,15 @@ void snmpv3_test() {
  * @brief Test the SNMPv1 stuff
  */
 void snmpv1_test() {
-	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>();
+
+    auto& config = Config::getInstance().getData();
+
+	std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>(config.udpTimeout);
 
 	FILE *f = fopen("sdmc:/log.txt", "wb");
 	fprintf(f, "Initialized\n");
 	fclose(f);
-
+    
 	try {
 
 		// Pruebas SNMP GET
@@ -366,8 +378,8 @@ void snmpv1_test() {
 		for(u8 i = 0; i < 7; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), SNMP_PORT);
-		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->sendRequest(SNMPV2_GETREQUEST, sock, inet_addr("127.0.0.1"), config.snmpPort);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), config.snmpPort);
 
 		// Pruebas SNMP SET
 		/*pdu->clear();
@@ -389,12 +401,12 @@ void snmpv1_test() {
 		for(u8 i = 0; i < 3; i++) {
 			pdu->addVarBind(oid[i], nullval);
 		}
-		pdu->sendBulkRequest(2, 5, sock, inet_addr("127.0.0.1"), SNMP_PORT);
-		pdu->recvResponse(sock, inet_addr("127.0.0.1"), SNMP_PORT);
+		pdu->sendBulkRequest(2, 5, sock, inet_addr("127.0.0.1"), config.snmpPort);
+		pdu->recvResponse(sock, inet_addr("127.0.0.1"), config.snmpPort);
 
 		// Pruebas SNMP TRAP
 		sock = std::make_shared<UdpSocket>(30);
-		sock->bindTo(SNMP_TRAP_PORT);
+		sock->bindTo(config.trapv3Port);
 		pdu->clear();
 		pdu->recvTrap(sock);
 		pdu->clear();

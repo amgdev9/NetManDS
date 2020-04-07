@@ -7,6 +7,12 @@
 #include "Application.h"
 #include "gui/ListView.h"
 #include "gui/TextView.h"
+#include "gui/ImageView.h"
+
+// Defines
+#define ICON_SIZE   81.0f
+#define TEXT_OFFX   10.0f
+#define TEXT_SCALE  0.8f
 
 namespace NetMan {
 
@@ -21,16 +27,19 @@ static void goAddUser(void *args) {
 static void fillUsers(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
-    params->elementWidth = 30;
-    params->elementHeight = 30;
-    params->remaining = true;
     params->layouts.clear();
 
+    if(params->endElement >= 40) {
+        params->remaining = false;
+    }
+
     for(u32 i = params->startElement; i < params->endElement; i++) {
-        if(i < 42) {
-            float y = params->startY + (i % 5) * params->elementHeight;
-            std::shared_ptr<TextView> tv = std::make_shared<TextView>("Text" + std::to_string(i), params->startX, y, 1.0f, 0xFFFFFFFF);
+        if(i < 40) {
+            float y = params->startY + (i % params->maxElements) * params->elementHeight;
+            std::shared_ptr<ImageView> bg = std::make_shared<ImageView>("menuButton", params->startX + params->elementWidth / 2, y + params->elementHeight / 2, params->elementWidth / ICON_SIZE, params->elementHeight / ICON_SIZE);
+            std::shared_ptr<TextView> tv = std::make_shared<TextView>("Text" + std::to_string(i), params->startX + TEXT_OFFX, y, TEXT_SCALE, C2D_Color32(0, 0, 0, 0xFF));
             std::shared_ptr<GuiLayout> layout = std::make_shared<GuiLayout>();
+            layout->addView(bg);
             layout->addView(tv);
             params->layouts.push_back(layout);
         } else {

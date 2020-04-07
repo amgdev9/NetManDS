@@ -14,10 +14,6 @@
 // Includes 3DS
 #include <3ds/types.h>
 
-// Defines
-#define DEFAULT_TCP_SOCKET_TIMEOUT_SECS		5
-#define DEFAULT_TCP_SOCKET_TIMEOUT_USECS	0
-
 namespace NetMan {
 
 /**
@@ -28,9 +24,9 @@ class TcpSocket {
 		int fd;					/**< File descriptor for TCP socket */
 		struct timeval tv;		/**< Timeout for TCP socket */
 	public:
-		TcpSocket(int fd, u32 timeoutSecs, u32 timeoutUsecs);
-		TcpSocket(u32 timeoutSecs = DEFAULT_TCP_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_TCP_SOCKET_TIMEOUT_USECS);
-		TcpSocket(const struct addrinfo &addr, u32 timeoutSecs = DEFAULT_TCP_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_TCP_SOCKET_TIMEOUT_USECS);
+		TcpSocket(int fd, u32 timeoutSecs);
+		TcpSocket(u32 timeoutSecs);
+		TcpSocket(const struct addrinfo &addr, u32 timeoutSecs);
 		virtual void connectToHost(const struct addrinfo &addr);
 		virtual void sendData(void *data, u32 size);
 		virtual u32 recvData(void *data, u32 size);

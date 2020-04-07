@@ -20,22 +20,27 @@ namespace NetMan {
  */
 Snmpv3UserStore::Snmpv3UserStore() {
     this->userTable = std::unordered_map<std::string, Snmpv3UserStoreEntry>();
+    load();
 }
 
 /**
  * @brief Load a SNMPv3 user store from a file
- * @param path  File path
  */
-void Snmpv3UserStore::load(const std::string &path) {
+void Snmpv3UserStore::load() {
 
     // Open file
-    this->path = path;
     std::ifstream infile;
 
     try {
-        infile = std::ifstream(path);
+        infile = std::ifstream(SNMPV3_USERSTORE_PATH, std::ios::in);
     } catch(const std::ifstream::failure &e) {
-        throw;
+        try {
+            infile = std::ifstream(SNMPV3_USERSTORE_PATH, std::ios::out);
+            infile.close();
+            return;
+        } catch (const std::ifstream::failure &e) {
+            throw;
+        }
     }
 
     std::string line;
@@ -106,7 +111,7 @@ Snmpv3UserStoreEntry &Snmpv3UserStore::getUser(const std::string &name) {
 void Snmpv3UserStore::save() {
 
     // Open the file
-    std::ofstream outfile(this->path);
+    std::ofstream outfile(SNMPV3_USERSTORE_PATH, std::ios::out);
 
     // Write the user store
     char line[256];
@@ -158,7 +163,9 @@ std::shared_ptr<Snmpv3PrivProto> Snmpv3UserStore::getPrivProto(const Snmpv3UserS
 /**
  * @brief Destructor for a SNMPv3 user store
  */
-Snmpv3UserStore::~Snmpv3UserStore() { }
+Snmpv3UserStore::~Snmpv3UserStore() {
+    save();
+}
 
 /**
  * @brief Get the instance of the User Store

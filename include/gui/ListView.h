@@ -33,6 +33,7 @@ typedef struct {
     u32 startElement;
     u32 endElement;
     bool remaining;
+    u32 maxElements;
     std::vector<std::shared_ptr<GuiLayout>> layouts;
 } ListViewFillParams;
 
@@ -44,7 +45,6 @@ class ListView : public GuiView {
         C2D_SpriteSheet arrowData;
         C2D_Sprite arrowParams;
         std::shared_ptr<GuiController> controller;
-        u32 maxElements;
         ListViewFillParams fillParams;
         std::string onFill;
         std::string onClick;

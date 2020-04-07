@@ -39,7 +39,8 @@
         <HSlideScreen>
             <TextView text="SNMPv3 Users" x="70" y="10" size="1.0"/>
 
-            <ListView x="20" y="30" maxElements="5" arrowX="250" arrowY="100" onFill="fillUsers" onClick="clickUser"/>
+            <ImageView name="menuButton" x="250" y="115" sx="0.5"/>
+            <ListView x="45" y="50" width="180" height="25" maxElements="5" arrowX="250" arrowY="100" onFill="fillUsers" onClick="clickUser"/>
 
             <ButtonView name="menuButton" x="160" y="210" sx="1.25" sy="0.5" onClick="goAddUser" />
             <TextView text="Add user" x="115" y="195" size="0.8"/>

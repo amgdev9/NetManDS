@@ -17,9 +17,8 @@ namespace NetMan {
 /**
  * @brief Constructor for a TCP socket
  * @param timeoutSecs   Timeout, in seconds
- * @param timeoutUsecs  Remaining microseconds of the timeout
  */
-TcpSocket::TcpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
+TcpSocket::TcpSocket(u32 timeoutSecs) {
 
 	this->fd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 
@@ -28,16 +27,15 @@ TcpSocket::TcpSocket(u32 timeoutSecs, u32 timeoutUsecs) {
 	}
 
 	this->tv.tv_sec = timeoutSecs;
-	this->tv.tv_usec = timeoutUsecs;
+	this->tv.tv_usec = 0;
 }
 
 /**
  * @brief Constructor for a TCP socket
  * @param addr          Address information
  * @param timeoutSecs   Timeout, in seconds
- * @param timeoutUsecs  Remaining microseconds of the timeout
  */
-TcpSocket::TcpSocket(const struct addrinfo &addr, u32 timeoutSecs, u32 timeoutUsecs) {
+TcpSocket::TcpSocket(const struct addrinfo &addr, u32 timeoutSecs) {
 
 	this->fd = socket(addr.ai_family, addr.ai_socktype, addr.ai_protocol);
 
@@ -46,19 +44,18 @@ TcpSocket::TcpSocket(const struct addrinfo &addr, u32 timeoutSecs, u32 timeoutUs
 	}
 
 	this->tv.tv_sec = timeoutSecs;
-	this->tv.tv_usec = timeoutUsecs;
+	this->tv.tv_usec = 0;
 }
 
 /**
  * @brief Constructor for a TcpSocket
  * @param fd			File descriptor for the socket
  * @param timeoutSecs   Timeout, in seconds
- * @param timeoutUsecs  Remaining microseconds of the timeout
  */
-TcpSocket::TcpSocket(int fd, u32 timeoutSecs, u32 timeoutUsecs) {
+TcpSocket::TcpSocket(int fd, u32 timeoutSecs) {
 	this->fd = fd;
 	this->tv.tv_sec = timeoutSecs;
-	this->tv.tv_usec = timeoutUsecs;
+	this->tv.tv_usec = 0;
 }
 
 /**
@@ -91,7 +88,7 @@ std::shared_ptr<TcpSocket> TcpSocket::acceptConnection() {
 	if(this->dataReceived()) {
 		int client_fd = accept(this->fd, NULL, NULL);
 		if(client_fd > 0) {
-            return std::make_shared<TcpSocket>(client_fd, this->tv.tv_sec, this->tv.tv_usec);
+            return std::make_shared<TcpSocket>(client_fd, this->tv.tv_sec);
 		}
 	}
 

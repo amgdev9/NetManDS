@@ -16,13 +16,17 @@ namespace NetMan {
 
 /**
  * @brief Load an image view
- * @param node          XML node containing image parameters
- * @param controller    Controller used (can be nullptr)
+ * @param name  Name of the image resource
+ * @param x     Image x position
+ * @param y     Image y position
+ * @param sx    Image x scale
+ * @param sy    Image y scale
  */
-ImageView::ImageView(XMLElement *node, std::shared_ptr<GuiController> controller) {
+ImageView::ImageView(const char *name, float x, float y, float sx, float sy) {
 
-    // Get image path
-    const char *name = node->Attribute("name");
+    this->controller = nullptr;
+
+    // Check image path
     if(name == NULL) {
         throw std::runtime_error("No image path");
     }
@@ -37,9 +41,19 @@ ImageView::ImageView(XMLElement *node, std::shared_ptr<GuiController> controller
     // Set up image parameters
     C2D_SpriteFromSheet(&imageParams, imageData, 0);
     C2D_SpriteSetCenter(&imageParams, 0.5f, 0.5f);
-    C2D_SpriteSetPos(&imageParams, node->FloatAttribute("x", 200.0f), node->FloatAttribute("y", 120.0f));
+    C2D_SpriteSetPos(&imageParams, x, y);
     C2D_SpriteSetRotation(&imageParams, 0.0f);
-    C2D_SpriteSetScale(&imageParams, node->FloatAttribute("sx", 1.0f), node->FloatAttribute("sy", 1.0f));
+    C2D_SpriteSetScale(&imageParams, sx, sy);
+}
+
+/**
+ * @brief Load an image view
+ * @param node          XML node containing image parameters
+ * @param controller    Controller used (can be nullptr)
+ */
+ImageView::ImageView(XMLElement *node, std::shared_ptr<GuiController> controller) :
+    ImageView(node->Attribute("name"), node->FloatAttribute("x", 200.0f), node->FloatAttribute("y", 120.0f),
+              node->FloatAttribute("sx", 1.0f), node->FloatAttribute("sy", 1.0f)) {
 
     // Save controller
     this->controller = controller;

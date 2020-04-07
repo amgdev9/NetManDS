@@ -17,6 +17,9 @@
 #include "Snmpv3AuthProto.h"
 #include "Snmpv3PrivProto.h"
 
+// Defines
+#define SNMPV3_USERSTORE_PATH   "userstore.dat"
+
 // Defines authentication protocols
 #define SNMPV3_AUTHPROTO_NONE   0
 #define SNMPV3_AUTHPROTO_MD5    1
@@ -41,11 +44,10 @@ typedef struct {
 class Snmpv3UserStore {
     private:
         std::unordered_map<std::string, Snmpv3UserStoreEntry> userTable;
-        std::string path;
         Snmpv3UserStore();
         virtual ~Snmpv3UserStore();
     public:
-        void load(const std::string &path);
+        void load();
         void save();
         void addUser(const std::string &name, const Snmpv3UserStoreEntry &entry);
         void removeUser(const std::string &name);

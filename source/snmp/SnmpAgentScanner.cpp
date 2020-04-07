@@ -19,7 +19,7 @@ namespace NetMan {
  * @brief Constructor for a SNMP Agent Scanner
  */
 SnmpAgentScanner::SnmpAgentScanner() {
-    sock = std::make_shared<UdpSocket>(0, 0);
+    sock = std::make_shared<UdpSocket>(0);
 
     for(int i = 0; i < SNMPAGENT_NOID; i++) {
         oid[i] = std::make_shared<BerOid>("1.3.6.1.2.1.1." + std::to_string(i + 1) + ".0");

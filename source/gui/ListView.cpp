@@ -27,7 +27,9 @@ ListView::ListView(XMLElement *node, std::shared_ptr<GuiController> controller) 
     fillParams.startY = node->FloatAttribute("y", 0.0f);
     fillParams.layouts = std::vector<std::shared_ptr<GuiLayout>>();
     fillParams.remaining = true;
-    maxElements = node->IntAttribute("maxElements", 1);
+    fillParams.maxElements = node->IntAttribute("maxElements", 1);
+    fillParams.elementWidth = node->FloatAttribute("width", 32.0f);
+    fillParams.elementHeight = node->FloatAttribute("height", 32.0f);
 
     // Get callbacks
     const char *onClickStr = node->Attribute("onClick");
@@ -53,7 +55,7 @@ ListView::ListView(XMLElement *node, std::shared_ptr<GuiController> controller) 
 
     // Call the filler
     fillParams.startElement = 0;
-    fillParams.endElement = maxElements;
+    fillParams.endElement = fillParams.maxElements;
     if(controller != nullptr && onFillStr) {
         controller->callMethod(onFill, &fillParams);
     }
@@ -73,12 +75,14 @@ void ListView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
 
     if((down &KEY_TOUCH) && touch.px >= (pos.x - hw) && touch.px <= (pos.x + hw) && !onFill.empty()) {
         if(touch.py >= (pos.y - hh) && touch.py <= (pos.y + hh) && (fillParams.startElement > 0)) {
-            fillParams.startElement -= maxElements;
-            fillParams.endElement -= maxElements;
+            fillParams.startElement -= fillParams.maxElements;
+            fillParams.endElement -= fillParams.maxElements;
+            fillParams.remaining = true;
             controller->callMethod(onFill, &fillParams);
         } else if(touch.py >= (pos.y + hh) && touch.py <= (pos.y + 3.0f * hh) && fillParams.remaining) {
-            fillParams.startElement += maxElements;
-            fillParams.endElement += maxElements;
+            fillParams.startElement += fillParams.maxElements;
+            fillParams.endElement += fillParams.maxElements;
+            fillParams.remaining = true;
             controller->callMethod(onFill, &fillParams);
         }
     } else if(!onClick.empty()) {

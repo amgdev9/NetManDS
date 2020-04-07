@@ -12,10 +12,6 @@
 // Includes 3DS
 #include <3ds/types.h>
 
-// Defines
-#define DEFAULT_UDP_SOCKET_TIMEOUT_SECS		5
-#define DEFAULT_UDP_SOCKET_TIMEOUT_USECS	0
-
 namespace NetMan {
 
 /**
@@ -28,7 +24,7 @@ class UdpSocket {
         in_addr_t lastOrigin;	/**< Last received packet's origin IP */
         in_port_t lastPort;		/**< Last received packet's origin port */
     public:
-        UdpSocket(u32 timeoutSecs = DEFAULT_UDP_SOCKET_TIMEOUT_SECS, u32 timeoutUsecs = DEFAULT_UDP_SOCKET_TIMEOUT_USECS);
+        UdpSocket(u32 timeoutSecs);
         void sendPacket(void *data, u32 size, in_addr_t ip, u16 port);
         u32 recvPacket(void *data, u32 size, in_addr_t ip = 0, u16 port = 0);
         void bindTo(u16 port);

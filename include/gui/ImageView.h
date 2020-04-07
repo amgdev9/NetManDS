@@ -30,6 +30,7 @@ class ImageView : public GuiView {
         C2D_Sprite imageParams;
         std::shared_ptr<GuiController> controller;
     public:
+        ImageView(const char *name, float x, float y, float sx, float sy);
         ImageView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         virtual void draw() override;
         virtual ~ImageView();
