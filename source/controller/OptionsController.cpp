@@ -13,6 +13,7 @@
 #define ICON_SIZE   81.0f
 #define TEXT_OFFX   10.0f
 #define TEXT_SCALE  0.8f
+#define CROSS_OFF   12.0f
 
 namespace NetMan {
 
@@ -38,9 +39,11 @@ static void fillUsers(void *args) {
             float y = params->startY + (i % params->maxElements) * params->elementHeight;
             std::shared_ptr<ImageView> bg = std::make_shared<ImageView>("menuButton", params->startX + params->elementWidth / 2, y + params->elementHeight / 2, params->elementWidth / ICON_SIZE, params->elementHeight / ICON_SIZE);
             std::shared_ptr<TextView> tv = std::make_shared<TextView>("Text" + std::to_string(i), params->startX + TEXT_OFFX, y, TEXT_SCALE, C2D_Color32(0, 0, 0, 0xFF));
+            std::shared_ptr<ImageView> cross = std::make_shared<ImageView>("cross", params->startX + params->elementWidth - CROSS_OFF, y + params->elementHeight - CROSS_OFF, 0.5f, 0.5f);
             std::shared_ptr<GuiLayout> layout = std::make_shared<GuiLayout>();
             layout->addView(bg);
             layout->addView(tv);
+            layout->addView(cross);
             params->layouts.push_back(layout);
         } else {
             i = params->endElement;
