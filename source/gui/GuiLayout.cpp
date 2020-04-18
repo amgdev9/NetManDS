@@ -16,6 +16,7 @@
 #include "gui/CheckboxView.h"
 #include "gui/BinaryButtonView.h"
 #include "gui/ListView.h"
+#include "gui/ConsoleView.h"
 
 using namespace tinyxml2;
 
@@ -34,6 +35,7 @@ const static std::unordered_map<std::string, GuiView*(*)(XMLElement*, std::share
     {"CheckboxView", &bakeView<CheckboxView>},
     {"BinaryButtonView", &bakeView<BinaryButtonView>},
     {"ListView", &bakeView<ListView>},
+    {"ConsoleView", &bakeView<ConsoleView>},
 };
 
 /**
