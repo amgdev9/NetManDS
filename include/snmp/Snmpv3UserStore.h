@@ -52,11 +52,14 @@ class Snmpv3UserStore {
         void addUser(const std::string &name, const Snmpv3UserStoreEntry &entry);
         void removeUser(const std::string &name);
         Snmpv3UserStoreEntry &getUser(const std::string &name);
+        inline std::unordered_map<std::string, Snmpv3UserStoreEntry> &getUserTable() { return userTable; }
         std::shared_ptr<Snmpv3AuthProto> getAuthProto(const Snmpv3UserStoreEntry &user);
         std::shared_ptr<Snmpv3PrivProto> getPrivProto(const Snmpv3UserStoreEntry &user);
         static Snmpv3UserStore &getInstance();
         u32 getAuthProtoID(const std::string &text);
         u32 getPrivProtoID(const std::string &text);
+        std::string getAuthProtoString(u32 id);
+        std::string getPrivProtoString(u32 id);
 };
 
 }

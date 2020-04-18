@@ -1,0 +1,25 @@
+<root controller="AddUserController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+    <TextView text="Edit SNMPv3 user" x="20" y="10" size="1.0"/>
+
+    <TextView text="Username" x="20" y="50" size="0.75"/>
+    <EditTextView x="160" y="50" width="140" height="20" length="12" onEdit="editUsername"/>
+
+    <TextView text="Privacy" x="20" y="75" size="0.75"/>
+    <EditTextView x="160" y="75" width="140" height="20" length="12" onEdit="editPriv"/>
+
+    <TextView text="Password" x="20" y="100" size="0.75"/>
+    <EditTextView x="160" y="100" width="140" height="20" length="12" password="true" onEdit="editPrivPass"/>
+
+    <TextView text="Authentication" x="20" y="125" size="0.75"/>
+    <EditTextView x="160" y="125" width="140" height="20" length="12" onEdit="editAuth"/>
+
+    <TextView text="Password" x="20" y="150" size="0.75"/>
+    <EditTextView x="160" y="150" width="140" height="20" length="12" password="true" onEdit="editAuthPass"/>
+
+    <ButtonView name="menuButton" x="150" y="216" onClick="addUser" sx="0.5" sy="0.4"/>
+    <TextView text="OK" x="135" y="205" size="0.75"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="gotoOptions" sx="-0.75" sy="0.75"/>
+</root>
+

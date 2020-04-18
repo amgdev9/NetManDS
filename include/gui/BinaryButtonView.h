@@ -12,6 +12,15 @@
 namespace NetMan {
 
 /**
+ * @struct BinaryButtonParams
+ */
+typedef struct {
+    bool selected;
+    bool init;
+    std::shared_ptr<GuiController> controller;
+} BinaryButtonParams;
+
+/**
  * @class BinaryButtonView
  */
 class BinaryButtonView : public ImageView {

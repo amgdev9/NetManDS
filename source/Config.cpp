@@ -63,22 +63,26 @@ Config::Config() {
 void Config::writeString(FILE *f, const std::string &text) {
     size_t len = text.length();
     fwrite(&len, sizeof(len), 1, f);
-    fwrite(text.c_str(), len, 1, f);
+    if(len > 0) {
+        fwrite(text.c_str(), len, 1, f);
+    }
 }
 
 void Config::readString(FILE *f, std::string &text) {
     size_t len;
     fread(&len, sizeof(len), 1, f);
-    std::unique_ptr<char> ptr = nullptr;
-    try {
-        ptr = std::unique_ptr<char>(new char[len+1]);
-    } catch (const std::bad_alloc &e) {
-        throw;
+    if(len > 0) {
+        std::unique_ptr<char> ptr = nullptr;
+        try {
+            ptr = std::unique_ptr<char>(new char[len+1]);
+        } catch (const std::bad_alloc &e) {
+            throw;
+        }
+        ptr.get()[len] = '\0';
+        fread(ptr.get(), len, 1, f);
+        text.clear();
+        text += ptr.get();
     }
-    ptr.get()[len] = '\0';
-    fread(ptr.get(), len, 1, f);
-    text.clear();
-    text += ptr.get();
 }
 
 Config::~Config() {

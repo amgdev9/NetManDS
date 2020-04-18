@@ -207,8 +207,9 @@ void Application::unloadResources() {
 /**
  * @brief Request a layout change
  * @param layoutName    Name of the layout
+ * @param contextData   Context data
  */
-void Application::requestLayoutChange(const std::string &layoutName) {
+void Application::requestLayoutChange(const std::string &layoutName, std::shared_ptr<void> contextData) {
 
     if(topLayout == nullptr || bottomLayout == nullptr) {
         loadingState = LOADINGSTATE_LOADING;
@@ -219,6 +220,8 @@ void Application::requestLayoutChange(const std::string &layoutName) {
     }
 
     loadingLayoutName = layoutName;
+
+    this->contextData = contextData;
 }
 
 /**

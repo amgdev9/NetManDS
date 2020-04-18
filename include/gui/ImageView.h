@@ -32,6 +32,7 @@ class ImageView : public GuiView {
     public:
         ImageView(const char *name, float x, float y, float sx, float sy);
         ImageView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
+        bool touched(u32 down, touchPosition &touch);
         virtual void draw() override;
         virtual ~ImageView();
 };

@@ -60,6 +60,23 @@ ImageView::ImageView(XMLElement *node, std::shared_ptr<GuiController> controller
 }
 
 /**
+ * @brief Check if an image has been touched
+ * @param down  Down keys
+ * @param touch Touch position
+ * @return Whether the image has been touched
+ */
+bool ImageView::touched(u32 down, touchPosition &touch) {
+
+    auto &pos = imageParams.params.pos;
+
+    float hw = fabs(pos.w) / 2.0f;
+    float hh = fabs(pos.h) / 2.0f;
+
+    return (touch.px >= (pos.x - hw) && touch.px <= (pos.x + hw) && 
+            touch.py >= (pos.y - hh) && touch.py <= (pos.y + hh) && (down &KEY_TOUCH));
+}
+
+/**
  * @brief Draw an image view
  */
 void ImageView::draw() {

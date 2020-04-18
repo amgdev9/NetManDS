@@ -55,6 +55,7 @@ ListView::ListView(XMLElement *node, std::shared_ptr<GuiController> controller) 
 
     // Call the filler
     fillParams.startElement = 0;
+    fillParams.controller = controller;
     fillParams.endElement = fillParams.maxElements;
     if(controller != nullptr && onFillStr) {
         controller->callMethod(onFill, &fillParams);
@@ -78,11 +79,13 @@ void ListView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
             fillParams.startElement -= fillParams.maxElements;
             fillParams.endElement -= fillParams.maxElements;
             fillParams.remaining = true;
+            fillParams.controller = controller;
             controller->callMethod(onFill, &fillParams);
         } else if(touch.py >= (pos.y + hh) && touch.py <= (pos.y + 3.0f * hh) && fillParams.remaining) {
             fillParams.startElement += fillParams.maxElements;
             fillParams.endElement += fillParams.maxElements;
             fillParams.remaining = true;
+            fillParams.controller = controller;
             controller->callMethod(onFill, &fillParams);
         }
     } else if(!onClick.empty()) {
@@ -90,7 +93,11 @@ void ListView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
             float y = fillParams.startY + i * fillParams.elementHeight;
             if(touch.px >= fillParams.startX && touch.px <= (fillParams.startX + fillParams.elementWidth) &&
                touch.py >= y && touch.py <= (y + fillParams.elementHeight)) {
-                   controller->callMethod(onClick, &i);
+                   ListViewClickParams params;
+                   params.controller = controller;
+                   params.element = fillParams.startElement + i;
+                   params.startElement = fillParams.startElement;
+                   controller->callMethod(onClick, &params);
             }
         }
     }

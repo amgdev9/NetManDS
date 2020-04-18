@@ -31,6 +31,18 @@ BinaryButtonView::BinaryButtonView(XMLElement *node, std::shared_ptr<GuiControll
     if(onClickStr) {
         onClick = std::string(onClickStr);
     }
+
+    // Call the controller to initialie the field
+    if(controller != nullptr && !onClick.empty()) {
+        BinaryButtonParams params;
+        params.controller = controller;
+        params.selected = false;
+        params.init = false;
+        controller->callMethod(onClick, &params);
+        if(params.init) {
+            selected = params.selected;
+        }
+    }
 }
 
 /**
@@ -47,12 +59,19 @@ void BinaryButtonView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
         if(touch.px >= (pos.x - hw) && touch.px <= (pos.x + hw) && selected) {
             selected = false;
             if(controller != nullptr && !onClick.empty()) {
-                controller->callMethod(onClick, &selected);
+                BinaryButtonParams params;
+                params.controller = controller;
+                params.selected = selected;
+                controller->callMethod(onClick, &params);
             }
         } else if(touch.px >= (pos.x + hw) && touch.px <= (pos.x + 3.0f * hw) && !selected) {
             selected = true;
             if(controller != nullptr && !onClick.empty()) {
-                controller->callMethod(onClick, &selected);
+                BinaryButtonParams params;
+                params.controller = controller;
+                params.selected = selected;
+                params.init = true;
+                controller->callMethod(onClick, &params);
             }
         }
     }

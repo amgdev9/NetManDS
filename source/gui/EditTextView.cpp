@@ -47,6 +47,20 @@ EditTextView::EditTextView(XMLElement *node, std::shared_ptr<GuiController> cont
 
     // Save controller
     this->controller = controller;
+
+    // Call controller to initialize the field
+    if(controller != nullptr && !onEdit.empty()) {
+        char textStr[128];
+        EditTextParams params;
+        params.controller = controller;
+        params.init = false;
+        params.text = textStr;
+        controller->callMethod(onEdit, &params);
+        if(params.init) {
+            C2D_TextParse(&text, textBuffer, textStr);
+            C2D_TextOptimize(&text);
+        }
+    }
 }
 
 /**
@@ -75,14 +89,14 @@ void EditTextView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
 
         // Call controller callback
         EditTextParams params;
-        params.success = true;
+        params.init = true;
         params.text = textstr;
         params.controller = controller;
         if(controller != nullptr && !onEdit.empty()) {
             controller->callMethod(onEdit, &params);
         }
 
-        if(params.success) {
+        if(params.init) {
             C2D_TextBufClear(textBuffer);
             if(password) {
                 memset(textstr, '*', strlen(textstr));

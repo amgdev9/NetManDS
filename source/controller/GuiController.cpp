@@ -15,6 +15,7 @@
 #include "controller/CreditsController.h"
 #include "controller/OptionsController.h"
 #include "controller/AddUserController.h"
+#include "controller/SetSMIController.h"
 
 namespace NetMan {
 
@@ -29,6 +30,7 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"CreditsController", &bakeController<CreditsController>},
     {"OptionsController", &bakeController<OptionsController>},
     {"AddUserController", &bakeController<AddUserController>},
+    {"SetSMIController", &bakeController<SetSMIController>},
 };
 
 /**

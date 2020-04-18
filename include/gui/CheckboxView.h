@@ -12,6 +12,15 @@
 namespace NetMan {
 
 /**
+ * @struct CheckboxParams
+ */
+typedef struct {
+    bool state;
+    bool init;
+    std::shared_ptr<GuiController> controller;
+} CheckboxParams;
+
+/**
  * @class CheckboxView
  */
 class CheckboxView : public ImageView {

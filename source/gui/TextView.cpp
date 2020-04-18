@@ -67,6 +67,7 @@ TextView::TextView(const std::string &textValue, float x, float y, float scale, 
     this->y = y;
     this->scale = scale;
     this->color = color;
+    this->textString = textValue;
 }
 
 /**

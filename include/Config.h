@@ -32,9 +32,9 @@ typedef struct {
     bool trapv3Enabled;
     u16 trapv3Port;
     u32 trapLimit;
-    u16 rcTimeout;
-    u16 tcpTimeout;
-    u16 udpTimeout;
+    u32 rcTimeout;
+    u32 tcpTimeout;
+    u32 udpTimeout;
     u16 syslogPort;
     bool syslogTransport;
     u32 syslogLimit;

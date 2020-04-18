@@ -41,6 +41,18 @@ CheckboxView::CheckboxView(XMLElement *node, std::shared_ptr<GuiController> cont
     C2D_SpriteSetRotation(&tickParams, 0.0f);
     C2D_SpriteSetScale(&tickParams, imageParams.params.pos.w / tickParams.params.pos.w, imageParams.params.pos.h / tickParams.params.pos.h);
     checked = false;
+
+    // Call controller to initialize the field
+    if(controller != nullptr && !onClick.empty()) {
+        CheckboxParams params;
+        params.state = false;
+        params.init = false;
+        params.controller = controller;
+        controller->callMethod(onClick, &params);
+        if(params.init) {
+            checked = params.state;
+        }
+    }
 }
 
 /**
@@ -57,7 +69,11 @@ void CheckboxView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
        touch.py >= (pos.y - hh) && touch.py <= (pos.y + hh) && (down &KEY_TOUCH)) {
         checked = !checked;
         if(controller != nullptr && !onClick.empty()) {
-            controller->callMethod(onClick, &checked);
+            CheckboxParams params;
+            params.state = checked;
+            params.init = true;
+            params.controller = controller;
+            controller->callMethod(onClick, &params);
         }
     }
 }

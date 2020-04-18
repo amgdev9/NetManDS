@@ -30,7 +30,7 @@ namespace NetMan {
 typedef struct {
     char *text;
     std::shared_ptr<GuiController> controller;
-    bool success;
+    bool init;
 } EditTextParams;
 
 /**

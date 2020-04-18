@@ -67,11 +67,12 @@ class Application {
 		void initialize(const std::string &layoutPath);
 		void run();
 		void fatalError(const std::string &text, u32 errorCode);
-        void requestLayoutChange(const std::string &layoutName);
+        void requestLayoutChange(const std::string &layoutName, std::shared_ptr<void> contextData = nullptr);
         C2D_SpriteSheet getImageResource(const char *resourceName);
         void messageBox(const std::string &text);
         inline std::shared_ptr<void> getContextData() { return this->contextData; }
-        inline void setContextData(std::shared_ptr<void> contextData) { this->contextData = contextData; }
+        inline u32 getDown() { return down; }
+        inline touchPosition &getTouch() { return touch; }
 };
 
 }

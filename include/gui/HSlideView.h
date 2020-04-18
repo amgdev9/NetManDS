@@ -37,6 +37,7 @@ class HSlideView : public GuiView {
         std::shared_ptr<GuiController> controller;
         std::vector<std::shared_ptr<GuiLayout>> screens;
         u32 currentScreen;
+        std::string onSetScreen;
     public:
         HSlideView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         void input(u32 held, u32 down, u32 up, touchPosition &touch) override;

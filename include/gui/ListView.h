@@ -35,7 +35,17 @@ typedef struct {
     bool remaining;
     u32 maxElements;
     std::vector<std::shared_ptr<GuiLayout>> layouts;
+    std::shared_ptr<GuiController> controller;
 } ListViewFillParams;
+
+/**
+ * @struct ListViewClickParams
+ */
+typedef struct {
+    u32 element;
+    std::shared_ptr<GuiController> controller;
+    u32 startElement;
+} ListViewClickParams;
 
 /**
  * @class ListView

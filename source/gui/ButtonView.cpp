@@ -33,14 +33,8 @@ ButtonView::ButtonView(XMLElement *node, std::shared_ptr<GuiController> controll
  * @brief Process input
  */
 void ButtonView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
-    
-    auto &pos = imageParams.params.pos;
 
-    float hw = fabs(pos.w) / 2.0f;
-    float hh = fabs(pos.h) / 2.0f;
-
-    if(touch.px >= (pos.x - hw) && touch.px <= (pos.x + hw) &&
-       touch.py >= (pos.y - hh) && touch.py <= (pos.y + hh) && (down &KEY_TOUCH)) {
+    if(this->touched(down, touch)) {
         C2D_PlainImageTint(&tint, C2D_Color32(0x0F, 0x0F, 0x0F, 0xFF), 0.2f);
         if(controller != nullptr && !onClick.empty()) {
             ButtonParams params;

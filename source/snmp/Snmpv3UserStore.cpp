@@ -105,9 +105,6 @@ void Snmpv3UserStore::load() {
 void Snmpv3UserStore::addUser(const std::string &name, const Snmpv3UserStoreEntry &entry) {
 
     try {
-        if(this->userTable.find(name) != this->userTable.end()) {
-            throw std::runtime_error("User " + name + " is repeated");
-        }
         this->userTable[name] = entry;
     } catch (const std::runtime_error &e) {
         throw;
@@ -196,6 +193,34 @@ std::shared_ptr<Snmpv3PrivProto> Snmpv3UserStore::getPrivProto(const Snmpv3UserS
     }
 
     return nullptr;
+}
+
+/**
+ * @brief Get the authentication protocol string
+ * @param id The protocol ID
+ * @return The corresponding string
+ */
+std::string Snmpv3UserStore::getAuthProtoString(u32 id) {
+    for(auto it : authProtos) {
+        if(it.second == id) {
+            return it.first;
+        }
+    }
+    throw std::runtime_error("Authproto not found");
+}
+
+/**
+ * @brief Get the privacy protocol string
+ * @param id The protocol ID
+ * @return The corresponding string
+ */
+std::string Snmpv3UserStore::getPrivProtoString(u32 id) {
+    for(auto it : privProtos) {
+        if(it.second == id) {
+            return it.first;
+        }
+    }
+    throw std::runtime_error("Privproto not found");
 }
 
 /**

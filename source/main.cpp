@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
 	Application &app = Application::getInstance();
 
-	app.initialize("options");
+	app.initialize("main");
 
 	//snmpv1_test();
 	//snmpv3_test();

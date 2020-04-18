@@ -47,6 +47,10 @@ HSlideView::HSlideView(XMLElement *node, std::shared_ptr<GuiController> controll
         }
     }
 
+    // Get callbacks
+    const char *onSetScreenStr = node->Attribute("onSetScreen");
+    if(onSetScreenStr) onSetScreen = std::string(onSetScreenStr);
+
     // Load each screen
     screens = std::vector<std::shared_ptr<GuiLayout>>();
     for(XMLElement* child = node->FirstChildElement(); child != NULL; child = child->NextSiblingElement()) {
@@ -57,6 +61,11 @@ HSlideView::HSlideView(XMLElement *node, std::shared_ptr<GuiController> controll
 
     // Save controller
     this->controller = controller;
+
+    // Set the initial screen
+    if(this->controller != nullptr && !onSetScreen.empty()) {
+        this->controller->callMethod(onSetScreen, &currentScreen);
+    }
 }
 
 /**
