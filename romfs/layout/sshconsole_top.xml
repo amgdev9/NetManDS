@@ -1,0 +1,5 @@
+<root controller="SshConsoleController">
+    <ImageView name="blank" x="200" y="120"/>
+    <ConsoleView x="12" y="24" width="48" height="26" onUpdate="updateConsole"/>
+</root>
+

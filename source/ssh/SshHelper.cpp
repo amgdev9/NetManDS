@@ -54,7 +54,7 @@ std::shared_ptr<TcpSocket> SshHelper::connect(const std::string &hostname, u16 p
     try {
 
         // Connect to the host
-        this->sock = std::make_shared<TcpSocket>(*res, 5);
+        this->sock = std::make_shared<TcpSocket>(*res, 0);  // Async socket
         this->sock->connectToHost(*res);
 
         // Create the SSH session

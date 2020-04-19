@@ -99,7 +99,17 @@ static void setPort(EditTextParams *params, u16 *dest) {
             params->init = false;
             Application::getInstance().messageBox("Invalid port");
         } else {
-            *dest = (u16)port;
+            auto configData = Config::getInstance().getData();
+            if((port == configData.snmpPort && dest != &configData.snmpPort) ||
+               (port == configData.trapv1Port && dest != &configData.trapv1Port) ||
+               (port == configData.trapv2Port && dest != &configData.trapv2Port) ||
+               (port == configData.trapv3Port && dest != &configData.trapv3Port) ||
+               (port == configData.syslogPort && dest != &configData.syslogPort)) {
+                params->init = false;
+                Application::getInstance().messageBox("Repeated port");
+            } else {
+                *dest = (u16)port;
+            }
         }
     }
 }

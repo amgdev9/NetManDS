@@ -6,6 +6,7 @@
 #include "controller/SshController.h"
 #include "gui/EditTextView.h"
 #include "gui/ButtonView.h"
+#include "ssh/SshHelper.h"
 #include "Application.h"
 
 namespace NetMan {
@@ -51,8 +52,15 @@ static void editPassword(void *args) {
 static void connect(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<SshController>(params->controller);
-    std::shared_ptr<SshSession> contextData = std::make_shared<SshSession>(controller->getSession());
-    Application::getInstance().requestLayoutChange("sshconsole", contextData);
+
+    try {
+        std::shared_ptr<SshHelper> sshHelper = std::make_shared<SshHelper>();
+        SshSession &session = controller->getSession();
+        sshHelper->connect(session.host, session.port, session.username, session.password);
+        Application::getInstance().requestLayoutChange("sshconsole", sshHelper);
+    } catch (const std::runtime_error &e) {
+        Application::getInstance().messageBox(e.what());
+    }
 }
 
 SshController::SshController() {

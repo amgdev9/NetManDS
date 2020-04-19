@@ -7,6 +7,7 @@
 
 // Own includes
 #include "GuiController.h"
+#include "ssh/SshHelper.h"
 
 namespace NetMan {
 
@@ -15,8 +16,10 @@ namespace NetMan {
  */
 class SshConsoleController : public GuiController {
     private:
+        std::shared_ptr<SshHelper> helper;
     public:
         SshConsoleController();
+        inline std::shared_ptr<SshHelper> getHelper() { return helper; }
         virtual ~SshConsoleController();
 };
 
