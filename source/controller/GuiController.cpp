@@ -17,6 +17,7 @@
 #include "controller/AddUserController.h"
 #include "controller/SetSMIController.h"
 #include "controller/SshConsoleController.h"
+#include "controller/LogsController.h"
 
 namespace NetMan {
 
@@ -33,6 +34,7 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"AddUserController", &bakeController<AddUserController>},
     {"SetSMIController", &bakeController<SetSMIController>},
     {"SshConsoleController", &bakeController<SshConsoleController>},
+    {"LogsController", &bakeController<LogsController>},
 };
 
 /**

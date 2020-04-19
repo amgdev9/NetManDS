@@ -16,6 +16,8 @@
 
 // Own includes
 #include "gui/GuiLayout.h"
+#include "socket/UdpSocket.h"
+#include "socket/TcpSocket.h"
 
 // Defines
 #define SOC_ALIGN               0x1000
@@ -58,6 +60,11 @@ class Application {
         s16 fadeAlpha;
         std::unordered_map<std::string, C2D_SpriteSheet> resourceManager;
         std::shared_ptr<void> contextData;
+        std::shared_ptr<UdpSocket> trapv1Sock;
+        std::shared_ptr<UdpSocket> trapv2Sock;
+        std::shared_ptr<UdpSocket> trapv3Sock;
+        std::shared_ptr<UdpSocket> syslogUdpSock;
+        std::shared_ptr<TcpSocket> syslogTcpSock;
 		Application();
 		virtual ~Application();
         void processLoadingScreen();
@@ -73,6 +80,11 @@ class Application {
         inline std::shared_ptr<void> getContextData() { return this->contextData; }
         inline u32 getDown() { return down; }
         inline touchPosition &getTouch() { return touch; }
+        inline std::shared_ptr<UdpSocket> getTrapv1Sock() { return trapv1Sock; }
+        inline std::shared_ptr<UdpSocket> getTrapv2Sock() { return trapv2Sock; }
+        inline std::shared_ptr<UdpSocket> getTrapv3Sock() { return trapv3Sock; }
+        inline std::shared_ptr<UdpSocket> getSyslogUdpSock() { return syslogUdpSock; }
+        inline std::shared_ptr<TcpSocket> getSyslogTcpSock() { return syslogTcpSock; }
 };
 
 }

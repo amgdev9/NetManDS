@@ -161,7 +161,7 @@ void TcpSocket::bindTo(u16 port) {
  * @brief Destructor for a socket
  */
 TcpSocket::~TcpSocket() {
-	close(this->fd);
+    close(fd);
 }
 
 }

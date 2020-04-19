@@ -8,6 +8,7 @@
 
 // Includes C/C++
 #include <sys/socket.h>
+#include <arpa/inet.h>
 
 // Includes 3DS
 #include <3ds/types.h>
@@ -30,6 +31,7 @@ class UdpSocket {
         void bindTo(u16 port);
         inline in_addr_t getLastOrigin() { return this->lastOrigin; }
         inline in_port_t getLastPort() { return this->lastPort; }
+        inline int getDescriptor() { return fd; }
         virtual ~UdpSocket();
 };
 

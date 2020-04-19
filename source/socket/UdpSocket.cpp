@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdexcept>
-#include <arpa/inet.h>
 
 // Own includes
 #include "socket/UdpSocket.h"
@@ -117,7 +116,7 @@ void UdpSocket::bindTo(u16 port) {
  * @brief Destructor for a socket
  */
 UdpSocket::~UdpSocket() {
-	close(this->fd);
+    close(fd);
 }
 
 }

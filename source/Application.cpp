@@ -14,6 +14,8 @@
 
 // Own includes
 #include "Application.h"
+#include "Config.h"
+#include "syslog/SyslogPdu.h"
 
 namespace NetMan {
 
@@ -87,6 +89,42 @@ void Application::initialize(const std::string &layoutPath) {
     }
     ndspSetOutputMode(NDSP_OUTPUT_STEREO);
 	ndspSetOutputCount(1);
+
+    // Create trapv1 socket
+    auto configData = Config::getInstance().getData();
+    if(configData.trapv1Enabled) {
+        trapv1Sock = std::unique_ptr<UdpSocket>(new UdpSocket(0));
+        trapv1Sock->bindTo(configData.trapv1Port);
+    } else {
+        trapv1Sock = nullptr;
+    }
+
+    // Create trapv2 socket
+    if(configData.trapv2Enabled) {
+        trapv2Sock = std::unique_ptr<UdpSocket>(new UdpSocket(0));
+        trapv2Sock->bindTo(configData.trapv2Port);
+    } else {
+        trapv2Sock = nullptr;
+    }
+
+    // Create trapv3 socket
+    if(configData.trapv3Enabled) {
+        trapv3Sock = std::unique_ptr<UdpSocket>(new UdpSocket(0));
+        trapv3Sock->bindTo(configData.trapv3Port);
+    } else {
+        trapv3Sock = nullptr;
+    }
+
+    // Create syslog socket
+    if(configData.syslogTransport == SYSLOG_TRANSPORT_UDP) {
+        syslogUdpSock = std::unique_ptr<UdpSocket>(new UdpSocket(0));
+        syslogUdpSock->bindTo(configData.syslogPort);
+        syslogTcpSock = nullptr;
+    } else {
+        syslogTcpSock = std::unique_ptr<TcpSocket>(new TcpSocket(0));
+        syslogTcpSock->bindTo(configData.syslogPort);
+        syslogUdpSock = nullptr;
+    }
 
 	// Inicialization done
 	init = true;

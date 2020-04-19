@@ -11,6 +11,8 @@
 // Own includes
 #include "GuiController.h"
 #include "WaveAudio.h"
+#include "socket/UdpSocket.h"
+#include "socket/TcpSocket.h"
 
 namespace NetMan {
 

@@ -10,13 +10,27 @@
 
 // Own includes
 #include "controller/MenuController.h"
+#include "Config.h"
 #include "Application.h"
+#include "syslog/SyslogPdu.h"
 
 // Defines
 #define MENUTEXT_X          140
 #define BEEP_AUDIO_CHANNEL  8
 
 namespace NetMan {
+
+static void goSNMP(void *args) {
+
+}
+
+static void goRestConf(void *args) {
+
+}
+
+static void goLogs(void *args) {
+    Application::getInstance().requestLayoutChange("logs");
+}
 
 static void goSSH(void *args) {
     Application::getInstance().requestLayoutChange("ssh");
@@ -35,10 +49,13 @@ MenuController::MenuController() {
         {"goSSH", goSSH},
         {"goCredits", goCredits},
         {"goOptions", goOptions},
+        {"goSNMP", goSNMP},
+        {"goRestConf", goRestConf},
+        {"goLogs", goLogs},
     };
 
-    // Load beep sound (used for trap and log receiving)
     try {
+        // Load beep sound (used for trap and log receiving)
         beepAudio = std::unique_ptr<WaveAudio>(new WaveAudio("beep"));
     } catch (const std::bad_alloc &e) {
         throw;

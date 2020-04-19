@@ -11,12 +11,12 @@
 
 // Defines
 #define CONFIG_PATH             "config.dat"
-#define DEFAULT_SNMP_PORT       161
-#define DEFAULT_TRAP_PORT       162
+#define DEFAULT_SNMP_PORT       1161
+#define DEFAULT_TRAP_PORT       1162
 #define DEFAULT_TRAP_LIMIT      30
 #define DEFAULT_SYSLOG_LIMIT    30
 #define DEFAULT_TIMEOUT         10
-#define DEFAULT_SYSLOG_PORT     514
+#define DEFAULT_SYSLOG_PORT     5140
 
 namespace NetMan {
 
