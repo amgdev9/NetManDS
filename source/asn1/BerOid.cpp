@@ -185,26 +185,16 @@ std::shared_ptr<BerOid> BerOid::decode(u8** data) {
 
 /**
  * @brief Print an OID
+ * @return The OID representation
  */
-void BerOid::print() {
-
-	if(oid.size() == 0) return;
-
-	FILE *f = fopen("log.txt", "a+");
-	
-	fprintf(f, "OID: %s\n", this->get()->c_str());
-
-	fclose(f);
-}
-
-std::shared_ptr<std::string> BerOid::get() {
-	std::shared_ptr<std::string> text = std::make_shared<std::string>();
+std::string BerOid::print() {
+	std::string text;
 	char tmp[64];
 	sprintf(tmp, "%ld.%ld", oid[0] / 40, oid[0] % 40);
-	text->append(tmp);
+	text.append(tmp);
 	for(u32 i = 1; i < oid.size(); i++) {
 		sprintf(tmp, ".%ld", oid[i]);
-		text->append(tmp);
+		text.append(tmp);
 	}
 	return text;
 }

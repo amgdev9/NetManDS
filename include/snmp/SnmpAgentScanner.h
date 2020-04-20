@@ -40,7 +40,7 @@ class SnmpAgentScanner {
         std::shared_ptr<BerNull> nullVal;
         std::unordered_map<in_addr_t, SnmpAgentEntry> agents;
         std::string &getStringFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i);
-        std::shared_ptr<std::string> getOidFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i);
+        std::string getOidFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i);
         std::shared_ptr<BerInteger> getIntegerFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i);
     public:
         SnmpAgentScanner();

@@ -8,6 +8,7 @@
 
 // Own includes
 #include "syslog/SyslogPdu.h"
+#include "Application.h"
 
 namespace NetMan {
 
@@ -397,7 +398,32 @@ std::string SyslogPdu::getString(u8 **ptr, u16 minlength, u16 maxlength, const c
  * @return The serialized syslog
  */
 std::shared_ptr<json_t> SyslogPdu::serialize() {
-    return nullptr;
+
+    auto root = std::shared_ptr<json_t>(json_object(), [=](json_t* data) { json_decref(data); });
+    Application &app = Application::getInstance();
+    
+    json_t *fields = json_array();
+    json_object_set_new(root.get(), "data", fields);
+    app.addJsonField(fields, "Priority: " + std::to_string(priority));
+    app.addJsonField(fields, "Version: " + std::to_string(version) + "." + std::to_string(subversion));
+    app.addJsonField(fields, "Date: " + std::to_string(timeStamp.day) + "-" + std::to_string(timeStamp.month) + "-" + std::to_string(timeStamp.year));
+    app.addJsonField(fields, "Time: " + std::to_string(timeStamp.hour) + ":" + std::to_string(timeStamp.minute) + ":" + std::to_string(timeStamp.second) + "." + std::to_string(timeStamp.fracsecond));
+    app.addJsonField(fields, "Time offset: " + std::to_string(timeStamp.hour_offset) + ":" + std::to_string(timeStamp.minute_offset));
+    app.addJsonField(fields, "Hostname: " + hostname);
+    app.addJsonField(fields, "Appname: " + appname);
+    app.addJsonField(fields, "ProcID: " + procid);
+    app.addJsonField(fields, "MsgID: " + msgid);
+
+    for(SyslogElement element : this->elements) {
+		app.addJsonField(fields, "ElementName: " + element.name);
+		for(SyslogElementParam param : element.params) {
+			app.addJsonField(fields, "ParamName: " + param.name);
+			app.addJsonField(fields, "ParamValue: " + param.value);
+		}
+	}
+
+    app.addJsonField(fields, message);
+    return root;
 }
 
 /**

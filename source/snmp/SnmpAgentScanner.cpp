@@ -99,7 +99,7 @@ void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 ver
                 // Save the agent
                 SnmpAgentEntry agent;
                 agent.sysDescr = this->getStringFromVarBind(pdu, 0);
-                agent.sysObjectID = *this->getOidFromVarBind(pdu, 1).get();
+                agent.sysObjectID = this->getOidFromVarBind(pdu, 1);
                 agent.sysUpTime = this->getIntegerFromVarBind(pdu, 2)->getValueU32();
                 agent.sysContact = this->getStringFromVarBind(pdu, 3);
                 agent.sysName = this->getStringFromVarBind(pdu, 4);
@@ -137,10 +137,10 @@ std::string &SnmpAgentScanner::getStringFromVarBind(std::shared_ptr<Snmpv1Pdu> p
  * @param i     Index of the varbind
  * @return The retrieved OID (ready to be printed)
  */
-std::shared_ptr<std::string> SnmpAgentScanner::getOidFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i) {
+std::string SnmpAgentScanner::getOidFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i) {
     std::shared_ptr<BerField> varBind = pdu->getVarBind(i);
     if(typeid(*varBind.get()) == typeid(BerOid)) {
-        return std::static_pointer_cast<BerOid>(varBind)->get();
+        return std::static_pointer_cast<BerOid>(varBind)->print();
     }
 
     throw std::runtime_error("Error retrieving OID");

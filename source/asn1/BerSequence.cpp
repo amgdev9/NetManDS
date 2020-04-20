@@ -108,11 +108,10 @@ std::shared_ptr<BerField> BerSequence::getChild(u16 i) {
 
 /**
  * @brief Print a SEQUENCE
+ * @return The SEQUENCE representation
  */
-void BerSequence::print() {
-	FILE *f = fopen("log.txt", "a+");
-	fprintf(f, "SEQUENCE\n");
-	fclose(f);
+std::string BerSequence::print() {
+	return "";
 }
 
 }

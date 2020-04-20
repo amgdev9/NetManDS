@@ -118,25 +118,23 @@ std::shared_ptr<BerInteger> BerInteger::decode(u8 **data, bool sign) {
 
 /**
  * @brief Print an Integer
+ * @return The integer representation
  */
-void BerInteger::print() {
-	FILE *f = fopen("sdmc:/log.txt", "a+");
-	fprintf(f, "INTEGER: ");
+std::string BerInteger::print() {
 	if(sign) {
 		if(this->getLength() == sizeof(s64)) {
-			fprintf(f, "%lld", *(s64*)this->value.get());
+            return std::to_string(*(s64*)this->value.get());
 		} else {
-			fprintf(f, "%ld", *(s32*)this->value.get());
+            return std::to_string(*(s32*)this->value.get());
 		}
 	} else {
 		if(this->getLength() == sizeof(u64)) {
-			fprintf(f, "%llu", *(u64*)this->value.get());
+            return std::to_string(*(u64*)this->value.get());
 		} else {
-			fprintf(f, "%lu", *(u32*)this->value.get());
+            return std::to_string(*(u32*)this->value.get());
 		}
 	}
-	fprintf(f, "\n");
-	fclose(f);
+    return "";
 }
 
 /**

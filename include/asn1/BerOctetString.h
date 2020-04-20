@@ -30,7 +30,7 @@ class BerOctetString: public BerField {
 		void parseData(u8 **out);
 		static std::shared_ptr<BerOctetString> decode(u8 **data);
 		virtual ~BerOctetString();
-		void print() override;
+		std::string print() override;
 		std::string &getValue();
 };
 

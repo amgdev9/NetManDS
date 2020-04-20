@@ -34,8 +34,7 @@ class BerOid: public BerField {
 		void parseData(u8 **out);
 		virtual ~BerOid();
 		static std::shared_ptr<BerOid> decode(u8** data);
-		void print() override;
-		std::shared_ptr<std::string> get();
+		std::string print() override;
 };
 
 }

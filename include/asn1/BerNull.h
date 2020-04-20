@@ -27,7 +27,7 @@ class BerNull : public BerField {
 		void parseData(u8 **out);
 		static std::shared_ptr<BerNull> decode(u8 **data);
 		virtual ~BerNull();
-		void print() override;
+		std::string print() override;
 };
 
 }

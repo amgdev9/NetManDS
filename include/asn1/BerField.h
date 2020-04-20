@@ -46,7 +46,7 @@ class BerField {
 		void parseTag(u8 **out);
 		void parseLength(u8 **out);
 		virtual void parseData(u8 **out) = 0;
-		virtual void print() = 0;
+		virtual std::string print() = 0;
 		virtual ~BerField() { }
 		static std::shared_ptr<BerField> decode(u8 **data);
 };

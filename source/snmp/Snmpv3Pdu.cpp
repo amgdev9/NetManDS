@@ -11,6 +11,7 @@
 #include "snmp/Snmpv2Pdu.h"
 #include "asn1/BerInteger.h"
 #include "snmp/Snmpv3UserStore.h"
+#include "Application.h"
 
 namespace NetMan {
 
@@ -486,8 +487,8 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 po
 			secParams.msgAuthoritativeEngineID = params.msgAuthoritativeEngineID;
 			secParams.msgAuthoritativeEngineBoots = params.msgAuthoritativeEngineBoots;
 			secParams.msgAuthoritativeEngineTime = params.msgAuthoritativeEngineTime;
-			std::shared_ptr<std::string> oid = std::static_pointer_cast<BerOid>(std::static_pointer_cast<BerSequence>(vbList->getChild(0))->getChild(0))->get();
-			throw std::runtime_error("REPORT received: " + *oid.get());
+			std::string oid = std::static_pointer_cast<BerOid>(std::static_pointer_cast<BerSequence>(vbList->getChild(0))->getChild(0))->print();
+			throw std::runtime_error("REPORT received: " + oid);
 		}
 
 		// Return the received PDU type
@@ -589,7 +590,22 @@ void Snmpv3Pdu::sendReportTo(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 
  * @return The serialized trap
  */
 std::shared_ptr<json_t> Snmpv3Pdu::serializeTrap() {
-    return nullptr;
+    
+    auto root = std::shared_ptr<json_t>(json_object(), [=](json_t* data) { json_decref(data); });
+    Application &app = Application::getInstance();
+    
+    json_t *data = json_array();
+    json_object_set_new(root.get(), "data", data);
+
+    if(varBindList != nullptr) {
+        for(u32 i = 0; i < varBindList->getNChildren(); i++) {
+            auto child = std::static_pointer_cast<BerSequence>(this->varBindList->getChild(i));
+            app.addJsonField(data, child->getChild(0)->print());
+            app.addJsonField(data, child->getChild(1)->print());
+        }
+    }
+
+    return root;
 }
 
 }

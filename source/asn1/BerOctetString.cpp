@@ -78,11 +78,10 @@ std::shared_ptr<BerOctetString> BerOctetString::decode(u8 **data) {
 
 /**
  * @brief Print an Octet String
+ * @return The string representation
  */
-void BerOctetString::print() {
-	FILE *f = fopen("log.txt", "a+");
-	fprintf(f, "OCTET STRING: %s\n", this->text.c_str());
-	fclose(f);
+std::string BerOctetString::print() {
+	return text;
 }
 
 /**

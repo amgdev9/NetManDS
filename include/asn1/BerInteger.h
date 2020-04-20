@@ -32,7 +32,7 @@ class BerInteger: public BerField {
 		void parseData(u8 **out);
 		static std::shared_ptr<BerInteger> decode(u8 **data, bool sign);
 		static void decodeIntegerValue(u8 **data, u8 len, bool sign, u8 *dest, u8 maxlen);
-		void print() override;
+		std::string print() override;
 		u32 getValueU32();
 		s32 getValueS32();
 		u64 getValueU64();

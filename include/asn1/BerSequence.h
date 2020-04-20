@@ -35,7 +35,7 @@ class BerSequence: public BerField {
         inline u32 getNChildren(){ return this->children.size(); }
 		~BerSequence();
 		static u32 decode(u8 **data, u8 tagOptions = BER_TAGCLASS_SEQUENCE, u32 tag = BER_TAG_SEQUENCE, u8 *decodedTag = NULL);
-		void print() override;
+		std::string print() override;
 };
 
 }

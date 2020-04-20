@@ -46,11 +46,10 @@ std::shared_ptr<BerNull> BerNull::decode(u8 **data) {
 
 /**
  * @brief Print a Null
+ * @return The Null representation
  */
-void BerNull::print() {
-	FILE *f = fopen("log.txt", "a+");
-	fprintf(f, "NULL\n");
-	fclose(f);
+std::string BerNull::print() {
+	return "null";
 }
 
 /**

@@ -3,6 +3,7 @@
  */
 
 // Includes C/C++
+#include <stdio.h>
 #include <arpa/inet.h>
 
 // Includes 3DS
@@ -23,8 +24,42 @@ namespace NetMan {
 static const char *trapFile = "snmpTrap.json";
 static const char *logFile = "syslog.json";
 
-static void saveLogEntry(const std::string &path, std::shared_ptr<json_t>, u32 limit) {
-    // TODO
+static void saveLogEntry(const std::string &path, std::shared_ptr<json_t> json, const std::string &name, u32 limit) {
+    
+    json_object_set_new(json.get(), "name", json_string(name.c_str()));
+
+    FILE *f = fopen(path.c_str(), "rb");
+    if(f == NULL) {
+        f = fopen(path.c_str(), "wb");
+        if(f) {
+            json_t *root = json_array();
+            json_array_append(root, json.get());
+            fprintf(f, json_dumps(root, 0));
+            fclose(f);
+            json_decref(root);
+        }
+    } else {
+
+        json_t *root = json_loadf(f, 0, NULL);
+        fclose(f);
+        if(root) {
+            u32 size = json_array_size(root);
+            if(size >= limit) {
+                for(u32 i = 0; i < (size - limit + 1); i++) {
+                    json_array_remove(root, i);
+                }
+            }
+            json_array_append(root, json.get());
+
+            f = fopen(path.c_str(), "wb");
+            if(f) {
+                fprintf(f, json_dumps(root, 0));
+                fclose(f);
+            }
+            
+            json_decref(root);
+        }
+    }
 }
 
 static void onUpdateLogs(void *args) {
@@ -44,8 +79,9 @@ static void onUpdateLogs(void *args) {
             auto pdu = controller->getSnmpv1Pdu();
             pdu->clear();
             pdu->recvTrap(trapv1Sock);
-            saveLogEntry(trapFile, pdu->serializeTrap(), configData.trapLimit);
-            controller->getTrapText()->setText(controller->getCurrentTime() + ": SNMPv1 trap received!");
+            auto curTime = controller->getCurrentTime();
+            saveLogEntry(trapFile, pdu->serializeTrap(), curTime + " Trap V1", configData.trapLimit);
+            controller->getTrapText()->setText(curTime + ": SNMPv1 trap received!");
             controller->beep();
         } catch (const std::runtime_error &e) { }
     }
@@ -56,8 +92,9 @@ static void onUpdateLogs(void *args) {
             auto pdu = controller->getSnmpv2Pdu();
             pdu->clear();
             pdu->recvTrap(trapv2Sock);
-            saveLogEntry(trapFile, pdu->serializeTrap(), configData.trapLimit);
-            controller->getTrapText()->setText(controller->getCurrentTime() + ": SNMPv2 trap received!");
+            auto curTime = controller->getCurrentTime();
+            saveLogEntry(trapFile, pdu->serializeTrap(), curTime + " Trap V2", configData.trapLimit);
+            controller->getTrapText()->setText(curTime + ": SNMPv2 trap received!");
             controller->beep();
         } catch (const std::runtime_error &e) { }
     }
@@ -67,12 +104,13 @@ static void onUpdateLogs(void *args) {
         try {
             auto pdu = controller->getSnmpv3Pdu();
             pdu->clear();
+            auto curTime = controller->getCurrentTime();
             if(pdu->recvTrap(trapv3Sock)) {
-                controller->getTrapText()->setText(controller->getCurrentTime() + ": SNMPv3 inform received!");
+                controller->getTrapText()->setText(curTime + ": SNMPv3 inform received!");
             } else {
-                controller->getTrapText()->setText(controller->getCurrentTime() + ": SNMPv3 trap received!");
+                controller->getTrapText()->setText(curTime + ": SNMPv3 trap received!");
             }
-            saveLogEntry(trapFile, pdu->serializeTrap(), configData.trapLimit);
+            saveLogEntry(trapFile, pdu->serializeTrap(), curTime + " Trap V3", configData.trapLimit);
             controller->beep();
         } catch (const std::runtime_error &e) { }
     }
@@ -82,8 +120,9 @@ static void onUpdateLogs(void *args) {
     if(syslogUdpSock != nullptr) {
         try {
             syslogPdu->recvLog(syslogUdpSock);
-            saveLogEntry(logFile, syslogPdu->serialize(), configData.syslogLimit);
-            controller->getTrapText()->setText(controller->getCurrentTime() + ": UDP Syslog received!");
+            auto curTime = controller->getCurrentTime();
+            saveLogEntry(logFile, syslogPdu->serialize(), curTime + " Syslog UDP", configData.syslogLimit);
+            controller->getTrapText()->setText(curTime + ": UDP Syslog received!");
             controller->beep();
         } catch (const std::runtime_error &e) { }
     } else if(syslogTcpSock != nullptr) {
@@ -91,8 +130,9 @@ static void onUpdateLogs(void *args) {
             std::shared_ptr<TcpSocket> conn = syslogTcpSock->acceptConnection(configData.tcpTimeout);
 			if(conn != nullptr) {
 				syslogPdu->recvLog(conn);
-                saveLogEntry(logFile, syslogPdu->serialize(), configData.syslogLimit);
-                controller->getTrapText()->setText(controller->getCurrentTime() + ": TCP Syslog received!");
+                auto curTime = controller->getCurrentTime();
+                saveLogEntry(logFile, syslogPdu->serialize(), curTime + " Syslog TCP", configData.syslogLimit);
+                controller->getTrapText()->setText(curTime + ": TCP Syslog received!");
                 controller->beep();
 			}
         } catch (const std::runtime_error &e) { }
