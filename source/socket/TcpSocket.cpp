@@ -81,14 +81,15 @@ void TcpSocket::listenState(u32 queueLength) {
 
 /**
  * @brief Accept a connection from a client
+ * @param timeout   Timeout for the new TCP connection
  * @return The accepted connection, or nullptr if no connection was requested
  */
-std::shared_ptr<TcpSocket> TcpSocket::acceptConnection() {
+std::shared_ptr<TcpSocket> TcpSocket::acceptConnection(u32 timeout) {
 
 	if(this->dataReceived()) {
 		int client_fd = accept(this->fd, NULL, NULL);
 		if(client_fd > 0) {
-            return std::make_shared<TcpSocket>(client_fd, this->tv.tv_sec);
+            return std::make_shared<TcpSocket>(client_fd, timeout);
 		}
 	}
 

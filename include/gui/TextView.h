@@ -39,6 +39,7 @@ class TextView : public GuiView {
         inline void setX(float x) { this->x = x; }
         inline float getX() { return x; }
         inline std::string &getText() { return textString; }
+        void setText(const std::string &textValue);
         virtual void draw() override;
         virtual ~TextView();
 };

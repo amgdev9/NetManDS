@@ -123,6 +123,7 @@ void Application::initialize(const std::string &layoutPath) {
     } else {
         syslogTcpSock = std::unique_ptr<TcpSocket>(new TcpSocket(0));
         syslogTcpSock->bindTo(configData.syslogPort);
+        syslogTcpSock->listenState(10);
         syslogUdpSock = nullptr;
     }
 
@@ -150,8 +151,9 @@ void Application::run() {
 		this->up = hidKeysUp();
 		hidTouchRead(&this->touch);
 
-        // Process input on bottom screen
-        if(bottomLayout != nullptr && loadingState == LOADINGSTATE_NONE) {
+        // Process input
+        if(bottomLayout != nullptr && topLayout != nullptr && loadingState == LOADINGSTATE_NONE) {
+            topLayout->input(held, down, up, touch);
             bottomLayout->input(held, down, up, touch);
         }
 

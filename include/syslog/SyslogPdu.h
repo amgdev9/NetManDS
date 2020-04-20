@@ -9,6 +9,9 @@
 #include <memory>
 #include <vector>
 
+// Includes jansson
+#include <jansson.h>
+
 // Own includes
 #include "socket/UdpSocket.h"
 #include "socket/TcpSocket.h"
@@ -122,6 +125,7 @@ class SyslogPdu {
         void recvLog(std::shared_ptr<UdpSocket> sock);
         void recvLog(std::shared_ptr<TcpSocket> sock);
         void print();
+        std::shared_ptr<json_t> serialize();
         virtual ~SyslogPdu();
 };
 

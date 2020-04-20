@@ -52,6 +52,8 @@ class Config {
         std::string rcPass;
         std::string engineID;
         std::string contextName;
+        std::string community;
+        std::string trapUser;
         void writeString(FILE *f, const std::string &text);
         void readString(FILE *f, std::string &text);
         Config();
@@ -66,6 +68,8 @@ class Config {
         inline std::string &getRestConfPassword() { return rcPass; }
         inline std::string &getEngineID() { return engineID; }
         inline std::string &getContextName() { return contextName; }
+        inline std::string &getCommunity() { return community; }
+        inline std::string &getTrapUser() { return trapUser; }
 };
 
 }

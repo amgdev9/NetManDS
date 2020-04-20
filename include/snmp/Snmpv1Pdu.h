@@ -9,6 +9,9 @@
 // Includes C/C++
 #include <memory>
 
+// Includes jansson
+#include <jansson.h>
+
 // Own includes
 #include "asn1/BerPdu.h"
 #include "asn1/BerSequence.h"
@@ -72,6 +75,7 @@ class Snmpv1Pdu: public BerPdu {
 		virtual u8 recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
 		virtual void recvTrap(std::shared_ptr<UdpSocket> sock);
 		std::shared_ptr<BerField> getVarBind(u16 i);
+        virtual std::shared_ptr<json_t> serializeTrap();
 		~Snmpv1Pdu();
         inline static void setGlobalRequestID(u32 rid) { Snmpv1Pdu::requestID = rid; }
 };

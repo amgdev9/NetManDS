@@ -167,7 +167,7 @@ void syslog_test_tcp() {
 			f = fopen("log.txt", "a+");
 			fprintf(f, "Connection\n");
 			fclose(f);
-			std::shared_ptr<TcpSocket> conn = sock->acceptConnection();
+			std::shared_ptr<TcpSocket> conn = sock->acceptConnection(2);
 			if(conn != nullptr) {
 				syslogPdu->recvLog(conn);
 				syslogPdu->print();
@@ -336,7 +336,7 @@ void snmpv3_test() {
 		// Pruebas SNMP TRAP e INFORM
 		pdu = std::make_shared<Snmpv3Pdu>("engineid", "", "manager");
 		sock = std::make_shared<UdpSocket>(30);
-		sock->bindTo(config.trapv2Port);
+		sock->bindTo(config.trapv3Port);
 		pdu->clear();
 		pdu->recvTrap(sock);
 		pdu->clear();

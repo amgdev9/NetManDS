@@ -6,6 +6,9 @@
 #ifndef SNMPV3PDU_H_
 #define SNMPV3PDU_H_
 
+// Includes jansson
+#include <jansson.h>
+
 // Own includes
 #include "asn1/BerPdu.h"
 #include "asn1/BerOid.h"
@@ -62,9 +65,10 @@ class Snmpv3Pdu: public BerPdu {
 		void addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
 		void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 nonRepeaters = 0, u32 maxRepetitions = 0);
 		u8 recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
-		void recvTrap(std::shared_ptr<UdpSocket> sock);
+		bool recvTrap(std::shared_ptr<UdpSocket> sock);
 		void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port);
 		std::shared_ptr<BerField> getVarBind(u16 i);
+        std::shared_ptr<json_t> serializeTrap();
 		~Snmpv3Pdu();
 };
 

@@ -14,7 +14,9 @@ namespace NetMan {
 /**
  * @brief Constructor for a SyslogPdu
  */
-SyslogPdu::SyslogPdu() { }
+SyslogPdu::SyslogPdu() {
+    this->elements = std::vector<SyslogElement>();
+}
 
 /**
  * @brief Destructor for a SyslogPdu
@@ -50,6 +52,7 @@ void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
 		checkCharacter(&ptr, SYSLOG_SP);
 
 		// Read timestamp
+        memset(&this->timeStamp, 0, sizeof(SyslogTimeStamp));
 		if(checkAlternative(&ptr, SYSLOG_NILVALUE)) {
 			this->timeStamp.year = getNumber(&ptr, 4, 4, 0, 9999, false);
 			checkCharacter(&ptr, SYSLOG_DASH);
@@ -120,7 +123,7 @@ void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
 #endif
 
 		// Read structured data
-		this->elements = std::vector<SyslogElement>();
+		this->elements.clear();
 		if(checkAlternative(&ptr, SYSLOG_NILVALUE)) {
 
 			// Check if there are more elements
@@ -177,7 +180,9 @@ void SyslogPdu::decodeLog(std::shared_ptr<u8> data, u32 dataSize) {
 			fprintf(f, "Message: %s\n", this->message.c_str());
 			fflush(f);
 #endif
-		}
+		} else {
+            this->message = "";
+        }
 	} catch (const std::runtime_error &e) {
 #ifdef SYSLOG_DEBUG
 		fprintf(f, e.what());
@@ -385,6 +390,14 @@ std::string SyslogPdu::getString(u8 **ptr, u16 minlength, u16 maxlength, const c
 	// Return the retrived string
 	*ptr += index + 1;		// Separator
 	return std::string(stringBuffer.get(), bufferLength);
+}
+
+/**
+ * @brief Serialize a Syslog into a JSON
+ * @return The serialized syslog
+ */
+std::shared_ptr<json_t> SyslogPdu::serialize() {
+    return nullptr;
 }
 
 /**

@@ -39,6 +39,8 @@ Config::Config() {
         rcPass = "";
         engineID = "";
         contextName = "";
+        community = "public";
+        trapUser = "";
         try {
             save();
         } catch (const std::runtime_error &e) {
@@ -53,6 +55,8 @@ Config::Config() {
             readString(f, rcPass);
             readString(f, engineID);
             readString(f, contextName);
+            readString(f, community);
+            readString(f, trapUser);
         } catch (const std::bad_alloc &e) {
             throw;
         }
@@ -101,6 +105,8 @@ void Config::save() {
     writeString(f, rcPass);
     writeString(f, engineID);
     writeString(f, contextName);
+    writeString(f, community);
+    writeString(f, trapUser);
     fclose(f);
 }
 

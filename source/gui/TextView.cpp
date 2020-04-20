@@ -79,6 +79,17 @@ TextView::TextView(const std::string &textValue, std::shared_ptr<TextView> textV
 : TextView(textValue, textView->x, textView->y, textView->scale, textView->color) { }
 
 /**
+ * @brief Update the text value
+ * @param textValue New text
+ */
+void TextView::setText(const std::string &textValue) {
+    C2D_TextBufDelete(textBuffer);
+    textBuffer = C2D_TextBufNew(textValue.length() + 1);
+    C2D_TextParse(&text, textBuffer, textValue.c_str());
+	C2D_TextOptimize(&text);
+}
+
+/**
  * @brief Draw a text view
  */
 void TextView::draw() {

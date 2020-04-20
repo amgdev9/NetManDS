@@ -6,6 +6,9 @@
 #ifndef SNMPV2PDU_H_
 #define SNMPV2PDU_H_
 
+// Includes jansson
+#include <jansson.h>
+
 // Own includes
 #include "Snmpv1Pdu.h"
 
@@ -62,6 +65,7 @@ class Snmpv2Pdu: public Snmpv1Pdu {
 		Snmpv2Pdu(const std::string &community);
         virtual void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port);
 		virtual void recvTrap(std::shared_ptr<UdpSocket> sock) override;
+        std::shared_ptr<json_t> serializeTrap() override;
 		~Snmpv2Pdu();
 		friend class Snmpv3Pdu;
 };

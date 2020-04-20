@@ -14,10 +14,6 @@
 #include "Application.h"
 #include "syslog/SyslogPdu.h"
 
-// Defines
-#define MENUTEXT_X          140
-#define BEEP_AUDIO_CHANNEL  8
-
 namespace NetMan {
 
 static void goSNMP(void *args) {
@@ -53,19 +49,8 @@ MenuController::MenuController() {
         {"goRestConf", goRestConf},
         {"goLogs", goLogs},
     };
-
-    try {
-        // Load beep sound (used for trap and log receiving)
-        beepAudio = std::unique_ptr<WaveAudio>(new WaveAudio("beep"));
-    } catch (const std::bad_alloc &e) {
-        throw;
-    } catch (const std::runtime_error &e) {
-        throw;
-    }
 }
 
-MenuController::~MenuController() {
-    ndspChnWaveBufClear(BEEP_AUDIO_CHANNEL);
-}
+MenuController::~MenuController() { }
 
 }

@@ -35,7 +35,7 @@ class TcpSocket {
 		inline int getDescriptor() { return this->fd; }
 		inline void setTimeout(u32 secs, u32 usecs) { tv.tv_sec = secs; tv.tv_usec = usecs; }
 		void listenState(u32 queueLength);
-		std::shared_ptr<TcpSocket> acceptConnection();
+		std::shared_ptr<TcpSocket> acceptConnection(u32 timeout);
 		virtual ~TcpSocket();
 };
 

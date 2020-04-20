@@ -10,7 +10,6 @@
 
 // Own includes
 #include "GuiController.h"
-#include "WaveAudio.h"
 #include "socket/UdpSocket.h"
 #include "socket/TcpSocket.h"
 
@@ -21,7 +20,6 @@ namespace NetMan {
  */
 class MenuController : public GuiController {
     private:
-        std::unique_ptr<WaveAudio> beepAudio;
     public:
         MenuController();
         virtual ~MenuController();

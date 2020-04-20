@@ -23,6 +23,10 @@
 
 namespace NetMan {
 
+static void nextBootMessage() {
+    Application::getInstance().messageBox("Changes will be applied on next boot");
+}
+
 static void gotoMenu(void *args) {
     Application::getInstance().requestLayoutChange("menu");
     Config::getInstance().save();
@@ -109,6 +113,7 @@ static void setPort(EditTextParams *params, u16 *dest) {
                 Application::getInstance().messageBox("Repeated port");
             } else {
                 *dest = (u16)port;
+                nextBootMessage();
             }
         }
     }
@@ -144,6 +149,7 @@ static void editTrapv1Bool(void *args) {
         params->init = true;
     } else {
         Config::getInstance().getData().trapv1Enabled = params->state;
+        nextBootMessage();
     }
 }
 
@@ -158,6 +164,7 @@ static void editTrapv2Bool(void *args) {
         params->init = true;
     } else {
         Config::getInstance().getData().trapv2Enabled = params->state;
+        nextBootMessage();
     }
 }
 
@@ -200,6 +207,7 @@ static void editTrapv3Bool(void *args) {
         params->init = true;
     } else {
         Config::getInstance().getData().trapv3Enabled = params->state;
+        nextBootMessage();
     }
 }
 
@@ -214,6 +222,7 @@ static void editSyslogTransport(void *args) {
         params->init = true;
     } else {
         Config::getInstance().getData().syslogTransport = params->selected;
+        nextBootMessage();
     }
 }
 
@@ -272,6 +281,32 @@ static void setScreen(void *args) {
     }
 }
 
+static void editCommunity(void *args) {
+    EditTextParams *params = (EditTextParams*)args;
+    if(!params->init) {
+        sprintf(params->text, Config::getInstance().getCommunity().c_str());
+        params->init = true;
+    } else {
+        Config::getInstance().getCommunity().assign(params->text);
+    }
+}
+
+static void editTrapUser(void *args) {
+    EditTextParams *params = (EditTextParams*)args;
+    if(!params->init) {
+        sprintf(params->text, Config::getInstance().getTrapUser().c_str());
+        params->init = true;
+    } else {
+        try {
+            Snmpv3UserStore::getInstance().getUser(params->text);
+            Config::getInstance().getTrapUser().assign(params->text);
+        } catch (const std::runtime_error &e) {
+            Application::getInstance().messageBox("User is not defined");
+            params->init = false;
+        }
+    }
+}
+
 OptionsController::OptionsController() {
     this->crosses = std::vector<std::shared_ptr<ImageView>>();
     this->texts = std::vector<std::shared_ptr<TextView>>();
@@ -302,6 +337,8 @@ OptionsController::OptionsController() {
         {"tcpTimeout", tcpTimeout},
         {"udpTimeout", udpTimeout},
         {"setScreen", setScreen},
+        {"editCommunity", editCommunity},
+        {"editTrapUser", editTrapUser},
     };
 }
 

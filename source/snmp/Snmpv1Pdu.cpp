@@ -404,4 +404,12 @@ std::shared_ptr<BerField> Snmpv1Pdu::getVarBind(u16 i) {
 	}
 }
 
+/**
+ * @brief Serialize a SNMPv1 trap into a JSON
+ * @return The serialized trap
+ */
+std::shared_ptr<json_t> Snmpv1Pdu::serializeTrap() {
+    return nullptr;
+}
+
 }

@@ -108,6 +108,14 @@ void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 }
 
 /**
+ * @brief Serialize a SNMPv2 trap into a JSON
+ * @return The serialized trap
+ */
+std::shared_ptr<json_t> Snmpv2Pdu::serializeTrap() {
+    return nullptr;
+}
+
+/**
  * @brief Destructor for a SNMPv2 PDU
  */
 Snmpv2Pdu::~Snmpv2Pdu() { }

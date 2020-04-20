@@ -16,7 +16,7 @@ namespace NetMan {
  */
 class GuiView {
     public:
-        virtual void draw() = 0;
+        virtual void draw() {}
         virtual void input(u32 held, u32 down, u32 up, touchPosition &touch) {}
 };
 

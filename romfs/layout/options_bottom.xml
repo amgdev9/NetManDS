@@ -5,23 +5,26 @@
         <HSlideScreen>
             <TextView text="SNMP" x="130" y="10" size="1.0"/>
 
-            <TextView text="Port" x="20" y="50" size="0.75"/>
-            <EditTextView x="130" y="50" width="140" height="20" numeric="true" length="5" onEdit="editSnmpPort"/>
+            <TextView text="Port" x="20" y="45" size="0.75"/>
+            <EditTextView x="130" y="45" width="140" height="20" numeric="true" length="5" onEdit="editSnmpPort"/>
 
-            <TextView text="Trap v1" x="20" y="75" size="0.75"/>
-            <EditTextView x="130" y="75" width="140" height="20" numeric="true" length="5" onEdit="editTrapv1"/>
-            <CheckboxView name="menuButton" x="110" y="90" onClick="editTrapv1Bool" sx="0.2" sy="0.2"/>
+            <TextView text="Trap v1" x="20" y="70" size="0.75"/>
+            <EditTextView x="130" y="70" width="140" height="20" numeric="true" length="5" onEdit="editTrapv1"/>
+            <CheckboxView name="menuButton" x="110" y="85" onClick="editTrapv1Bool" sx="0.2" sy="0.2"/>
 
-            <TextView text="Trap v2" x="20" y="100" size="0.75"/>
-            <EditTextView x="130" y="100" width="140" height="20" numeric="true" length="5" onEdit="editTrapv2"/>
-            <CheckboxView name="menuButton" x="110" y="113" onClick="editTrapv2Bool" sx="0.2" sy="0.2"/>
+            <TextView text="Trap v2" x="20" y="95" size="0.75"/>
+            <EditTextView x="130" y="95" width="140" height="20" numeric="true" length="5" onEdit="editTrapv2"/>
+            <CheckboxView name="menuButton" x="110" y="108" onClick="editTrapv2Bool" sx="0.2" sy="0.2"/>
 
-            <TextView text="Trap limit" x="20" y="125" size="0.75"/>
-            <EditTextView x="130" y="125" width="140" height="20" numeric="true" length="3" onEdit="editTrapLimit"/>
+            <TextView text="Trap limit" x="20" y="120" size="0.75"/>
+            <EditTextView x="130" y="120" width="140" height="20" numeric="true" length="3" onEdit="editTrapLimit"/>
 
-            <TextView text="SMI Path" x="20" y="150" size="0.75"/>
-            <ButtonView name="menuButton" x="160" y="165" sx="0.75" sy="0.25" onClick="setSMI" />
-            <TextView text="Search" x="135" y="155" size="0.5"/>
+            <TextView text="Community" x="20" y="145" size="0.75"/>
+            <EditTextView x="130" y="145" width="140" height="20" length="12" onEdit="editCommunity"/>
+
+            <TextView text="SMI Path" x="20" y="170" size="0.75"/>
+            <ButtonView name="menuButton" x="160" y="185" sx="0.75" sy="0.25" onClick="setSMI" />
+            <TextView text="Search" x="135" y="175" size="0.5"/>
         </HSlideScreen>
         <HSlideScreen>
             <TextView text="SNMPv3" x="115" y="10" size="1.0"/>
@@ -35,6 +38,9 @@
             <TextView text="Trap v3" x="20" y="100" size="0.75"/>
             <EditTextView x="155" y="100" width="140" height="20" numeric="true" length="5" onEdit="editTrapv3"/>
             <CheckboxView name="menuButton" x="125" y="113" onClick="editTrapv3Bool" sx="0.2" sy="0.2"/>
+            
+            <TextView text="Trap user" x="20" y="165" size="0.75"/>
+            <EditTextView x="155" y="165" width="140" height="20" length="12" onEdit="editTrapUser"/>
         </HSlideScreen>
         <HSlideScreen>
             <TextView text="SNMPv3 Users" x="70" y="10" size="1.0"/>

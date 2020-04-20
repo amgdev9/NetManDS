@@ -502,8 +502,9 @@ u8 Snmpv3Pdu::recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 po
 /**
  * @brief Receive a trap or inform-request
  * @param sock Socket used for reception
+ * @return If an inform was received
  */
-void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
+bool Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 
 	try {
 
@@ -518,7 +519,11 @@ void Snmpv3Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
         // If it was an inform-request, send back the acknowledgement
         if(pduType == SNMPV2_INFORMREQUEST) {
             this->sendRequest(SNMPV2_GETRESPONSE, sock, 0, 0);    // Use inform-request origin IP-port as destination IP-port
+            return true;
         }
+
+        // A trap was received
+        return false;
     } catch (const std::runtime_error &e) {
 		throw;
 	} catch (const std::bad_alloc &e) {
@@ -577,6 +582,14 @@ void Snmpv3Pdu::sendReportTo(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 
 	} catch (const std::bad_alloc &e) {
 		throw;
 	}
+}
+
+/**
+ * @brief Serialize a SNMPv3 trap into a JSON
+ * @return The serialized trap
+ */
+std::shared_ptr<json_t> Snmpv3Pdu::serializeTrap() {
+    return nullptr;
 }
 
 }

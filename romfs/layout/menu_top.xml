@@ -6,6 +6,6 @@
     <TextView text="MAC Address:" x="40" y="90" size="0.6" r="240" g="240" b="240"/>
     <TextView text="TCP Sockets:" x="40" y="110" size="0.6" r="240" g="240" b="240"/>
     <TextView text="UDP Sockets:" x="40" y="130" size="0.6" r="240" g="240" b="240"/>
-    <TextView text="Nothing happened... yet" x="40" y="193" size="0.6" r="240" g="240" b="240"/>
+    <UpdateView onUpdate="onUpdateLogs"/>
 </root>
 

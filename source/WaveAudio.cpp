@@ -82,6 +82,8 @@ WaveAudio::WaveAudio(const std::string &path) {
  */
 void WaveAudio::play(int channel) {
 
+    if(ndspChnIsPlaying(channel)) return;
+    
     ndspChnReset(channel);
     ndspChnWaveBufClear(channel);
 	ndspChnSetInterp(channel, NDSP_INTERP_POLYPHASE);
