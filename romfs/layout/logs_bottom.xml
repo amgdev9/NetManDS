@@ -1,11 +1,12 @@
 <root controller="LogsController">
     <ImageView name="bottomScreen" x="160" y="120"/>
 
-    <BinaryButtonView name="menuButton" x="150" y="85" sx="0.5" sy="0.25" onClick="editLogMode" />
-    <TextView text="Trap" x="135" y="78" size="0.5"/>
-    <TextView text="Syslog" x="175" y="78" size="0.5"/>
+    <BinaryButtonView name="menuButton" x="150" y="35" sx="0.75" sy="0.25" onClick="editLogMode" />
+    <TextView text="Trap" x="135" y="28" size="0.5"/>
+    <TextView text="Syslog" x="190" y="28" size="0.5"/>
 
-    <ListView x="45" y="50" width="180" height="25" maxElements="5" arrowX="250" arrowY="100" onFill="fillLogs" onClick="clickLog"/>
+    <ImageView name="menuButton" x="290" y="115" sx="0.5"/>
+    <ListView x="5" y="50" width="260" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillLogs" onClick="clickLog"/>
 
     <ButtonView name="backArrow" x="24" y="216" onClick="gotoMenu" sx="-0.75" sy="0.75"/>
 </root>
