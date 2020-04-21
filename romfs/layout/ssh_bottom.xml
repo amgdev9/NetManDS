@@ -16,6 +16,6 @@
     <ButtonView name="menuButton" x="170" y="200" onClick="connect" sx="1.25" sy="0.6"/>
     <TextView text="Connect" x="125" y="185" size="0.8"/>
 
-    <ButtonView name="backArrow" x="32" y="208" onClick="goMenu" sx="-1.0"/>
+    <ButtonView name="backArrow" x="24" y="216" onClick="goMenu" sx="-0.75" sy="0.75"/>
 </root>
 

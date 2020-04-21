@@ -17,7 +17,7 @@
 namespace NetMan {
 
 static void goSNMP(void *args) {
-
+    Application::getInstance().requestLayoutChange("snmp");
 }
 
 static void goRestConf(void *args) {

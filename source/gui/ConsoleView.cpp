@@ -51,10 +51,10 @@ ConsoleView::ConsoleView(XMLElement *node, std::shared_ptr<GuiController> contro
 }
 
 /**
- * @brief Draw a console view
+ * @brief Process input
  */
-void ConsoleView::draw() {
-
+void ConsoleView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
+    
     if(this->controller != nullptr && !onUpdate.empty()) {
         ConsoleUpdateParams params;
         params.text = "";
@@ -66,6 +66,12 @@ void ConsoleView::draw() {
             tmt_write(vt, params.text.c_str(), 0);
         }
     }
+}
+
+/**
+ * @brief Draw a console view
+ */
+void ConsoleView::draw() {
 
     float x = fontParams.params.pos.x;
     float y = fontParams.params.pos.y;

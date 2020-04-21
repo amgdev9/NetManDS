@@ -28,6 +28,10 @@ static void fillLogs(void *args) {
     params->layouts.clear();
 
     auto list = controller->getJson();
+    if(list.get() == NULL) {
+        Application::getInstance().requestLayoutChange("menu");
+        return;
+    }
     u32 listSize = json_array_size(list.get());
 
     if(params->endElement >= listSize) {

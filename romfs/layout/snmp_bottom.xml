@@ -1,0 +1,15 @@
+<root controller="SnmpController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <ButtonView name="menuButton" x="160" y="60" onClick="goAgentDiscovery" sx="2.5" sy="0.5"/>
+    <TextView text="Agent Discovery" x="80" y="45" size="0.8"/>
+
+    <ButtonView name="menuButton" x="160" y="110" onClick="goMibBrowser" sx="2.5" sy="0.5"/>
+    <TextView text="MIB Browser" x="80" y="95" size="0.8"/>
+
+    <ButtonView name="menuButton" x="160" y="160" onClick="goSendSnmp" sx="2.5" sy="0.5"/>
+    <TextView text="Send SNMP" x="80" y="145" size="0.8"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goMenu" sx="-0.75" sy="0.75"/>
+</root>
+

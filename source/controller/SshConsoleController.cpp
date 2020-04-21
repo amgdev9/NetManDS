@@ -32,7 +32,9 @@ static void updateConsole(void *args) {
     auto controller = std::static_pointer_cast<SshConsoleController>(params->controller);
     auto helper = controller->getHelper();
     if(update) {
-        helper->sendData(text + "\n");          // Send SSH command
+        if(helper->sendData(text + "\n")) {     // Send SSH command
+            Application::getInstance().requestLayoutChange("menu");
+        }
         update = false;
     }
     if(helper->recvData()) {
