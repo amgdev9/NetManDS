@@ -12,9 +12,11 @@
 #include "gui/TextView.h"
 #include "Application.h"
 #include "Config.h"
+#include "Utils.h"
 
 // Defines
 #define MIBS_FOLDER         "mibs/"
+#define MIBS_EXT            ".txt"
 #define ICON_SIZE           81.0f
 #define TEXT_OFFX           10.0f
 #define TEXT_OFFY           5.0f
@@ -74,23 +76,8 @@ SetSMIController::SetSMIController() {
         {"gotoOptions", gotoOptions},
     };
 
-    DIR *dp = opendir(MIBS_FOLDER);
-    if(dp == NULL) {
-        throw std::runtime_error(std::string("Couldn't open ") + MIBS_FOLDER);
-    }
-
-    struct dirent *entry;
-    struct stat statbuf;
-    while((entry = readdir(dp)) != NULL) {
-
-        lstat(entry->d_name, &statbuf);
-
-        if(!S_ISDIR(statbuf.st_mode)) {
-            this->dirEntries.push_back(entry->d_name);
-        }
-    }
-
-    closedir(dp);
+    this->dirEntries = std::vector<std::string>();
+    Utils::readFolder(MIBS_FOLDER, MIBS_EXT, this->dirEntries);
 }
 
 SetSMIController::~SetSMIController() { }

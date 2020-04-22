@@ -14,9 +14,6 @@
 #include <3ds.h>
 #include <citro2d.h>
 
-// Includes jansson
-#include <jansson.h>
-
 // Own includes
 #include "gui/GuiLayout.h"
 #include "socket/UdpSocket.h"
@@ -88,7 +85,6 @@ class Application {
         inline std::shared_ptr<UdpSocket> getTrapv3Sock() { return trapv3Sock; }
         inline std::shared_ptr<UdpSocket> getSyslogUdpSock() { return syslogUdpSock; }
         inline std::shared_ptr<TcpSocket> getSyslogTcpSock() { return syslogTcpSock; }
-        void addJsonField(json_t *array, const std::string &field);
 };
 
 }

@@ -37,10 +37,11 @@ SnmpAgentScanner::SnmpAgentScanner() {
  * @param version       SNMP Version to use (1 or 2)
  * @param maxRequests   Maximum number of requests without checking responses
  * @param timeout       Response timeout (in seconds)
+ * @param progress      Used to store scan progress (0-100) for its usage in threads (can be NULL)
  * @note The estimated delay should be ~ timeout * nhosts / maxRequests (seconds).
  *       If maxRequests grows, the memory used at a time will grow (for reception queues)
  */
-void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 version, u8 maxRequests, u8 timeout) {
+void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 version, u8 maxRequests, u8 timeout, u8 *progress) {
     
     // Initialize agents map
     this->agents.clear();
@@ -74,6 +75,11 @@ void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 ver
                     throw;
                 } catch (const std::runtime_error &e) {
                     // ARP can fail here, it doesn't matter
+                }
+
+                // Update progress, if needed
+                if(progress) {
+                    *progress = (u8)((float)(checkedHosts + i) / (float)(nhosts) * 100.0f);
                 }
 
                 pdu->clear();
@@ -113,6 +119,11 @@ void SnmpAgentScanner::scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 ver
                 i = hostsToCheck;
             }
         }
+    }
+
+    // All done
+    if(progress) {
+        *progress = 100;
     }
 }
 
@@ -159,6 +170,35 @@ std::shared_ptr<BerInteger> SnmpAgentScanner::getIntegerFromVarBind(std::shared_
     }
 
     throw std::runtime_error("Error retrieving INTEGER");
+}
+
+/**
+ * @brief Dump the scanner result to a JSON file
+ * @param path  File path
+ */
+void SnmpAgentScanner::dumpJson(const std::string &path) {
+    json_t *root = json_array();
+    char ip[16];
+    for (auto agent : this->agents) {
+        SnmpAgentEntry &entry = agent.second;
+
+        json_t *obj = json_object();
+        json_array_append_new(root, obj);
+
+        struct in_addr myaddr;
+        myaddr.s_addr = agent.first;
+        inet_ntop(AF_INET, &myaddr, ip, sizeof(ip));
+
+        json_object_set_new(obj, "ip", json_string(ip));
+        std::string agentData = "sysDescr:\n" + entry.sysDescr +
+                                "\nsysObjectID:\n" + entry.sysObjectID +
+                                "\nsysContact:\n" + entry.sysContact +
+                                "\nsysName:\n" + entry.sysName +
+                                "\nsysLocation:\n" + entry.sysLocation;
+        json_object_set_new(obj, "data", json_string(agentData.c_str()));
+    }
+    json_dump_file(root, path.c_str(), 0);
+    json_decref(root);
 }
 
 /**

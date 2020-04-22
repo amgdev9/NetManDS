@@ -217,7 +217,7 @@ void snmpagent_test() {
 
     try {
 		std::shared_ptr<SnmpAgentScanner> agentScanner = std::make_shared<SnmpAgentScanner>();
-        agentScanner->scanAgents(inet_addr("192.168.100.1"), 254, config.snmpPort, SNMPV1_VERSION, 15, 2);
+        agentScanner->scanAgents(inet_addr("192.168.100.1"), 254, config.snmpPort, SNMPV1_VERSION, 15, 2, NULL);
         agentScanner->print();
 	} catch (const std::runtime_error &e) {
 		f = fopen("log.txt", "a+");

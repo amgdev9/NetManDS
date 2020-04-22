@@ -15,6 +15,7 @@
 #include "gui/TextView.h"
 #include "gui/UpdateView.h"
 #include "Config.h"
+#include "Utils.h"
 
 // Defines
 #define MENUTEXT_X          160
@@ -79,7 +80,7 @@ static void onUpdateLogs(void *args) {
             auto pdu = controller->getSnmpv1Pdu();
             pdu->clear();
             pdu->recvTrap(trapv1Sock);
-            auto curTime = controller->getCurrentTime();
+            auto curTime = Utils::getCurrentTime();
             saveLogEntry(trapFile, pdu->serializeTrap(), curTime + " Trap V1", configData.trapLimit);
             controller->getTrapText()->setText(curTime + ": SNMPv1 trap received!");
             controller->beep();
@@ -92,7 +93,7 @@ static void onUpdateLogs(void *args) {
             auto pdu = controller->getSnmpv2Pdu();
             pdu->clear();
             pdu->recvTrap(trapv2Sock);
-            auto curTime = controller->getCurrentTime();
+            auto curTime = Utils::getCurrentTime();
             saveLogEntry(trapFile, pdu->serializeTrap(), curTime + " Trap V2", configData.trapLimit);
             controller->getTrapText()->setText(curTime + ": SNMPv2 trap received!");
             controller->beep();
@@ -104,7 +105,7 @@ static void onUpdateLogs(void *args) {
         try {
             auto pdu = controller->getSnmpv3Pdu();
             pdu->clear();
-            auto curTime = controller->getCurrentTime();
+            auto curTime = Utils::getCurrentTime();
             if(pdu->recvTrap(trapv3Sock)) {
                 controller->getTrapText()->setText(curTime + ": SNMPv3 inform received!");
             } else {
@@ -120,7 +121,7 @@ static void onUpdateLogs(void *args) {
     if(syslogUdpSock != nullptr) {
         try {
             syslogPdu->recvLog(syslogUdpSock);
-            auto curTime = controller->getCurrentTime();
+            auto curTime = Utils::getCurrentTime();
             saveLogEntry(logFile, syslogPdu->serialize(), curTime + " Syslog UDP", configData.syslogLimit);
             controller->getTrapText()->setText(curTime + ": UDP Syslog received!");
             controller->beep();
@@ -130,7 +131,7 @@ static void onUpdateLogs(void *args) {
             std::shared_ptr<TcpSocket> conn = syslogTcpSock->acceptConnection(configData.tcpTimeout);
 			if(conn != nullptr) {
 				syslogPdu->recvLog(conn);
-                auto curTime = controller->getCurrentTime();
+                auto curTime = Utils::getCurrentTime();
                 saveLogEntry(logFile, syslogPdu->serialize(), curTime + " Syslog TCP", configData.syslogLimit);
                 controller->getTrapText()->setText(curTime + ": TCP Syslog received!");
                 controller->beep();
@@ -163,20 +164,6 @@ MenuTopController::MenuTopController() {
 
 MenuTopController::~MenuTopController() {
     ndspChnWaveBufClear(BEEP_AUDIO_CHANNEL);
-}
-
-std::string MenuTopController::getCurrentTime() {
-
-    time_t unixTime = time(NULL);
-	struct tm* timeStruct = gmtime((const time_t *)&unixTime);
-
-	int hours = timeStruct->tm_hour;
-	int minutes = timeStruct->tm_min;
-	int seconds = timeStruct->tm_sec;
-
-    char t[64];
-    sprintf(t, "[%02i:%02i:%02i]", hours, minutes, seconds);
-    return std::string(t);
 }
 
 void MenuTopController::initialize(std::vector<std::shared_ptr<GuiView>> &views) {

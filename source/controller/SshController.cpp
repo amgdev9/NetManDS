@@ -8,6 +8,7 @@
 #include "gui/ButtonView.h"
 #include "ssh/SshHelper.h"
 #include "Application.h"
+#include "Utils.h"
 
 namespace NetMan {
 
@@ -24,14 +25,10 @@ static void editHost(void *args) {
 
 static void editPort(void *args) {
     EditTextParams *params = (EditTextParams*)args;
-    if(!params->init) return;
-    auto controller = std::static_pointer_cast<SshController>(params->controller);
-    int port = strtol(params->text, NULL, 10);
-    if(port == 0 || port > 0xFFFF) {
-        params->init = false;
-        Application::getInstance().messageBox("Invalid port");
-    } else {
-        controller->getSession().port = (u16)port;
+    u16 port = Utils::handleFormPort(params, SSH_PORT);
+    if(port > 0) {
+        auto controller = std::static_pointer_cast<SshController>(params->controller);
+        controller->getSession().port = port;
     }
 }
 

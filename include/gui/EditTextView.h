@@ -48,6 +48,7 @@ class EditTextView : public GuiView {
         bool password;
         std::string onEdit;
         std::shared_ptr<GuiController> controller;
+        std::string hintText;
     public:
         EditTextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         virtual void input(u32 held, u32 down, u32 up, touchPosition &touch) override;

@@ -13,6 +13,7 @@
 #include "gui/BinaryButtonView.h"
 #include "snmp/Snmpv3UserStore.h"
 #include "Config.h"
+#include "Utils.h"
 
 // Defines
 #define ICON_SIZE           81.0f
@@ -94,42 +95,20 @@ static void clickUser(void *args) {
 }
 
 static void setPort(EditTextParams *params, u16 *dest) {
-    if(!params->init) {
-        sprintf(params->text, "%d", *dest);
-        params->init = true;
-    } else {
-        int port = strtol(params->text, NULL, 10);
-        if(port == 0 || port > 0xFFFF) {
-            params->init = false;
-            Application::getInstance().messageBox("Invalid port");
-        } else {
-            auto configData = Config::getInstance().getData();
-            if((port == configData.snmpPort && dest != &configData.snmpPort) ||
-               (port == configData.trapv1Port && dest != &configData.trapv1Port) ||
-               (port == configData.trapv2Port && dest != &configData.trapv2Port) ||
-               (port == configData.trapv3Port && dest != &configData.trapv3Port) ||
-               (port == configData.syslogPort && dest != &configData.syslogPort)) {
-                params->init = false;
-                Application::getInstance().messageBox("Repeated port");
-            } else {
-                *dest = (u16)port;
-                nextBootMessage();
-            }
-        }
-    }
-}
 
-static void setInteger(EditTextParams *params, u32 *dest, u32 limit) {
-    if(!params->init) {
-        sprintf(params->text, "%ld", *dest);
-        params->init = true;
-    } else {
-        int n = strtol(params->text, NULL, 10);
-        if(n == 0 || (u32)n > limit) {
+    u16 port = Utils::handleFormPort(params, *dest);
+    if(port > 0) {
+        auto configData = Config::getInstance().getData();
+        if((port == configData.snmpPort && dest != &configData.snmpPort) ||
+           (port == configData.trapv1Port && dest != &configData.trapv1Port) ||
+           (port == configData.trapv2Port && dest != &configData.trapv2Port) ||
+           (port == configData.trapv3Port && dest != &configData.trapv3Port) ||
+           (port == configData.syslogPort && dest != &configData.syslogPort)) {
             params->init = false;
-            Application::getInstance().messageBox("Invalid number");
+            Application::getInstance().messageBox("Repeated port");
         } else {
-            *dest = (u32)n;
+            *dest = (u16)port;
+            nextBootMessage();
         }
     }
 }
@@ -169,7 +148,7 @@ static void editTrapv2Bool(void *args) {
 }
 
 static void editTrapLimit(void *args) {
-    setInteger((EditTextParams*)args, &Config::getInstance().getData().trapLimit, 999);
+    Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().trapLimit, 999);
 }
 
 static void setSMI(void *args) {
@@ -227,11 +206,11 @@ static void editSyslogTransport(void *args) {
 }
 
 static void editLogLimit(void *args) {
-    setInteger((EditTextParams*)args, &Config::getInstance().getData().syslogLimit, 999);
+    Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().syslogLimit, 999);
 }
 
 static void rcTimeout(void *args) {
-    setInteger((EditTextParams*)args, &Config::getInstance().getData().rcTimeout, 999);
+    Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().rcTimeout, 999);
 }
 
 static void rcURL(void *args) {
@@ -265,11 +244,11 @@ static void rcPassword(void *args) {
 }
 
 static void tcpTimeout(void *args) {
-    setInteger((EditTextParams*)args, &Config::getInstance().getData().tcpTimeout, 999);
+    Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().tcpTimeout, 999);
 }
 
 static void udpTimeout(void *args) {
-    setInteger((EditTextParams*)args, &Config::getInstance().getData().udpTimeout, 999);
+    Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().udpTimeout, 999);
 }
 
 static void setScreen(void *args) {

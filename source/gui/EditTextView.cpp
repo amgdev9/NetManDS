@@ -36,6 +36,11 @@ EditTextView::EditTextView(XMLElement *node, std::shared_ptr<GuiController> cont
         onEdit = std::string(onEditStr);
     }
 
+    const char *hintTextStr = node->Attribute("hintText");
+    if(hintTextStr != NULL) {
+        hintText = std::string(hintTextStr);
+    }
+
     // Create text
     textLength = node->IntAttribute("length", width / (DEFAULT_FONT_SIZE * textScale));
     textBuffer = C2D_TextBufNew(textLength);
@@ -83,7 +88,7 @@ void EditTextView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
             if(password) swkbdSetPasswordMode(&swkbd, SWKBD_PASSWORD_HIDE_DELAY);
             swkbdSetValidation(&swkbd, SWKBD_NOTEMPTY_NOTBLANK, SWKBD_FILTER_DIGITS | SWKBD_FILTER_AT | SWKBD_FILTER_PERCENT | SWKBD_FILTER_BACKSLASH | SWKBD_FILTER_PROFANITY, 2);
             swkbdSetFeatures(&swkbd, 0);
-            swkbdSetHintText(&swkbd, "");
+            swkbdSetHintText(&swkbd, hintText.c_str());
             swkbdInputText(&swkbd, textstr, sizeof(textstr));
         }
 

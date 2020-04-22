@@ -12,7 +12,7 @@
 #include "snmp/Snmpv1Pdu.h"
 #include "asn1/BerInteger.h"
 #include "asn1/BerOctetString.h"
-#include "Application.h"
+#include "Utils.h"
 
 namespace NetMan {
 
@@ -412,35 +412,34 @@ std::shared_ptr<BerField> Snmpv1Pdu::getVarBind(u16 i) {
 std::shared_ptr<json_t> Snmpv1Pdu::serializeTrap() {
 
     auto root = std::shared_ptr<json_t>(json_object(), [=](json_t* data) { json_decref(data); });
-    Application &app = Application::getInstance();
     
     json_t *data = json_array();
     json_object_set_new(root.get(), "data", data);
 
-    app.addJsonField(data, "Enterprise ID");
-    app.addJsonField(data, fields[0]->print());
+    Utils::addJsonField(data, "Enterprise ID");
+    Utils::addJsonField(data, fields[0]->print());
 
-    app.addJsonField(data, "Agent address");
+    Utils::addJsonField(data, "Agent address");
     auto agentAddress = std::static_pointer_cast<BerOctetString>(fields[1])->getValue();
     if(agentAddress.length() == 4) {
-        app.addJsonField(data, std::to_string(agentAddress[0]) + "." + std::to_string(agentAddress[1]) + "." +
+        Utils::addJsonField(data, std::to_string(agentAddress[0]) + "." + std::to_string(agentAddress[1]) + "." +
                                std::to_string(agentAddress[2]) + "." + std::to_string(agentAddress[3]));
     }
 
-    app.addJsonField(data, "Generic trap: " + fields[2]->print());
-    app.addJsonField(data, "Specific trap: " + fields[3]->print());
+    Utils::addJsonField(data, "Generic trap: " + fields[2]->print());
+    Utils::addJsonField(data, "Specific trap: " + fields[3]->print());
     
     u32 timestamp = std::static_pointer_cast<BerInteger>(fields[4])->getValueU32() / 100;
     u8 hour = timestamp / 3600;
     u8 minute = (timestamp % 3600) / 60;
     u8 second = (timestamp % 3600) % 60;
-    app.addJsonField(data, "Timestamp: " + std::to_string(hour) + ":" + std::to_string(minute) + ":" + std::to_string(second));
+    Utils::addJsonField(data, "Timestamp: " + std::to_string(hour) + ":" + std::to_string(minute) + ":" + std::to_string(second));
 
     if(varBindList != nullptr) {
         for(u32 i = 0; i < varBindList->getNChildren(); i++) {
             auto child = std::static_pointer_cast<BerSequence>(this->varBindList->getChild(i));
-            app.addJsonField(data, child->getChild(0)->print());
-            app.addJsonField(data, child->getChild(1)->print());
+            Utils::addJsonField(data, "OID: " + child->getChild(0)->print());
+            Utils::addJsonField(data, "Value: " + child->getChild(1)->print());
         }
     }
 

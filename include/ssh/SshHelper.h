@@ -19,6 +19,7 @@
 // Defines
 #define SSH_EXIT_COMMAND    "exit"
 #define SSH_INPUT_LENGTH    0x1000
+#define SSH_PORT            22
 
 namespace NetMan {
 

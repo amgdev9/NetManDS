@@ -44,8 +44,9 @@ class SnmpAgentScanner {
         std::shared_ptr<BerInteger> getIntegerFromVarBind(std::shared_ptr<Snmpv1Pdu> pdu, u8 i);
     public:
         SnmpAgentScanner();
-        void scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 version, u8 maxRequests, u8 timeout);
+        void scanAgents(in_addr_t baseIP, u16 nhosts, u16 port, u8 version, u8 maxRequests, u8 timeout, u8 *progress);
         void print();
+        void dumpJson(const std::string &path);
         virtual ~SnmpAgentScanner();
 };
 

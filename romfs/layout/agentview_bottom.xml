@@ -1,4 +1,4 @@
-<root controller="AgentDiscoveryController">
+<root controller="AgentViewController">
     <ImageView name="bottomScreen" x="160" y="120"/>
 
     <TextView text="Scanning agents..." x="100" y="70" size="0.75"/>

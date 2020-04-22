@@ -2,7 +2,7 @@
     <ImageView name="bottomScreen" x="160" y="120"/>
 
     <TextView text="IP range" x="20" y="45" size="0.75"/>
-    <EditTextView x="160" y="45" width="140" height="20" length="12" onEdit="editRange"/>
+    <EditTextView x="160" y="45" width="140" height="20" length="12" hintText="IP Address:Number of hosts"onEdit="editRange"/>
 
     <TextView text="Port" x="20" y="70" size="0.75"/>
     <EditTextView x="160" y="70" width="140" height="20" numeric="true" length="5" onEdit="editPort"/>
@@ -20,5 +20,8 @@
     <TextView text="Scan" x="145" y="176" size="0.5"/>
 
     <ButtonView name="backArrow" x="24" y="216" onClick="goSnmp" sx="-0.75" sy="0.75"/>
+    <ImageView name="menuButton" x="296" y="216" sx="0.75" sy="0.75"/>
+
+    <UpdateView onUpdate="onUpdateProgress"/>
 </root>
 

@@ -9,7 +9,7 @@
 // Own includes
 #include "asn1/BerInteger.h"
 #include "snmp/Snmpv2Pdu.h"
-#include "Application.h"
+#include "Utils.h"
 
 namespace NetMan {
 
@@ -115,7 +115,6 @@ void Snmpv2Pdu::recvTrap(std::shared_ptr<UdpSocket> sock) {
 std::shared_ptr<json_t> Snmpv2Pdu::serializeTrap() {
 
     auto root = std::shared_ptr<json_t>(json_object(), [=](json_t* data) { json_decref(data); });
-    Application &app = Application::getInstance();
     
     json_t *data = json_array();
     json_object_set_new(root.get(), "data", data);
@@ -123,8 +122,8 @@ std::shared_ptr<json_t> Snmpv2Pdu::serializeTrap() {
     if(varBindList != nullptr) {
         for(u32 i = 0; i < varBindList->getNChildren(); i++) {
             auto child = std::static_pointer_cast<BerSequence>(this->varBindList->getChild(i));
-            app.addJsonField(data, child->getChild(0)->print());
-            app.addJsonField(data, child->getChild(1)->print());
+            Utils::addJsonField(data, "OID: " + child->getChild(0)->print());
+            Utils::addJsonField(data, "Value: " + child->getChild(1)->print());
         }
     }
 

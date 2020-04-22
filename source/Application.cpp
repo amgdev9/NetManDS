@@ -337,15 +337,6 @@ void Application::fatalError(const std::string &text, u32 errorCode) {
 }
 
 /**
- * @brief Add a field to a JSON array
- * @param array The array to use
- * @param field The string to add
- */
-void Application::addJsonField(json_t *array, const std::string &field) {
-    json_array_append_new(array, json_string(field.c_str()));
-}
-
-/**
  * @brief Get the singleton instance for an Application
  * @return The singleton instance
  */

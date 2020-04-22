@@ -40,7 +40,6 @@ class MenuTopController : public GuiController {
         inline std::shared_ptr<SyslogPdu> getSyslogPdu() { return syslogPdu; }
         inline void beep() { beepAudio->play(BEEP_AUDIO_CHANNEL); }
         inline std::shared_ptr<TextView> getTrapText() { return trapText; }
-        std::string getCurrentTime();
 };
 
 }
