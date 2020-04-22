@@ -8,6 +8,7 @@
 #include "gui/BinaryButtonView.h"
 #include "gui/ListView.h"
 #include "gui/TextView.h"
+#include "Utils.h"
 
 // Defines
 #define ICON_SIZE           81.0f
@@ -101,10 +102,7 @@ LogsController::LogsController() {
 }
 
 void LogsController::loadJsonList(const std::string &path) {
-    root = std::shared_ptr<json_t>(json_load_file(path.c_str(), 0, NULL), [=](json_t* data) { json_decref(data); });
-    if(root.get() == NULL) {
-        Application::getInstance().messageBox("Can't load JSON list: " + path);
-    }
+    root = Utils::loadJsonList(path);
 }
 
 LogsController::~LogsController() { }

@@ -86,7 +86,7 @@ void EditTextView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
         } else {
             swkbdInit(&swkbd, SWKBD_TYPE_WESTERN, 1, 128);
             if(password) swkbdSetPasswordMode(&swkbd, SWKBD_PASSWORD_HIDE_DELAY);
-            swkbdSetValidation(&swkbd, SWKBD_NOTEMPTY_NOTBLANK, SWKBD_FILTER_DIGITS | SWKBD_FILTER_AT | SWKBD_FILTER_PERCENT | SWKBD_FILTER_BACKSLASH | SWKBD_FILTER_PROFANITY, 2);
+            swkbdSetValidation(&swkbd, SWKBD_NOTEMPTY_NOTBLANK, SWKBD_FILTER_AT | SWKBD_FILTER_PERCENT | SWKBD_FILTER_BACKSLASH | SWKBD_FILTER_PROFANITY, 0);
             swkbdSetFeatures(&swkbd, 0);
             swkbdSetHintText(&swkbd, hintText.c_str());
             swkbdInputText(&swkbd, textstr, sizeof(textstr));

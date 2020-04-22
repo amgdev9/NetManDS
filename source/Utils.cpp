@@ -22,6 +22,14 @@ void Utils::addJsonField(json_t *array, const std::string &field) {
     json_array_append_new(array, json_string(field.c_str()));
 }
 
+std::shared_ptr<json_t> Utils::loadJsonList(const std::string &path) {
+    auto root = std::shared_ptr<json_t>(json_load_file(path.c_str(), 0, NULL), [=](json_t* data) { json_decref(data); });
+    if(root.get() == NULL) {
+        Application::getInstance().messageBox("Can't load JSON list: " + path);
+    }
+    return root;
+}
+
 /**
  * @brief Get current time
  * @return A string with the current time

@@ -27,6 +27,7 @@ class Utils {
         static u16 handleFormPort(EditTextParams *params, u16 port);
         static void handleFormInteger(EditTextParams *params, u32 *dest, u32 limit);
         static void readFolder(const std::string &path, const std::string &ext, std::vector<std::string> &out);
+        static std::shared_ptr<json_t> loadJsonList(const std::string &path);
 };
 
 }

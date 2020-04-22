@@ -14,7 +14,7 @@
     <EditTextView x="160" y="120" width="140" height="20" numeric="true" length="2" onEdit="editMaxRequests"/>
 
     <TextView text="Timeout" x="20" y="145" size="0.75"/>
-    <EditTextView x="160" y="145" width="140" height="20" length="12" onEdit="editTimeout"/>
+    <EditTextView x="160" y="145" width="140" height="20" numeric="true" length="2" onEdit="editTimeout"/>
 
     <ButtonView name="menuButton" x="160" y="185" sx="0.75" sy="0.25" onClick="scan" />
     <TextView text="Scan" x="145" y="176" size="0.5"/>

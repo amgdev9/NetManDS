@@ -21,6 +21,7 @@
 #include "controller/ViewLogController.h"
 #include "controller/SnmpController.h"
 #include "controller/AgentDiscoveryController.h"
+#include "controller/AgentViewController.h"
 
 namespace NetMan {
 
@@ -41,6 +42,7 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"ViewLogController", &bakeController<ViewLogController>},
     {"SnmpController", &bakeController<SnmpController>},
     {"AgentDiscoveryController", &bakeController<AgentDiscoveryController>},
+    {"AgentViewController", &bakeController<AgentViewController>},
 };
 
 /**

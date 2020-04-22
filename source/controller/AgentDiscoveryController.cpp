@@ -31,17 +31,24 @@ static void editRange(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
     if(controller->getParams().scanning || !params->init) return;
-    char ip[128];
-    int nhosts;
-    if(sscanf(params->text, "%s:%d", ip, &nhosts) != 2) {
+
+    char *colon = strchr(params->text, ':');
+    if(colon == NULL) {
         params->init = false;
     } else {
-        in_addr_t ipAddr = inet_addr(ip);
+        colon[0] = 0;
+        in_addr_t ipAddr = inet_addr(params->text);
         if(ipAddr == INADDR_NONE) {
             params->init = false;
         } else {
-            controller->getParams().baseIP = ipAddr;
-            controller->getParams().nhosts = nhosts;
+            int nhosts = strtol(&colon[1], NULL, 10);
+            if(nhosts > 0) {
+                colon[0] = ':';
+                controller->getParams().baseIP = ipAddr;
+                controller->getParams().nhosts = nhosts;
+            } else {
+                params->init = false;
+            }
         }
     }
 }
@@ -68,7 +75,7 @@ static void editMaxRequests(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
     if(controller->getParams().scanning) return;
-    Utils::handleFormInteger(params, &controller->getParams().timeout, 30);
+    Utils::handleFormInteger(params, &controller->getParams().maxRequests, 30);
 }
 
 static void editTimeout(void *args) {
@@ -152,14 +159,7 @@ AgentDiscoveryController::AgentDiscoveryController() {
 
     memset(&params, 0, sizeof(AgentDiscoveryParams));
     params.version = 1;
-
-    // TODO Remove
-    params.baseIP = inet_addr("192.168.100.1");
-    params.nhosts = 254;
-    params.port = 1161;
-    params.version = 1;
-    params.maxRequests = 15;
-    params.timeout = 2;
+    params.port = Config::getInstance().getData().snmpPort;
 }
 
 AgentDiscoveryController::~AgentDiscoveryController() { }
