@@ -8,6 +8,7 @@
 #include "gui/ListView.h"
 #include "gui/ImageView.h"
 #include "gui/TextView.h"
+#include "gui/ButtonView.h"
 #include "Utils.h"
 
 // Defines
@@ -20,7 +21,13 @@
 namespace NetMan {
 
 static void goBack(void *args) {
-    Application::getInstance().requestLayoutChange("agentdiscovery");
+    ButtonParams *params = (ButtonParams*)args;
+    auto controller = std::static_pointer_cast<AgentViewController>(params->controller);
+    if(controller->getComesFromAgentDiscovery()) {
+        Application::getInstance().requestLayoutChange("agentdiscovery");
+    } else {
+        Application::getInstance().requestLayoutChange("snmp");
+    }
 }
 
 static void fillAgents(void *args) {
@@ -31,7 +38,8 @@ static void fillAgents(void *args) {
 
     auto list = controller->getJson();
     if(list.get() == NULL) {
-        goBack(NULL);
+        Application::getInstance().messageBox("No agents found. You should do an agent scan first");
+        Application::getInstance().requestLayoutChange("agentdiscovery");
         return;
     }
     u32 listSize = json_array_size(list.get());
@@ -67,14 +75,21 @@ static void fillAgents(void *args) {
 static void clickAgent(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<AgentViewController>(params->controller);
-
     auto list = controller->getJson();
     json_t *obj = json_array_get(list.get(), params->element);
-    json_t *data = json_object_get(obj, "data");
-    const char *dataString = json_string_value(data);
 
-    if(dataString) {
-        Application::getInstance().messageBox(dataString);
+    if(controller->getComesFromAgentDiscovery()) {
+        json_t *data = json_object_get(obj, "data");
+        const char *dataString = json_string_value(data);
+
+        if(dataString) {
+            Application::getInstance().messageBox(dataString);
+        }
+    } else {
+        auto sessionParams = controller->getSnmpSessionParams();
+        json_t *ip = json_object_get(obj, "ip");
+        sessionParams->agentIP = inet_addr(json_string_value(ip));
+        Application::getInstance().requestLayoutChange("snmpparams", sessionParams);
     }
 }
 
@@ -86,6 +101,13 @@ AgentViewController::AgentViewController() {
     };
 
     root = Utils::loadJsonList(AGENTS_PATH);
+
+    if(Application::getInstance().getContextData() != nullptr) {
+        this->comesFromAgentDiscovery = false;
+        this->snmpSessionParams = std::static_pointer_cast<SnmpSessionParams>(Application::getInstance().getContextData());
+    } else {
+        this->comesFromAgentDiscovery = true;
+    }
 }
 
 AgentViewController::~AgentViewController() { }

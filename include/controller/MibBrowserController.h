@@ -29,6 +29,16 @@ typedef struct {
 } MibEntryIcons;
 
 /**
+ * @struct SnmpSessionParams
+ */
+typedef struct {
+    bool isTable;
+    std::shared_ptr<Mib> mib;
+    std::string tableName;
+    in_addr_t agentIP;
+} SnmpSessionParams;
+
+/**
  * @class MibBrowserController
  */
 class MibBrowserController : public GuiController {

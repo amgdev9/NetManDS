@@ -100,7 +100,12 @@ static void clickEntry(void *args) {
         Application::getInstance().getPduFields().push_back(pduField);
         Application::getInstance().messageBox("Field added successfully");
     } else if(icons[index].table != nullptr && icons[index].table->touched(down, touch)) {
-        // TODO
+        std::shared_ptr<SnmpSessionParams> contextData = std::make_shared<SnmpSessionParams>();
+        contextData->isTable = true;
+        contextData->agentIP = 0;
+        contextData->mib = controller->getMib();
+        contextData->tableName = icons[index].text->getText();
+        Application::getInstance().requestLayoutChange("agentview", contextData);
     } else if(icons[index].tick->touched(down, touch)) {
         auto mib = controller->getMib();
         auto it = mib->getOidTree()->find(icons[index].text->getText());

@@ -12,7 +12,7 @@
 #include <jansson.h>
 
 // Own includes
-#include "GuiController.h"
+#include "MibBrowserController.h"
 
 namespace NetMan {
 
@@ -22,10 +22,14 @@ namespace NetMan {
 class AgentViewController : public GuiController {
     private:
         std::shared_ptr<json_t> root;
+        bool comesFromAgentDiscovery;
+        std::shared_ptr<SnmpSessionParams> snmpSessionParams;
     public:
         AgentViewController();
         virtual ~AgentViewController();
         inline std::shared_ptr<json_t> getJson() { return root; }
+        inline bool getComesFromAgentDiscovery() { return comesFromAgentDiscovery; }
+        inline std::shared_ptr<SnmpSessionParams> getSnmpSessionParams() { return snmpSessionParams; }
 };
 
 }
