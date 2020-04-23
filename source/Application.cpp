@@ -27,6 +27,7 @@ Application::Application() {
 	this->init = false;
     this->resourceManager = std::unordered_map<std::string, C2D_SpriteSheet>();
     this->contextData = nullptr;
+    this->pduFields = std::vector<PduField>();
 }
 
 /**
@@ -250,7 +251,7 @@ void Application::unloadResources() {
  * @param contextData   Context data
  */
 void Application::requestLayoutChange(const std::string &layoutName, std::shared_ptr<void> contextData) {
-
+    
     if(topLayout == nullptr || bottomLayout == nullptr) {
         loadingState = LOADINGSTATE_LOADING;
         fadeAlpha = 0xFF;

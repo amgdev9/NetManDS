@@ -126,4 +126,14 @@ void Utils::readFolder(const std::string &path, const std::string &ext, std::vec
     closedir(dp);
 }
 
+/**
+ * @brief Check if a string ends in another string
+ * @param mainStr   Main string
+ * @param toMatch   String to match at the end
+ * @return If the first string ends in the second string
+ */
+bool Utils::endsWith(const std::string &mainStr, const std::string &toMatch) {
+	return (mainStr.size() >= toMatch.size() && mainStr.compare(mainStr.size() - toMatch.size(), toMatch.size(), toMatch) == 0);
+}
+
 }

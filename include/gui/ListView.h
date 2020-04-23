@@ -45,6 +45,7 @@ typedef struct {
     u32 element;
     std::shared_ptr<GuiController> controller;
     u32 startElement;
+    bool changedLayout;
 } ListViewClickParams;
 
 /**

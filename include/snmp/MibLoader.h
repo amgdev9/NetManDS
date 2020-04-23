@@ -7,6 +7,7 @@
 
 // Includes C/C++
 #include <memory>
+#include <string.h>
 
 // Own includes
 #include "snmp/Mib.h"

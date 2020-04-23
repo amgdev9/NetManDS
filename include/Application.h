@@ -18,6 +18,7 @@
 #include "gui/GuiLayout.h"
 #include "socket/UdpSocket.h"
 #include "socket/TcpSocket.h"
+#include "asn1/BerOid.h"
 
 // Defines
 #define SOC_ALIGN               0x1000
@@ -40,6 +41,15 @@ enum LoadingState {
     LOADINGSTATE_FADEIN,
     LOADINGSTATE_NONE,
 };
+
+/**
+ * @struct PduData
+ */
+typedef struct {
+    std::shared_ptr<BerOid> oid;
+    u8 type;
+    std::string value;
+} PduField;
 
 /**
  * @class Application
@@ -65,6 +75,7 @@ class Application {
         std::shared_ptr<UdpSocket> trapv3Sock;
         std::shared_ptr<UdpSocket> syslogUdpSock;
         std::shared_ptr<TcpSocket> syslogTcpSock;
+        std::vector<PduField> pduFields;
 		Application();
 		virtual ~Application();
         void processLoadingScreen();
@@ -85,6 +96,7 @@ class Application {
         inline std::shared_ptr<UdpSocket> getTrapv3Sock() { return trapv3Sock; }
         inline std::shared_ptr<UdpSocket> getSyslogUdpSock() { return syslogUdpSock; }
         inline std::shared_ptr<TcpSocket> getSyslogTcpSock() { return syslogTcpSock; }
+        inline std::vector<PduField> &getPduFields() { return pduFields; }
 };
 
 }

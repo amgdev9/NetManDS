@@ -1,0 +1,10 @@
+<root controller="MibBrowserController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <ButtonView name="backArrow" x="24" y="42" onClick="prevEntry" sx="-0.25" sy="0.25"/>
+    <ImageView name="menuButton" x="290" y="115" sx="0.5"/>
+    <ListView x="5" y="50" width="260" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillEntries" onClick="clickEntry"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+

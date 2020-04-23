@@ -91,13 +91,15 @@ void ListView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
     } else if(!onClick.empty()) {
         for(u32 i = 0; i < fillParams.layouts.size(); i++) {
             float y = fillParams.startY + i * fillParams.elementHeight;
-            if(touch.px >= fillParams.startX && touch.px <= (fillParams.startX + fillParams.elementWidth) &&
+            if((down &KEY_TOUCH) && touch.px >= fillParams.startX && touch.px <= (fillParams.startX + fillParams.elementWidth) &&
                touch.py >= y && touch.py <= (y + fillParams.elementHeight)) {
                    ListViewClickParams params;
                    params.controller = controller;
                    params.element = fillParams.startElement + i;
                    params.startElement = fillParams.startElement;
+                   params.changedLayout = false;
                    controller->callMethod(onClick, &params);
+                   if(params.changedLayout) break;
             }
         }
     }

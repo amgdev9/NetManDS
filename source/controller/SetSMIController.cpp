@@ -10,6 +10,7 @@
 #include "gui/ListView.h"
 #include "gui/ImageView.h"
 #include "gui/TextView.h"
+#include "gui/ButtonView.h"
 #include "Application.h"
 #include "Config.h"
 #include "Utils.h"
@@ -59,13 +60,24 @@ static void clickMib(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<SetSMIController>(params->controller);
 
-    Config &config = Config::getInstance();
-    config.getSmiPath().assign(MIBS_FOLDER + controller->getDirEntries()[params->element]);
-    Application::getInstance().requestLayoutChange("options");
+    if(controller->getComesFromOptions()) {
+        Config &config = Config::getInstance();
+        config.getSmiPath().assign(MIBS_FOLDER + controller->getDirEntries()[params->element]);
+        Application::getInstance().requestLayoutChange("options");
+    } else {
+        std::shared_ptr<std::string> contextData = std::make_shared<std::string>(MIBS_FOLDER + controller->getDirEntries()[params->element]);
+        Application::getInstance().requestLayoutChange("mibbrowser", contextData);
+    }
 }
 
-static void gotoOptions(void *args) {
-    Application::getInstance().requestLayoutChange("options");
+static void goBack(void *args) {
+    ButtonParams *params = (ButtonParams*)args;
+    auto controller = std::static_pointer_cast<SetSMIController>(params->controller);
+    if(controller->getComesFromOptions()) {
+        Application::getInstance().requestLayoutChange("options");
+    } else {
+        Application::getInstance().requestLayoutChange("snmp");
+    }
 }
 
 SetSMIController::SetSMIController() {
@@ -73,11 +85,17 @@ SetSMIController::SetSMIController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"fillMibs", fillMibs},
         {"clickMib", clickMib},
-        {"gotoOptions", gotoOptions},
+        {"goBack", goBack},
     };
 
     this->dirEntries = std::vector<std::string>();
     Utils::readFolder(MIBS_FOLDER, MIBS_EXT, this->dirEntries);
+
+    if(Application::getInstance().getContextData() == nullptr) {
+        comesFromOptions = true;
+    } else {
+        comesFromOptions = false;
+    }
 }
 
 SetSMIController::~SetSMIController() { }

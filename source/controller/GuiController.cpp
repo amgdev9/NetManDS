@@ -22,6 +22,8 @@
 #include "controller/SnmpController.h"
 #include "controller/AgentDiscoveryController.h"
 #include "controller/AgentViewController.h"
+#include "controller/MibBrowserController.h"
+#include "controller/SnmpParamsController.h"
 
 namespace NetMan {
 
@@ -43,6 +45,8 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"SnmpController", &bakeController<SnmpController>},
     {"AgentDiscoveryController", &bakeController<AgentDiscoveryController>},
     {"AgentViewController", &bakeController<AgentViewController>},
+    {"MibBrowserController", &bakeController<MibBrowserController>},
+    {"SnmpParamsController", &bakeController<SnmpParamsController>},
 };
 
 /**

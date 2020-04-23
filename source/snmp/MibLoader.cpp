@@ -95,7 +95,13 @@ MibLoader::MibLoader() {
  * @note It is used for resolving OIDs
  */
 void MibLoader::loadSMI(const std::string &path) {
-    smiMib = load(path);
+    try {
+        smiMib = load(path);
+    } catch (const std::bad_alloc &e) {
+        throw;
+    } catch (const std::runtime_error &e) {
+        throw;
+    }
 }
 
 /**

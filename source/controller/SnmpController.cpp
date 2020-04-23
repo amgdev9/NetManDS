@@ -13,7 +13,8 @@ static void goAgentDiscovery(void *args) {
 }
 
 static void goMibBrowser(void *args) {
-
+    std::shared_ptr<u8> contextData = std::make_shared<u8>();
+    Application::getInstance().requestLayoutChange("setsmi", contextData);
 }
 
 static void goSendSnmp(void *args) {

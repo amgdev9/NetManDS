@@ -48,6 +48,45 @@ std::shared_ptr<BerOid> Mib::resolve(const std::string &name) {
 }
 
 /**
+ * @brief Get the description of an OID
+ * @param oid   OID to get the description from
+ * @return The OID description according to the MIB
+ */
+std::string Mib::getDescription(std::shared_ptr<MibOid> oid) {
+    std::string s = "";
+    switch(oid->macroType) {
+        case MACRO_MODULE_IDENTITY:
+        {
+            auto moduleIdentity = (MibModuleIdentity*)oid->macroData.get();
+            s.append("LastUpdated: " + moduleIdentity->lastUpdated);
+            s.append("\nOrganization: " + moduleIdentity->organization);
+            s.append("\nContactInfo: " + moduleIdentity->contactInfo);
+            s.append("\nDescription: " + moduleIdentity->description);
+            for(auto revision : moduleIdentity->revisions) {
+                s.append("\nRevisionDate: " + revision.date);
+                s.append("\nRevision: " + revision.description);
+            }
+        } break;
+        case MACRO_OBJECT_TYPE:
+        {
+            auto objectType = (MibObjectType*)oid->macroData.get();
+            s.append("Syntax: " + objectType->syntax);
+            s.append("\nUnits: " + objectType->units);
+            s.append("\nMaxAccess: " + objectType->maxAccess);
+            s.append("\nStatus: " + objectType->status);
+            s.append("\nDescription: " + objectType->description);
+            s.append("\nReference: " + objectType->reference);
+            s.append("\nIndexPart: " + objectType->indexPart);
+            s.append("\nDefaultValue: " + objectType->defaultValue);
+        } break;
+        default:
+            break;
+    }
+
+    return s;
+}
+
+/**
  * @brief Print a MIB with all its definitions
  */
 void Mib::print() {

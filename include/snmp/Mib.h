@@ -82,6 +82,7 @@ class Mib {
         Mib(std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<MibOid>>> tree);
         std::shared_ptr<BerOid> resolve(const std::string &name);
         void print();
+        std::string getDescription(std::shared_ptr<MibOid> oid);
         inline std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<MibOid>>> getOidTree() { return oidTree; }
         virtual ~Mib();
 };
