@@ -6,7 +6,7 @@
 #define _SENDSNMP_CONTROLLER_H_
 
 // Own includes
-#include "GuiController.h"
+#include "MibBrowserController.h"
 #include "gui/TextView.h"
 #include "gui/ImageView.h"
 #include "gui/EditTextView.h"
@@ -22,6 +22,7 @@ typedef struct {
     std::shared_ptr<ImageView> typeBox;
     std::shared_ptr<TextView> typeText;
     std::shared_ptr<EditTextView> valueEditText;
+    std::shared_ptr<ImageView> cross;
 } SendSnmpIcons;
 
 /**
@@ -38,7 +39,7 @@ class SendSnmpController : public GuiController {
         inline ListViewFillParams *getFillParams() { return fillParams; }
         inline void setFillParams(ListViewFillParams *params) { fillParams = params; }
         inline void clearIcons() { sendSnmpIcons.clear(); }
-        void addIcons(std::shared_ptr<TextView> oidText, std::shared_ptr<ImageView> typeBox, std::shared_ptr<TextView> typeText, std::shared_ptr<EditTextView> valueEditText);
+        void addIcons(std::shared_ptr<TextView> oidText, std::shared_ptr<ImageView> typeBox, std::shared_ptr<TextView> typeText, std::shared_ptr<EditTextView> valueEditText, std::shared_ptr<ImageView> cross);
         inline std::vector<SendSnmpIcons> &getIcons() { return sendSnmpIcons; }
         inline void setCurrentField(u32 field) { currentField = field; }
         inline u32 getCurrentField() { return currentField; }

@@ -36,6 +36,7 @@ typedef struct {
     std::shared_ptr<Mib> mib;
     std::string tableName;
     in_addr_t agentIP;
+    u32 pduType;
 } SnmpSessionParams;
 
 /**

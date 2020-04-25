@@ -103,7 +103,6 @@ static void clickEntry(void *args) {
     } else if(icons[index].table != nullptr && icons[index].table->touched(down, touch)) {
         std::shared_ptr<SnmpSessionParams> contextData = std::make_shared<SnmpSessionParams>();
         contextData->isTable = true;
-        contextData->agentIP = 0;
         contextData->mib = controller->getMib();
         contextData->tableName = icons[index].text->getText();
         Application::getInstance().requestLayoutChange("agentview", contextData);
