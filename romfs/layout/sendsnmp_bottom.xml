@@ -1,0 +1,23 @@
+<root controller="SendSnmpController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <TextView text="Send SNMP Request" x="30" y="10" size="1.0"/>
+
+    <ImageView name="menuButton" x="290" y="115" sx="0.5"/>
+    <ListView x="45" y="50" width="220" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillFields" onClick="clickField"/>
+
+    <ButtonView name="menuButton" x="100" y="210" sx="0.75" sy="0.25" onClick="snmpGet" />
+    <TextView text="Get" x="90" y="202" size="0.5"/>
+    
+    <ButtonView name="menuButton" x="160" y="210" sx="0.75" sy="0.25" onClick="snmpSet" />
+    <TextView text="Set" x="150" y="202" size="0.5"/>
+
+    <ButtonView name="menuButton" x="220" y="210" sx="0.75" sy="0.25" onClick="snmpGetNext" />
+    <TextView text="GetNext" x="195" y="202" size="0.5"/>
+    
+    <ButtonView name="menuButton" x="280" y="210" sx="0.75" sy="0.25" onClick="snmpGetBulk" />
+    <TextView text="GetBulk" x="255" y="202" size="0.5"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+

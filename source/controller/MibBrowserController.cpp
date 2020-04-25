@@ -95,6 +95,7 @@ static void clickEntry(void *args) {
     if(icons[index].add->touched(down, touch)) {
         PduField pduField;
         pduField.oid = controller->getMib()->resolve(icons[index].text->getText());
+        pduField.oidText = icons[index].text->getText();
         pduField.type = 0;
         pduField.value = "";
         Application::getInstance().getPduFields().push_back(pduField);

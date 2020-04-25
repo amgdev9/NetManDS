@@ -15,7 +15,57 @@ using namespace tinyxml2;
 namespace NetMan {
 
 /**
- * @brief Load an image view
+ * @brief Create an edit text view
+ * @param x             Text box x position
+ * @param y             Text box y position
+ * @param width         Text box width
+ * @param height        Text box height
+ * @param textLength    Maximum text length to be shown (actual text can be larger)
+ * @param controller    Controller used for the view
+ * @param editMethod    Method name when this text box is edited
+ */
+EditTextView::EditTextView(float x, float y, float width, float height, u16 textLength, std::shared_ptr<GuiController> controller, const std::string &editMethod) {
+
+     // Get box parameters
+    this->x = x;
+    this->y = y;
+    this->width = width;
+    this->height = height;
+    this->textColor = C2D_Color32(0, 0, 0, 0xFF);
+    this->textScale = height / DEFAULT_FONT_SIZE;
+    this->numeric = false;
+    this->password = false;
+    onEdit = editMethod;
+
+    // Create text
+    this->textLength = textLength;
+    textBuffer = C2D_TextBufNew(textLength);
+    if(textBuffer == NULL) {
+        throw std::runtime_error("C2D_TextBufNew");
+    }
+	C2D_TextParse(&text, textBuffer, "");
+	C2D_TextOptimize(&text);
+
+    // Save controller
+    this->controller = controller;
+
+    // Call controller to initialize the field
+    if(controller != nullptr && !onEdit.empty()) {
+        char textStr[128];
+        EditTextParams params;
+        params.controller = controller;
+        params.init = false;
+        params.text = textStr;
+        controller->callMethod(onEdit, &params);
+        if(params.init) {
+            C2D_TextParse(&text, textBuffer, textStr);
+            C2D_TextOptimize(&text);
+        }
+    }
+}
+
+/**
+ * @brief Load an edit text view
  * @param node          XML node containing image parameters
  * @param controller    Controller used (can be nullptr)
  */

@@ -50,6 +50,7 @@ class EditTextView : public GuiView {
         std::shared_ptr<GuiController> controller;
         std::string hintText;
     public:
+        EditTextView(float x, float y, float width, float height, u16 textLength, std::shared_ptr<GuiController> controller, const std::string &editMethod);
         EditTextView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         virtual void input(u32 held, u32 down, u32 up, touchPosition &touch) override;
         virtual void draw() override;

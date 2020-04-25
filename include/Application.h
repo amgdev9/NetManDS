@@ -47,7 +47,8 @@ enum LoadingState {
  */
 typedef struct {
     std::shared_ptr<BerOid> oid;
-    u8 type;
+    std::string oidText;
+    char type;
     std::string value;
 } PduField;
 

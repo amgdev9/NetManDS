@@ -24,6 +24,7 @@
 #include "controller/AgentViewController.h"
 #include "controller/MibBrowserController.h"
 #include "controller/SnmpParamsController.h"
+#include "controller/SendSnmpController.h"
 
 namespace NetMan {
 
@@ -47,6 +48,7 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"AgentViewController", &bakeController<AgentViewController>},
     {"MibBrowserController", &bakeController<MibBrowserController>},
     {"SnmpParamsController", &bakeController<SnmpParamsController>},
+    {"SendSnmpController", &bakeController<SendSnmpController>},
 };
 
 /**

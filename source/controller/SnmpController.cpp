@@ -18,7 +18,7 @@ static void goMibBrowser(void *args) {
 }
 
 static void goSendSnmp(void *args) {
-
+    Application::getInstance().requestLayoutChange("sendsnmp");
 }
 
 static void goMenu(void *args) {
