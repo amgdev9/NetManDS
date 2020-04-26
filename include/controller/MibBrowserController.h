@@ -37,6 +37,8 @@ typedef struct {
     std::string tableName;
     in_addr_t agentIP;
     u32 pduType;
+    u32 nonRepeaters;
+    u32 maxRepetitions;
 } SnmpSessionParams;
 
 /**

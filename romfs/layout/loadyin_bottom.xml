@@ -1,0 +1,11 @@
+<root controller="LoadYinController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <TextView text="Choose a YIN module" x="20" y="10" size="1.0"/>
+
+    <ImageView name="menuButton" x="280" y="115" sx="0.5"/>
+    <ListView x="20" y="50" width="240" height="25" maxElements="5" arrowX="280" arrowY="100" onFill="fillModules" onClick="clickModule"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+

@@ -5,7 +5,7 @@
 // Own includes
 #include "controller/SendSnmpController.h"
 #include "Application.h"
-#include "snmp/Snmpv3Pdu.h"
+#include "snmp/Snmpv2Pdu.h"
 
 // Defines
 #define ICON_SIZE           81.0f
@@ -85,7 +85,8 @@ static void clickField(void *args) {
     icons[index].valueEditText->input(0, down, 0, touch);
 
     if(icons[index].typeBox->touched(down, touch)) {
-        // TODO
+        std::shared_ptr<u32> contextData = std::make_shared<u32>(params->element);
+        Application::getInstance().requestLayoutChange("snmptype", contextData);
     } else if(icons[index].cross->touched(down, touch)) {
         auto& pduFields = Application::getInstance().getPduFields();
         pduFields.erase(pduFields.begin() + params->element);
@@ -106,27 +107,27 @@ static void onEditValue(void *args) {
     }
 }
 
-static void gotoAgentView(u32 pduType) {
+static void gotoView(u32 pduType, const std::string &view = "agentview") {
     std::shared_ptr<SnmpSessionParams> sessionParams = std::make_shared<SnmpSessionParams>();
     sessionParams->isTable = false;
     sessionParams->pduType = pduType;
-    Application::getInstance().requestLayoutChange("agentview", sessionParams);
+    Application::getInstance().requestLayoutChange(view, sessionParams);
 }
 
 static void snmpGet(void *args) {
-    gotoAgentView(SNMPV1_GETREQUEST);
+    gotoView(SNMPV1_GETREQUEST);
 }
 
 static void snmpSet(void *args) {
-    gotoAgentView(SNMPV1_SETREQUEST);
+    gotoView(SNMPV1_SETREQUEST);
 }
 
 static void snmpGetNext(void *args) {
-    gotoAgentView(SNMPV1_GETNEXTREQUEST);
+    gotoView(SNMPV1_GETNEXTREQUEST);
 }
 
 static void snmpGetBulk(void *args) {
-    // TODO
+    gotoView(SNMPV2_GETBULKREQUEST, "getbulk");
 }
 
 SendSnmpController::SendSnmpController() {
@@ -140,15 +141,6 @@ SendSnmpController::SendSnmpController() {
         {"snmpGetBulk", snmpGetBulk},
         {"onEditValue", onEditValue},
     };
-
-    // TODO Remove
-    PduField field;
-    field.oid = std::make_shared<BerOid>("1.2.3.4");
-    field.type = 's';
-    field.value = "";
-    field.oidText = "sysUpTimesysUpTime";
-    Application::getInstance().getPduFields().push_back(field);
-    Application::getInstance().getPduFields().push_back(field);
 }
 
 void SendSnmpController::addIcons(std::shared_ptr<TextView> oidText, std::shared_ptr<ImageView> typeBox, std::shared_ptr<TextView> typeText, std::shared_ptr<EditTextView> valueEditText, std::shared_ptr<ImageView> cross) {

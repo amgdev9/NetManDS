@@ -44,6 +44,7 @@ ImageView::ImageView(const char *name, float x, float y, float sx, float sy) {
     C2D_SpriteSetPos(&imageParams, x, y);
     C2D_SpriteSetRotation(&imageParams, 0.0f);
     C2D_SpriteSetScale(&imageParams, sx, sy);
+    this->show = true;
 }
 
 /**
@@ -67,6 +68,8 @@ ImageView::ImageView(XMLElement *node, std::shared_ptr<GuiController> controller
  */
 bool ImageView::touched(u32 down, touchPosition &touch) {
 
+    if(!this->show) return false;
+    
     auto &pos = imageParams.params.pos;
 
     float hw = fabs(pos.w) / 2.0f;
@@ -80,6 +83,7 @@ bool ImageView::touched(u32 down, touchPosition &touch) {
  * @brief Draw an image view
  */
 void ImageView::draw() {
+    if(!this->show) return;
     C2D_DrawSprite(&imageParams);
 }
 

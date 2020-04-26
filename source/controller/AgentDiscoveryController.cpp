@@ -121,14 +121,17 @@ static void scan(void *args) {
 }
 
 static void onUpdateProgress(void *args) {
+    
     UpdateParams *params = (UpdateParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
     auto& scanParams = controller->getParams();
+
     if(!scanParams.scanning) {
         if(scanParams.progress == 100) {
             Application::getInstance().requestLayoutChange("agentview");
         } else if(scanParams.error) {
-            Application::getInstance().messageBox("An error has ocurred in the scan. Aborting");  
+            Application::getInstance().messageBox("An error has ocurred in the scan. Aborting");
+            scanParams.error = false;
         } else {
             return;
         }

@@ -21,7 +21,7 @@ static void goSNMP(void *args) {
 }
 
 static void goRestConf(void *args) {
-
+    Application::getInstance().requestLayoutChange("loadyin");
 }
 
 static void goLogs(void *args) {

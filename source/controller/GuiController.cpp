@@ -25,6 +25,9 @@
 #include "controller/MibBrowserController.h"
 #include "controller/SnmpParamsController.h"
 #include "controller/SendSnmpController.h"
+#include "controller/LoadYinController.h"
+#include "controller/SnmpTypeController.h"
+#include "controller/GetBulkController.h"
 
 namespace NetMan {
 
@@ -49,6 +52,9 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"MibBrowserController", &bakeController<MibBrowserController>},
     {"SnmpParamsController", &bakeController<SnmpParamsController>},
     {"SendSnmpController", &bakeController<SendSnmpController>},
+    {"LoadYinController", &bakeController<LoadYinController>},
+    {"SnmpTypeController", &bakeController<SnmpTypeController>},
+    {"GetBulkController", &bakeController<GetBulkController>},
 };
 
 /**

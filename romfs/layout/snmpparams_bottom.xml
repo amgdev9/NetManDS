@@ -14,8 +14,9 @@
     <ButtonView name="menuButton" x="160" y="200" onClick="sendSnmp" sx="0.5" sy="0.25"/>
     <TextView text="Send" x="143" y="192" size="0.5" />
 
-    <ImageView name="menuButton" x="296" y="216" sx="0.75" sy="0.75"/>
-
     <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+
+    <UpdateView onUpdate="updateRequest" />
+    <ImageView name="menuButton" x="310" y="10" sx="0.25" sy="0.25"/>
 </root>
 
