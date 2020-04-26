@@ -60,7 +60,7 @@ static void sendRequest(void *args) {
                 // TODO SNMPv2
             } else {
                 // TODO SNMPv1
-                std::unique_ptr<Snmpv1Pdu> pdu = std::make_unique<Snmpv1Pdu>(params->community);
+                std::unique_ptr<Snmpv1Pdu> pdu = std::unique_ptr<Snmpv1Pdu>(new Snmpv1Pdu(params->community));
             }
         }
     }
