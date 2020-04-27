@@ -119,117 +119,113 @@ static void sendRequest(void *args) {
     auto& config = configStore.getData();
     std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>(config.udpTimeout);
 
-    if(session->isTable) {
-        // TODO Handle table
-    } else {
-        // Prepare OIDs
-        auto& pduFields = Application::getInstance().getPduFields();
-        for(u32 i = 0; i < pduFields.size(); i++) {
-            if(session->pduType == SNMPV1_GETREQUEST || session->pduType == SNMPV1_SETREQUEST ||
-               (session->pduType == SNMPV2_GETBULKREQUEST && i < session->nonRepeaters)) {
-                pduFields[i].oid->addElement(0);    // Add .0 to scalar objects
-            }
+    // Prepare OIDs
+    auto& pduFields = Application::getInstance().getPduFields();
+    for(u32 i = 0; i < pduFields.size(); i++) {
+        if(session->pduType == SNMPV1_GETREQUEST || session->pduType == SNMPV1_SETREQUEST ||
+           (session->pduType == SNMPV2_GETBULKREQUEST && i < session->nonRepeaters)) {
+            pduFields[i].oid->addElement(0);    // Add .0 to scalar objects
         }
+    }
 
-        try {
-            if(params->usmEnabled) {
-                std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(configStore.getEngineID(), configStore.getContextName(), params->username);
+    try {
+        if(params->usmEnabled) {
+            std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(configStore.getEngineID(), configStore.getContextName(), params->username);
+            std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
+            std::shared_ptr<BerOid> testOid = std::make_shared<BerOid>("1.3.6.1.2.1.1.7.0");
+            pdu->addVarBind(testOid, nullval);
+            pdu->sendRequest(SNMPV2_GETREQUEST, sock, session->agentIP, config.snmpPort);
+            try {
+                pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+            } catch (const std::runtime_error &e) { }
+            pdu->clear();
+
+            if(session->pduType == SNMPV1_SETREQUEST) {
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pdu->addVarBind(pduFields[i].oid, prepareSetField(i));
+                }
+            } else {
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pdu->addVarBind(pduFields[i].oid, nullval);
+                }
+            }
+
+            if(session->pduType == SNMPV2_GETBULKREQUEST) {
+                pdu->sendBulkRequest(session->nonRepeaters, session->maxRepetitions, sock, session->agentIP, config.snmpPort);
+            } else {
+                pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
+            }
+            for(u32 i = 0; i < 60; i++) gspWaitForVBlank();
+            pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+
+            if(session->pduType == SNMPV2_GETBULKREQUEST) {
+                for(u32 i = 0; i < pdu->getNVarBinds(); i++) {
+                    if(i < session->nonRepeaters) {
+                        pduFields[i].value = pdu->getVarBind(i)->print();
+                    } else if(i == session->nonRepeaters) {
+                        pduFields[i].value = std::to_string(pdu->getNVarBinds() - session->nonRepeaters) + " fields";
+                    } else {
+                        PduField field;
+                        field.oidText = pdu->getVarBindOid(session->nonRepeaters)->print();
+                        field.value = pdu->getVarBind(i)->print();
+                        pduFields.push_back(field);
+                    }
+                }
+            } else {
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pduFields[i].value = pdu->getVarBind(i)->print();
+                }
+            }
+        } else {
+            if(session->pduType == SNMPV2_GETBULKREQUEST) {
+                std::unique_ptr<Snmpv2Pdu> pdu = std::unique_ptr<Snmpv2Pdu>(new Snmpv2Pdu(params->community));
                 std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
-                std::shared_ptr<BerOid> testOid = std::make_shared<BerOid>("1.3.6.1.2.1.1.7.0");
-                pdu->addVarBind(testOid, nullval);
-                pdu->sendRequest(SNMPV2_GETREQUEST, sock, session->agentIP, config.snmpPort);
-                try {
-                    pdu->recvResponse(sock, session->agentIP, config.snmpPort);
-                } catch (const std::runtime_error &e) { }
-                pdu->clear();
 
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pdu->addVarBind(pduFields[i].oid, nullval);
+                }
+
+                pdu->sendBulkRequest(session->nonRepeaters, session->maxRepetitions, sock, session->agentIP, config.snmpPort);
+                pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+
+                for(u32 i = 0; i < pdu->getNVarBinds(); i++) {
+                    if(i < session->nonRepeaters) {
+                        pduFields[i].value = pdu->getVarBind(i)->print();
+                    } else if(i == session->nonRepeaters) {
+                        pduFields[i].value = std::to_string(pdu->getNVarBinds() - session->nonRepeaters) + " fields";
+                    } else {
+                        PduField field;
+                        field.oidText = pdu->getVarBindOid(session->nonRepeaters)->print();
+                        field.value = pdu->getVarBind(i)->print();
+                        pduFields.push_back(field);
+                    }
+                }
+            } else {
+                std::unique_ptr<Snmpv1Pdu> pdu = std::unique_ptr<Snmpv1Pdu>(new Snmpv1Pdu(params->community));
                 if(session->pduType == SNMPV1_SETREQUEST) {
                     for(u32 i = 0; i < pduFields.size(); i++) {
                         pdu->addVarBind(pduFields[i].oid, prepareSetField(i));
                     }
                 } else {
+                    std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
                     for(u32 i = 0; i < pduFields.size(); i++) {
                         pdu->addVarBind(pduFields[i].oid, nullval);
                     }
                 }
 
-                if(session->pduType == SNMPV2_GETBULKREQUEST) {
-                    pdu->sendBulkRequest(session->nonRepeaters, session->maxRepetitions, sock, session->agentIP, config.snmpPort);
-                } else {
-                    pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
-                }
-                for(u32 i = 0; i < 60; i++) gspWaitForVBlank();
+                pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
                 pdu->recvResponse(sock, session->agentIP, config.snmpPort);
 
-                if(session->pduType == SNMPV2_GETBULKREQUEST) {
-                    for(u32 i = 0; i < pdu->getNVarBinds(); i++) {
-                        if(i < session->nonRepeaters) {
-                            pduFields[i].value = pdu->getVarBind(i)->print();
-                        } else if(i == session->nonRepeaters) {
-                            pduFields[i].value = std::to_string(pdu->getNVarBinds() - session->nonRepeaters) + " fields";
-                        } else {
-                            PduField field;
-                            field.oidText = pdu->getVarBindOid(session->nonRepeaters)->print();
-                            field.value = pdu->getVarBind(i)->print();
-                            pduFields.push_back(field);
-                        }
-                    }
-                } else {
-                    for(u32 i = 0; i < pduFields.size(); i++) {
-                        pduFields[i].value = pdu->getVarBind(i)->print();
-                    }
-                }
-            } else {
-                if(session->pduType == SNMPV2_GETBULKREQUEST) {
-                    std::unique_ptr<Snmpv2Pdu> pdu = std::unique_ptr<Snmpv2Pdu>(new Snmpv2Pdu(params->community));
-                    std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
-
-                    for(u32 i = 0; i < pduFields.size(); i++) {
-                        pdu->addVarBind(pduFields[i].oid, nullval);
-                    }
-
-                    pdu->sendBulkRequest(session->nonRepeaters, session->maxRepetitions, sock, session->agentIP, config.snmpPort);
-                    pdu->recvResponse(sock, session->agentIP, config.snmpPort);
-
-                    for(u32 i = 0; i < pdu->getNVarBinds(); i++) {
-                        if(i < session->nonRepeaters) {
-                            pduFields[i].value = pdu->getVarBind(i)->print();
-                        } else if(i == session->nonRepeaters) {
-                            pduFields[i].value = std::to_string(pdu->getNVarBinds() - session->nonRepeaters) + " fields";
-                        } else {
-                            PduField field;
-                            field.oidText = pdu->getVarBindOid(session->nonRepeaters)->print();
-                            field.value = pdu->getVarBind(i)->print();
-                            pduFields.push_back(field);
-                        }
-                    }
-                } else {
-                    std::unique_ptr<Snmpv1Pdu> pdu = std::unique_ptr<Snmpv1Pdu>(new Snmpv1Pdu(params->community));
-                    if(session->pduType == SNMPV1_SETREQUEST) {
-                        for(u32 i = 0; i < pduFields.size(); i++) {
-                            pdu->addVarBind(pduFields[i].oid, prepareSetField(i));
-                        }
-                    } else {
-                        std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
-                        for(u32 i = 0; i < pduFields.size(); i++) {
-                            pdu->addVarBind(pduFields[i].oid, nullval);
-                        }
-                    }
-
-                    pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
-                    pdu->recvResponse(sock, session->agentIP, config.snmpPort);
-
-                    for(u32 i = 0; i < pduFields.size(); i++) {
-                        pduFields[i].value = pdu->getVarBind(i)->print();
-                    }
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pduFields[i].value = pdu->getVarBind(i)->print();
                 }
             }
-        } catch (const std::runtime_error &e) {
-            params->working = false;
-            params->error = true;
-            params->errorText = e.what();
-            return;
         }
+    } catch (const std::runtime_error &e) {
+        params->working = false;
+        params->error = true;
+        params->errorText = e.what();
+        return;
     }
 
     params->working = false;
@@ -243,14 +239,23 @@ static void sendSnmp(void *args) {
     SnmpThreadParams *threadParams = controller->getThreadParams();
     if(threadParams->working) return;
    
-    s32 prio = 0;
-	svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
-	Thread thread = threadCreate(sendRequest, threadParams, STACKSIZE, prio-1, -2, true);
-    if(thread == NULL) {
-        Application::getInstance().messageBox("Can't create thread for sending SNMP request");
+    if(threadParams->session->isTable) {
+        auto contextData = std::make_shared<SnmpThreadParams>();
+        contextData->session = threadParams->session;
+        contextData->community = threadParams->community;
+        contextData->username = threadParams->username;
+        contextData->usmEnabled = threadParams->usmEnabled;
+        Application::getInstance().requestLayoutChange("snmptable", contextData);
     } else {
-        controller->getLoadingBox()->setShow(true);
-        controller->getLoadingIcon()->setShow(true);
+        s32 prio = 0;
+        svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
+        Thread thread = threadCreate(sendRequest, threadParams, STACKSIZE, prio-1, -2, true);
+        if(thread == NULL) {
+            Application::getInstance().messageBox("Can't create thread for sending SNMP request");
+        } else {
+            controller->getLoadingBox()->setShow(true);
+            controller->getLoadingIcon()->setShow(true);
+        }
     }
 }
 
