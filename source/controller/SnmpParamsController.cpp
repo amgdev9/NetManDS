@@ -134,13 +134,20 @@ static void sendRequest(void *args) {
         try {
             if(params->usmEnabled) {
                 std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(configStore.getEngineID(), configStore.getContextName(), params->username);
+                std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
+                std::shared_ptr<BerOid> testOid = std::make_shared<BerOid>("1.3.6.1.2.1.1.7.0");
+                pdu->addVarBind(testOid, nullval);
+                pdu->sendRequest(SNMPV2_GETREQUEST, sock, session->agentIP, config.snmpPort);
+                try {
+                    pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+                } catch (const std::runtime_error &e) { }
+                pdu->clear();
 
                 if(session->pduType == SNMPV1_SETREQUEST) {
                     for(u32 i = 0; i < pduFields.size(); i++) {
                         pdu->addVarBind(pduFields[i].oid, prepareSetField(i));
                     }
                 } else {
-                    std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
                     for(u32 i = 0; i < pduFields.size(); i++) {
                         pdu->addVarBind(pduFields[i].oid, nullval);
                     }
@@ -151,6 +158,7 @@ static void sendRequest(void *args) {
                 } else {
                     pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
                 }
+                for(u32 i = 0; i < 60; i++) gspWaitForVBlank();
                 pdu->recvResponse(sock, session->agentIP, config.snmpPort);
 
                 if(session->pduType == SNMPV2_GETBULKREQUEST) {
@@ -286,32 +294,11 @@ SnmpParamsController::SnmpParamsController() {
     threadParams.community = "";
     threadParams.username = "";
 
-    // TODO Remove test
-    std::shared_ptr<SnmpSessionParams> sessionParams = std::make_shared<SnmpSessionParams>();
-    sessionParams->agentIP = inet_addr("127.0.0.1");
-    sessionParams->isTable = false;
-    sessionParams->pduType = SNMPV2_GETBULKREQUEST;
-    sessionParams->nonRepeaters = 2;
-    sessionParams->maxRepetitions = 5;
-    threadParams.username = "manager";
-    threadParams.usmEnabled = true;
-    threadParams.session = sessionParams;
-    PduField field;
-    field.oid = std::make_shared<BerOid>("1.3.6.1.2.1.1.1");
-    field.oidText = "sysDescr";
-    Application::getInstance().getPduFields().push_back(field);
-    field.oid = std::make_shared<BerOid>("1.3.6.1.2.1.1.3");
-    field.oidText = "sysUpTime";
-    Application::getInstance().getPduFields().push_back(field);
-    field.oid = std::make_shared<BerOid>("1.3.6.1.2.1.2.2");
-    field.oidText = "ifTable";
-    Application::getInstance().getPduFields().push_back(field);
-
-    /*auto contextData = std::static_pointer_cast<SnmpSessionParams>(Application::getInstance().getContextData());
+    auto contextData = std::static_pointer_cast<SnmpSessionParams>(Application::getInstance().getContextData());
     if(contextData == nullptr) {
         throw std::runtime_error("No context specified");
     }
-    this->threadParams.session = contextData;*/
+    this->threadParams.session = contextData;
     this->threadParams.working = false;
     this->threadParams.error = false;
     this->threadParams.success = false;
