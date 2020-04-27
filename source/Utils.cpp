@@ -10,6 +10,10 @@
 // Own includes
 #include "Utils.h"
 #include "Application.h"
+#include "snmp/Snmpv2Pdu.h"
+#include "snmp/Snmpv3Pdu.h"
+#include "asn1/BerInteger.h"
+#include "Config.h"
 
 namespace NetMan {
 
@@ -134,6 +138,179 @@ void Utils::readFolder(const std::string &path, const std::string &ext, std::vec
  */
 bool Utils::endsWith(const std::string &mainStr, const std::string &toMatch) {
 	return (mainStr.size() >= toMatch.size() && mainStr.compare(mainStr.size() - toMatch.size(), toMatch.size(), toMatch) == 0);
+}
+
+/**
+ * @brief Prepare PDU fields for a SET request
+ * @param i PDU field to be prepared
+ * @return The prepared field
+ */
+static std::shared_ptr<BerField> prepareSetField(u32 i) {
+
+    std::shared_ptr<BerField> currentField = nullptr;
+    auto &pduFields = Application::getInstance().getPduFields();
+
+    switch(pduFields[i].type) {
+        case 'i':       // Integer
+        {
+            s32 val = strtol(pduFields[i].value.c_str(), NULL, 10);
+            currentField = std::make_shared<BerInteger>(&val, sizeof(s32), true);
+        } break;
+        case 's':       // Octet string
+            currentField = std::make_shared<BerOctetString>(pduFields[i].value);
+            break;
+        case 'n':       // Null
+            currentField = std::make_shared<BerNull>();
+            break;
+        case 'O':       // Object Identifier
+            currentField = std::make_shared<BerOid>(pduFields[i].value);
+            break;
+        case 'a':       // Network Address
+        {
+            char ipOctetString[5];
+            in_addr_t ip = inet_addr(pduFields[i].value.c_str());
+            if(ip == INADDR_NONE) {
+                throw std::runtime_error("Field " + pduFields[i].oidText + " is not a valid IP address");
+            }
+            memcpy(ipOctetString, &ip, 4);
+            ipOctetString[4] = '\0';
+            currentField = std::make_shared<BerOctetString>(ipOctetString, SNMPV1_TAGCLASS_NETWORKADDRESS, SNMPV1_TAG_NETWORKADDRESS);
+        } break;
+        case 'c':       // Counter
+        {
+            u32 val = strtoul(pduFields[i].value.c_str(), NULL, 10);
+            currentField = std::make_shared<BerInteger>(&val, sizeof(u32), false, SNMPV1_TAGCLASS_COUNTER, SNMPV1_TAG_COUNTER);
+        } break;
+        case 'C':       // Counter64
+        {
+            u64 val = strtoul(pduFields[i].value.c_str(), NULL, 10);
+            currentField = std::make_shared<BerInteger>(&val, sizeof(u64), false, SNMPV2_TAGCLASS_COUNTER64, SNMPV2_TAG_COUNTER64);
+        } break;
+        case 'g':       // Gauge
+        {
+            u32 val = strtoul(pduFields[i].value.c_str(), NULL, 10);
+            currentField = std::make_shared<BerInteger>(&val, sizeof(u32), false, SNMPV1_TAGCLASS_GAUGE, SNMPV1_TAG_GAUGE);
+        } break;
+        case 't':       // TimeTicks
+        {
+            u32 val = strtoul(pduFields[i].value.c_str(), NULL, 10);
+            currentField = std::make_shared<BerInteger>(&val, sizeof(u32), false, SNMPV1_TAGCLASS_TIMETICKS, SNMPV1_TAG_TIMETICKS);
+        } break;
+        case 'o':       // Opaque
+            currentField = std::make_shared<BerOctetString>(pduFields[i].value, SNMPV1_TAGCLASS_OPAQUE, SNMPV1_TAG_OPAQUE);
+            break;
+        default:
+            throw std::runtime_error("Field " + pduFields[i].oidText + " has no valid ASN.1 syntax");
+    }
+
+    return currentField;
+}
+
+/**
+ * @brief Send a SNMP PDU to some destination
+ * @param params    Request parameters
+ */
+void Utils::sendSnmpPdu(SnmpThreadParams *params) {
+
+    auto& configStore = Config::getInstance();
+    auto& config = configStore.getData();
+    auto session = params->session;
+    auto& pduFields = Application::getInstance().getPduFields();
+
+    std::shared_ptr<UdpSocket> sock = std::make_shared<UdpSocket>(config.udpTimeout);
+    
+    if(params->usmEnabled) {
+        std::shared_ptr<Snmpv3Pdu> pdu = std::make_shared<Snmpv3Pdu>(configStore.getEngineID(), configStore.getContextName(), params->username);
+        std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
+        std::shared_ptr<BerOid> testOid = std::make_shared<BerOid>("1.3.6.1.2.1.1.7.0");
+        pdu->addVarBind(testOid, nullval);
+        pdu->sendRequest(SNMPV2_GETREQUEST, sock, session->agentIP, config.snmpPort);
+        try {
+            pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+        } catch (const std::runtime_error &e) { }
+        pdu->clear();
+
+        if(session->pduType == SNMPV1_SETREQUEST) {
+            for(u32 i = 0; i < pduFields.size(); i++) {
+                pdu->addVarBind(pduFields[i].oid, prepareSetField(i));
+            }
+        } else {
+            for(u32 i = 0; i < pduFields.size(); i++) {
+                pdu->addVarBind(pduFields[i].oid, nullval);
+            }
+        }
+
+        if(session->pduType == SNMPV2_GETBULKREQUEST) {
+            pdu->sendBulkRequest(session->nonRepeaters, session->maxRepetitions, sock, session->agentIP, config.snmpPort);
+        } else {
+            pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
+        }
+        for(u32 i = 0; i < 60; i++) gspWaitForVBlank();
+        pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+
+        if(session->pduType == SNMPV2_GETBULKREQUEST) {
+            for(u32 i = 0; i < pdu->getNVarBinds(); i++) {
+                if(i < session->nonRepeaters) {
+                    pduFields[i].value = pdu->getVarBind(i)->print();
+                } else if(i == session->nonRepeaters) {
+                    pduFields[i].value = std::to_string(pdu->getNVarBinds() - session->nonRepeaters) + " fields";
+                } else {
+                    PduField field;
+                    field.oidText = pdu->getVarBindOid(session->nonRepeaters)->print();
+                    field.value = pdu->getVarBind(i)->print();
+                    pduFields.push_back(field);
+                }
+            }
+        } else {
+            for(u32 i = 0; i < pduFields.size(); i++) {
+                pduFields[i].value = pdu->getVarBind(i)->print();
+            }
+        }
+    } else {
+        if(session->pduType == SNMPV2_GETBULKREQUEST) {
+            std::unique_ptr<Snmpv2Pdu> pdu = std::unique_ptr<Snmpv2Pdu>(new Snmpv2Pdu(params->community));
+            std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
+
+            for(u32 i = 0; i < pduFields.size(); i++) {
+                pdu->addVarBind(pduFields[i].oid, nullval);
+            }
+
+            pdu->sendBulkRequest(session->nonRepeaters, session->maxRepetitions, sock, session->agentIP, config.snmpPort);
+            pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+
+            for(u32 i = 0; i < pdu->getNVarBinds(); i++) {
+                if(i < session->nonRepeaters) {
+                    pduFields[i].value = pdu->getVarBind(i)->print();
+                } else if(i == session->nonRepeaters) {
+                    pduFields[i].value = std::to_string(pdu->getNVarBinds() - session->nonRepeaters) + " fields";
+                } else {
+                    PduField field;
+                    field.oidText = pdu->getVarBindOid(session->nonRepeaters)->print();
+                    field.value = pdu->getVarBind(i)->print();
+                    pduFields.push_back(field);
+                }
+            }
+        } else {
+            std::unique_ptr<Snmpv1Pdu> pdu = std::unique_ptr<Snmpv1Pdu>(new Snmpv1Pdu(params->community));
+            if(session->pduType == SNMPV1_SETREQUEST) {
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pdu->addVarBind(pduFields[i].oid, prepareSetField(i));
+                }
+            } else {
+                std::shared_ptr<BerNull> nullval = std::make_shared<BerNull>();
+                for(u32 i = 0; i < pduFields.size(); i++) {
+                    pdu->addVarBind(pduFields[i].oid, nullval);
+                }
+            }
+
+            pdu->sendRequest(session->pduType, sock, session->agentIP, config.snmpPort);
+            pdu->recvResponse(sock, session->agentIP, config.snmpPort);
+
+            for(u32 i = 0; i < pduFields.size(); i++) {
+                pduFields[i].value = pdu->getVarBind(i)->print();
+            }
+        }
+    }
 }
 
 }

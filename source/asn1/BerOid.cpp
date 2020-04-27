@@ -118,6 +118,15 @@ void BerOid::addElement(u32 n) {
 }
 
 /**
+ * @brief Edit the last element of the OID
+ * @param n New value for the last element
+ */
+void BerOid::editLastElement(u32 n) {
+    this->oid[this->oid.size() - 1] = n;
+    this->parseOid(this->oid);
+}
+
+/**
  * @brief Parse data to an output buffer
  * @param out Output buffer
  */

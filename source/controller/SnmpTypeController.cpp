@@ -7,6 +7,7 @@
 #include "gui/ListView.h"
 #include "gui/ImageView.h"
 #include "gui/TextView.h"
+#include "gui/ButtonView.h"
 #include "Application.h"
 
 // Defines
@@ -18,7 +19,13 @@
 namespace NetMan {
 
 static void goBack(void *args) {
-    Application::getInstance().requestLayoutChange("sendsnmp");
+    ButtonParams *params = (ButtonParams*)args;
+    auto controller = std::static_pointer_cast<SnmpTypeController>(params->controller);
+    if(controller->getContext()->comesFromTable) {
+        Application::getInstance().requestLayoutChange("snmptable");
+    } else {
+        Application::getInstance().requestLayoutChange("sendsnmp");
+    }
 }
 
 static void fillTypes(void *args) {
@@ -66,8 +73,12 @@ static void clickType(void *args) {
         'i', 's', 'n', 'O', 'a', 'c', 'C', 'g', 't', 'o'
     };
 
-    Application::getInstance().getPduFields()[controller->getField()].type = snmpTypeChars[params->element];
-    Application::getInstance().requestLayoutChange("sendsnmp");
+    Application::getInstance().getPduFields()[controller->getContext()->element].type = snmpTypeChars[params->element];
+    if(controller->getContext()->comesFromTable) {
+        Application::getInstance().requestLayoutChange("snmptable");
+    } else {
+        Application::getInstance().requestLayoutChange("sendsnmp");
+    }
 }
 
 SnmpTypeController::SnmpTypeController() {
@@ -82,7 +93,7 @@ SnmpTypeController::SnmpTypeController() {
         throw std::runtime_error("No context specified");
     }
 
-    field = *std::static_pointer_cast<u32>(contextData).get();
+    context = std::static_pointer_cast<SnmpTypeContext>(contextData);
 }
 
 SnmpTypeController::~SnmpTypeController() { }

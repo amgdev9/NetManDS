@@ -4,6 +4,7 @@
 
 // Own includes
 #include "controller/SendSnmpController.h"
+#include "controller/SnmpTypeController.h"
 #include "Application.h"
 #include "snmp/Snmpv2Pdu.h"
 
@@ -85,7 +86,9 @@ static void clickField(void *args) {
     icons[index].valueEditText->input(0, down, 0, touch);
 
     if(icons[index].typeBox->touched(down, touch)) {
-        std::shared_ptr<u32> contextData = std::make_shared<u32>(params->element);
+        std::shared_ptr<SnmpTypeContext> contextData = std::make_shared<SnmpTypeContext>();
+        contextData->element = params->element;
+        contextData->comesFromTable = false;
         Application::getInstance().requestLayoutChange("snmptype", contextData);
     } else if(icons[index].cross->touched(down, touch)) {
         auto& pduFields = Application::getInstance().getPduFields();

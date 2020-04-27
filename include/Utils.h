@@ -14,6 +14,7 @@
 
 // Own includes
 #include "gui/EditTextView.h"
+#include "controller/SnmpParamsController.h"
 
 namespace NetMan {
 
@@ -29,6 +30,7 @@ class Utils {
         static void readFolder(const std::string &path, const std::string &ext, std::vector<std::string> &out);
         static std::shared_ptr<json_t> loadJsonList(const std::string &path);
         static bool endsWith(const std::string &mainStr, const std::string &toMatch);
+        static void sendSnmpPdu(SnmpThreadParams *params);
 };
 
 }

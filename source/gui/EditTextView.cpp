@@ -119,12 +119,22 @@ EditTextView::EditTextView(XMLElement *node, std::shared_ptr<GuiController> cont
 }
 
 /**
+ * @brief Check if the edit text view was touched
+ * @param down  Down keys
+ * @param touch Touchpad status
+ * @return Whether this view has been touched or not
+ */
+bool EditTextView::touched(u32 down, touchPosition &touch) {
+    return (touch.px >= x && touch.px <= (x + width) &&
+            touch.py >= y && touch.py <= (y + height) && (down &KEY_TOUCH));
+}
+
+/**
  * @brief Process input
  */
 void EditTextView::input(u32 held, u32 down, u32 up, touchPosition &touch) {
 
-    if(touch.px >= x && touch.px <= (x + width) &&
-       touch.py >= y && touch.py <= (y + height) && (down &KEY_TOUCH)) {
+    if(touched(down, touch)) {
         SwkbdState swkbd;
         char textstr[128];
         if(numeric) {

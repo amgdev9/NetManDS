@@ -11,15 +11,23 @@
 namespace NetMan {
 
 /**
+ * @struct SnmpTypeContext
+ */
+typedef struct {
+    u32 element;
+    bool comesFromTable;
+} SnmpTypeContext;
+
+/**
  * @class SnmpTypeController
  */
 class SnmpTypeController : public GuiController {
     private:
-        u32 field;
+        std::shared_ptr<SnmpTypeContext> context;
     public:
         SnmpTypeController();
         virtual ~SnmpTypeController();
-        inline u32 getField() { return field; }
+        inline std::shared_ptr<SnmpTypeContext> getContext() { return context; }
 };
 
 }

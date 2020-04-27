@@ -4,7 +4,13 @@
     <TextView text="SNMP Table contents" x="20" y="10" size="1.0"/>
 
     <ImageView name="menuButton" x="290" y="115" sx="0.5"/>
-    <ListView x="5" y="50" width="260" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillTable" onClick="clickElement"/>
+    <ListView x="5" y="50" width="260" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillTable" onClick="clickColumn"/>
+
+    <TextView text="Index:" x="90" y="202" size="0.6"/>
+    <EditTextView x="140" y="200" width="45" height="20" numeric="true" length="3" onEdit="editTableIndex"/>
+
+    <ButtonView name="menuButton" x="220" y="210" sx="0.75" sy="0.25" onClick="getRow" />
+    <TextView text="Get" x="195" y="202" size="0.5"/>
 
     <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
 </root>
