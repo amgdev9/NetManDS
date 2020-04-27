@@ -406,6 +406,19 @@ std::shared_ptr<BerField> Snmpv1Pdu::getVarBind(u16 i) {
 }
 
 /**
+ * @brief Get a VarBind OID from the PDU
+ * @param i VarBind index
+ * @return Desired VarBind OID
+ */
+std::shared_ptr<BerOid> Snmpv1Pdu::getVarBindOid(u16 i) {
+    try {
+		return std::static_pointer_cast<BerOid>(std::static_pointer_cast<BerSequence>(this->varBindList->getChild(i))->getChild(0));
+	} catch (const std::out_of_range &e){
+		throw;
+	}
+}
+
+/**
  * @brief Serialize a SNMPv1 trap into a JSON
  * @return The serialized trap
  */

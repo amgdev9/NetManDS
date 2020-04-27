@@ -19,6 +19,7 @@
 #define MAX_TEXT_LENGTH     20
 #define ICON_YOFFS          12.0f
 #define ICON_XOFFS          16.0f
+#define MAX_PDU_FIELDS      25
 
 namespace NetMan {
 
@@ -93,13 +94,17 @@ static void clickEntry(void *args) {
     touchPosition &touch = Application::getInstance().getTouch();
 
     if(icons[index].add->touched(down, touch)) {
-        PduField pduField;
-        pduField.oid = controller->getMib()->resolve(icons[index].text->getText());
-        pduField.oidText = icons[index].text->getText();
-        pduField.type = 0;
-        pduField.value = "";
-        Application::getInstance().getPduFields().push_back(pduField);
-        Application::getInstance().messageBox("Field added successfully");
+        if(Application::getInstance().getPduFields().size() < MAX_PDU_FIELDS) {
+            PduField pduField;
+            pduField.oid = controller->getMib()->resolve(icons[index].text->getText());
+            pduField.oidText = icons[index].text->getText();
+            pduField.type = 0;
+            pduField.value = "";
+            Application::getInstance().getPduFields().push_back(pduField);
+            Application::getInstance().messageBox("Field added successfully");
+        } else {
+            Application::getInstance().messageBox("Limit of " + std::to_string(MAX_PDU_FIELDS) + " fields exceeded");
+        }
     } else if(icons[index].table != nullptr && icons[index].table->touched(down, touch)) {
         std::shared_ptr<SnmpSessionParams> contextData = std::make_shared<SnmpSessionParams>();
         contextData->isTable = true;

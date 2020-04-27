@@ -63,11 +63,13 @@ class Snmpv3Pdu: public BerPdu {
 		Snmpv3Pdu(const std::string &engineID, const std::string &contextName, const std::string &userName);
 		void clear() override;
 		void addVarBind(std::shared_ptr<BerOid> oid, std::shared_ptr<BerField> value);
+        inline u32 getNVarBinds() { return this->varBindList->getNChildren(); }
 		void sendRequest(u32 type, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 nonRepeaters = 0, u32 maxRepetitions = 0);
 		u8 recvResponse(std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port, u32 expectedPduType = SNMPV1_GETRESPONSE);
 		bool recvTrap(std::shared_ptr<UdpSocket> sock);
 		void sendBulkRequest(u32 nonRepeaters, u32 maxRepetitions, std::shared_ptr<UdpSocket> sock, in_addr_t ip, u16 port);
 		std::shared_ptr<BerField> getVarBind(u16 i);
+        std::shared_ptr<BerOid> getVarBindOid(u16 i);
         std::shared_ptr<json_t> serializeTrap();
 		~Snmpv3Pdu();
 };

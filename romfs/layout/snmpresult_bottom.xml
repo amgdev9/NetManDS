@@ -1,0 +1,11 @@
+<root controller="SnmpResultController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <TextView text="SNMP Response" x="20" y="10" size="1.0"/>
+
+    <ImageView name="menuButton" x="290" y="115" sx="0.5"/>
+    <ListView x="5" y="50" width="260" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillResults" onClick="clickResult"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+

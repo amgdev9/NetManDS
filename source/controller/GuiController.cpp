@@ -28,6 +28,7 @@
 #include "controller/LoadYinController.h"
 #include "controller/SnmpTypeController.h"
 #include "controller/GetBulkController.h"
+#include "controller/SnmpResultController.h"
 
 namespace NetMan {
 
@@ -55,6 +56,7 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"LoadYinController", &bakeController<LoadYinController>},
     {"SnmpTypeController", &bakeController<SnmpTypeController>},
     {"GetBulkController", &bakeController<GetBulkController>},
+    {"SnmpResultController", &bakeController<SnmpResultController>},
 };
 
 /**

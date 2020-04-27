@@ -32,6 +32,7 @@ class BerOid: public BerField {
 		BerOid(const std::string &oidString, u8 tagOptions = BER_TAGCLASS_OID, u32 tag = BER_TAG_OID);
         BerOid(const std::vector<u32> &oid, u8 tagOptions = BER_TAGCLASS_OID, u32 tag = BER_TAG_OID);
 		void parseData(u8 **out);
+        void addElement(u32 n);
 		virtual ~BerOid();
 		static std::shared_ptr<BerOid> decode(u8** data);
 		std::string print() override;

@@ -109,6 +109,15 @@ void BerOid::parseOid(std::vector<u32> &oid){
 }
 
 /**
+ * @brief Add a new element to the OID
+ * @param n Element to be added
+ */
+void BerOid::addElement(u32 n) {
+    this->oid.push_back(n);
+    this->parseOid(this->oid);
+}
+
+/**
  * @brief Parse data to an output buffer
  * @param out Output buffer
  */
