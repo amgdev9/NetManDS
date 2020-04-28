@@ -1,0 +1,15 @@
+<root controller="RestConfOpController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <ButtonView name="menuButton" x="160" y="60" onClick="getRequest" sx="2.5" sy="0.5"/>
+    <TextView text="Get request" x="80" y="45" size="0.8"/>
+
+    <ButtonView name="menuButton" x="160" y="110" onClick="postRequest" sx="2.5" sy="0.5"/>
+    <TextView text="Post request" x="80" y="95" size="0.8"/>
+
+    <ButtonView name="menuButton" x="160" y="160" onClick="deleteRequest" sx="2.5" sy="0.5"/>
+    <TextView text="Delete request" x="80" y="145" size="0.8"/>
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+
