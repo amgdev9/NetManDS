@@ -4,7 +4,10 @@
 
 // Own includes
 #include "controller/RestConfOpController.h"
+#include "gui/ButtonView.h"
 #include "Application.h"
+#include "restconf/RestConfClient.h"
+#include "Config.h"
 
 namespace NetMan {
 
@@ -19,21 +22,44 @@ static void goBack(void *args) {
  * @brief Perform a RESTCONF GET request
  */
 static void getRequest(void *args) {
+    ButtonParams *params = (ButtonParams*)args;
+    auto controller = std::static_pointer_cast<RestConfOpController>(params->controller);
 
+    if(controller->getRestConfParams()->isList) {
+        // TODO List
+    } else {
+        auto& config = Config::getInstance();
+        try {
+            auto restConfClient = std::make_shared<RestConfClient>(config.getRestConfURL(), config.getRestConfUser(), config.getRestConfPassword(), config.getData().rcTimeout);
+            auto jsonData = restConfClient->request(controller->getRestConfParams()->url, HTTPC_METHOD_GET);
+            char *response = json_dumps(jsonData.get(), JSON_INDENT(2));
+            Application::getInstance().messageBox(std::string("Received response:\n") + response);
+            free(response);
+        } catch (const std::runtime_error &e) {
+            Application::getInstance().messageBox(e.what());
+        }
+    }
 }
 
 /**
  * @brief Perform a RESTCONF POST request
  */
 static void postRequest(void *args) {
-
+    // TODO Post
 }
 
 /**
  * @brief Perform a RESTCONF DELETE request
  */
 static void deleteRequest(void *args) {
+    ButtonParams *params = (ButtonParams*)args;
+    auto controller = std::static_pointer_cast<RestConfOpController>(params->controller);
 
+    if(controller->getRestConfParams()->isList) {
+        // TODO List
+    } else {
+        Application::getInstance().messageBox("Only list elements can be deleted");
+    }
 }
 
 /**

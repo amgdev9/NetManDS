@@ -70,7 +70,7 @@ void restconf_test() {
     auto& config = Config::getInstance().getData();
     
     try {
-        std::shared_ptr<YinHelper> yinHelper = std::make_shared<YinHelper>("yin/ietf-interfaces.xml");
+        std::shared_ptr<YinHelper> yinHelper = std::make_shared<YinHelper>("yin/ietf-interfaces.yin");
         tinyxml2::XMLElement *root = yinHelper->getRoot();
         tinyxml2::XMLElement *containerNode = root->FirstChildElement("container");
         tinyxml2::XMLElement *reqNode = containerNode->FirstChildElement("list");
