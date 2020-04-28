@@ -21,10 +21,16 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the main menu
+ */
 static void goBack(void *args) {
     Application::getInstance().requestLayoutChange("menu");
 }
 
+/**
+ * @brief Fill the modules list
+ */
 static void fillModules(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -54,6 +60,9 @@ static void fillModules(void *args) {
     }
 }
 
+/**
+ * @brief Called when a module is clicked
+ */
 static void clickModule(void *args) {
 
     ListViewClickParams *params = (ListViewClickParams*)args;
@@ -63,6 +72,9 @@ static void clickModule(void *args) {
     Application::getInstance().requestLayoutChange("yinbrowser", contextData);
 }
 
+/**
+ * @brief Constructor for a LoadYinController
+ */
 LoadYinController::LoadYinController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goBack", goBack},
@@ -74,6 +86,9 @@ LoadYinController::LoadYinController() {
     Utils::readFolder(YIN_FOLDER, YIN_EXT, this->dirEntries);
 }
 
+/**
+ * @brief Destructor for a LoadYinController
+ */
 LoadYinController::~LoadYinController() { }
 
 }

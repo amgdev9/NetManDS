@@ -22,15 +22,24 @@
 
 namespace NetMan {
 
+// Log file paths
 static const char *trapFile = "snmpTrap.json";
 static const char *logFile = "syslog.json";
 
+/**
+ * @brief Save a log to the proper file in JSON format
+ * @param path  Log file path
+ * @param json  JSON object containing log data
+ * @param name  Canonical log name
+ * @param limit How many logs to store in this file?
+ */
 static void saveLogEntry(const std::string &path, std::shared_ptr<json_t> json, const std::string &name, u32 limit) {
     
     json_object_set_new(json.get(), "name", json_string(name.c_str()));
 
     FILE *f = fopen(path.c_str(), "rb");
     if(f == NULL) {
+        // Create a new file
         f = fopen(path.c_str(), "wb");
         if(f) {
             json_t *root = json_array();
@@ -40,7 +49,8 @@ static void saveLogEntry(const std::string &path, std::shared_ptr<json_t> json, 
             json_decref(root);
         }
     } else {
-
+        
+        // File already exists
         json_t *root = json_loadf(f, 0, NULL);
         fclose(f);
         if(root) {
@@ -63,6 +73,9 @@ static void saveLogEntry(const std::string &path, std::shared_ptr<json_t> json, 
     }
 }
 
+/**
+ * @brief Process the log daemon
+ */
 static void onUpdateLogs(void *args) {
 
     auto trapv1Sock = Application::getInstance().getTrapv1Sock();
@@ -140,6 +153,9 @@ static void onUpdateLogs(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a MenuTopController
+ */
 MenuTopController::MenuTopController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"onUpdateLogs", onUpdateLogs},
@@ -162,10 +178,16 @@ MenuTopController::MenuTopController() {
     syslogPdu = std::make_shared<SyslogPdu>();
 }
 
+/**
+ * @brief Destructor for a MenuTopController
+ */
 MenuTopController::~MenuTopController() {
     ndspChnWaveBufClear(BEEP_AUDIO_CHANNEL);
 }
 
+/**
+ * @brief Initialize the screen view
+ */
 void MenuTopController::initialize(std::vector<std::shared_ptr<GuiView>> &views) {
 
     in_addr ip, mask, broad;
@@ -173,6 +195,7 @@ void MenuTopController::initialize(std::vector<std::shared_ptr<GuiView>> &views)
     socklen_t bufsize = sizeof(u32);
     u32 mac[6];
 
+    // Obtain network information
     SOCU_GetIPInfo(&ip, &mask, &broad);
     SOCU_GetNetworkOpt(SOL_CONFIG, NETOPT_TCP_NUMBER, &tcpSockets, &bufsize);
     SOCU_GetNetworkOpt(SOL_CONFIG, NETOPT_UDP_NUMBER, &udpSockets, &bufsize);

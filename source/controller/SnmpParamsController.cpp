@@ -21,6 +21,9 @@
 
 namespace NetMan {
 
+/**
+ * @brief Edit the SNMP version used for this request
+ */
 static void editSnmpVersion(void *args) {
     BinaryButtonParams *params = (BinaryButtonParams*)args;
     auto controller = std::static_pointer_cast<SnmpParamsController>(params->controller);
@@ -29,6 +32,9 @@ static void editSnmpVersion(void *args) {
     controller->setUsmEnabled(params->selected);
 }
 
+/**
+ * @brief Edit the SNMP community name used for this request
+ */
 static void editCommunity(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<SnmpParamsController>(params->controller);
@@ -37,6 +43,9 @@ static void editCommunity(void *args) {
     controller->setCommunity(params->text);
 }
 
+/**
+ * @brief Edit the SNMPv3 user name used for this request
+ */
 static void editUsername(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<SnmpParamsController>(params->controller);
@@ -45,6 +54,9 @@ static void editUsername(void *args) {
     controller->setUsername(params->text);
 }
 
+/**
+ * @brief Send a SNMP request to a remote agent
+ */
 static void sendRequest(void *args) {
 
     SnmpThreadParams *params = (SnmpThreadParams*)args;
@@ -74,10 +86,14 @@ static void sendRequest(void *args) {
         return;
     }
 
+    // All done
     params->working = false;
     params->success = true;
 }
 
+/**
+ * @brief Called when the send button is pressed
+ */
 static void sendSnmp(void *args) {
 
     ButtonParams *params = (ButtonParams*)args;
@@ -85,6 +101,7 @@ static void sendSnmp(void *args) {
     SnmpThreadParams *threadParams = controller->getThreadParams();
     if(threadParams->working) return;
    
+    // Send the request directly or show a table
     if(threadParams->session->isTable) {
         auto contextData = std::make_shared<SnmpThreadParams>();
         contextData->session = threadParams->session;
@@ -105,6 +122,9 @@ static void sendSnmp(void *args) {
     }
 }
 
+/**
+ * @brief Monitor the request status in the main thread
+ */
 static void updateRequest(void *args) {
     UpdateParams *params = (UpdateParams*)args;
     auto controller = std::static_pointer_cast<SnmpParamsController>(params->controller);
@@ -126,10 +146,16 @@ static void updateRequest(void *args) {
     }
 }
 
+/**
+ * @brief Go to the SNMP menu
+ */
 static void goBack(void *args) {
     Application::getInstance().requestLayoutChange("snmp");
 }
 
+/**
+ * @brief Constructor for a SnmpParamsController
+ */
 SnmpParamsController::SnmpParamsController() {
 
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
@@ -141,20 +167,25 @@ SnmpParamsController::SnmpParamsController() {
         {"updateRequest", updateRequest},
     };
 
-    threadParams.usmEnabled = false;
-    threadParams.community = "";
-    threadParams.username = "";
-
+    // Retrieve context data
     auto contextData = std::static_pointer_cast<SnmpSessionParams>(Application::getInstance().getContextData());
     if(contextData == nullptr) {
         throw std::runtime_error("No context specified");
     }
-    this->threadParams.session = contextData;
-    this->threadParams.working = false;
-    this->threadParams.error = false;
-    this->threadParams.success = false;
+
+    // Initialize data
+    threadParams.session = contextData;
+    threadParams.working = false;
+    threadParams.error = false;
+    threadParams.success = false;
+    threadParams.usmEnabled = false;
+    threadParams.community = "";
+    threadParams.username = "";
 }
 
+/**
+ * @brief Initialize the screen view
+ */
 void SnmpParamsController::initialize(std::vector<std::shared_ptr<GuiView>> &views) {
 
     loadingBox = std::static_pointer_cast<ImageView>(views[12]);
@@ -166,6 +197,9 @@ void SnmpParamsController::initialize(std::vector<std::shared_ptr<GuiView>> &vie
     views.push_back(loadingIcon);
 }
 
+/**
+ * @brief Destructor for a SnmpParamsController
+ */
 SnmpParamsController::~SnmpParamsController() { }
 
 }

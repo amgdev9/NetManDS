@@ -13,11 +13,17 @@
 
 namespace NetMan {
 
+/**
+ * @brief Goto the options menu
+ */
 static void gotoOptions(void *args) {
     std::shared_ptr<u32> contextData = std::make_shared<u32>(SCREEN_SNMPV3_USERS);
     Application::getInstance().requestLayoutChange("options", contextData);
 }
 
+/**
+ * @brief Edit the username field
+ */
 static void editUsername(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AddUserController>(params->controller);
@@ -29,6 +35,9 @@ static void editUsername(void *args) {
     }
 }
 
+/**
+ * @brief Edit privacy protocol field
+ */
 static void editPriv(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AddUserController>(params->controller);
@@ -47,6 +56,9 @@ static void editPriv(void *args) {
     }
 }
 
+/**
+ * @brief Edit privacy password field
+ */
 static void editPrivPass(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AddUserController>(params->controller);
@@ -59,6 +71,9 @@ static void editPrivPass(void *args) {
     }
 }
 
+/**
+ * @brief Edit authentication protocol field
+ */
 static void editAuth(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AddUserController>(params->controller);
@@ -77,6 +92,9 @@ static void editAuth(void *args) {
     }
 }
 
+/**
+ * @brief Edit authentication password field
+ */
 static void editAuthPass(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AddUserController>(params->controller);
@@ -89,6 +107,9 @@ static void editAuthPass(void *args) {
     }
 }
 
+/**
+ * @brief Add an user to the store
+ */
 static void addUser(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<AddUserController>(params->controller);
@@ -105,6 +126,9 @@ static void addUser(void *args) {
     Application::getInstance().requestLayoutChange("options", contextData);
 }
 
+/**
+ * @brief Constructor for an AddUserController
+ */
 AddUserController::AddUserController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"gotoOptions", gotoOptions},
@@ -115,6 +139,7 @@ AddUserController::AddUserController() {
         {"editAuthPass", editAuthPass},
         {"addUser", addUser},
     };
+
     if(Application::getInstance().getContextData() != nullptr) {
         std::shared_ptr<std::string> contextData = std::static_pointer_cast<std::string>(Application::getInstance().getContextData());
         auto user = Snmpv3UserStore::getInstance().getUser(*contextData.get());
@@ -132,6 +157,9 @@ AddUserController::AddUserController() {
     }
 }
 
+/**
+ * @brief Destructor for an AddUserController
+ */
 AddUserController::~AddUserController() { }
 
 }

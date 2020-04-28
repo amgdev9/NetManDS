@@ -27,10 +27,16 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the SNMP menu
+ */
 static void goBack(void *args) {
     Application::getInstance().requestLayoutChange("snmp");
 }
 
+/**
+ * @brief Fill the SNMP PDU field list
+ */
 static void fillFields(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -73,6 +79,9 @@ static void fillFields(void *args) {
     }
 }
 
+/**
+ * @brief Called when a SNMP PDU field is clicked
+ */
 static void clickField(void *args) {
 
     ListViewClickParams *params = (ListViewClickParams*)args;
@@ -97,6 +106,9 @@ static void clickField(void *args) {
     }
 }
 
+/**
+ * @brief Edit a SNMP PDU field value (used for SetRequest operations)
+ */
 static void onEditValue(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<SendSnmpController>(params->controller);
@@ -110,6 +122,11 @@ static void onEditValue(void *args) {
     }
 }
 
+/**
+ * @brief Go to another screen
+ * @param pduType   SNMP PDU type to be sent
+ * @param view      Screen name ("agentview" by default)
+ */
 static void gotoView(u32 pduType, const std::string &view = "agentview") {
     std::shared_ptr<SnmpSessionParams> sessionParams = std::make_shared<SnmpSessionParams>();
     sessionParams->isTable = false;
@@ -117,22 +134,37 @@ static void gotoView(u32 pduType, const std::string &view = "agentview") {
     Application::getInstance().requestLayoutChange(view, sessionParams);
 }
 
+/**
+ * @brief Called when the GET button is pressed
+ */
 static void snmpGet(void *args) {
     gotoView(SNMPV1_GETREQUEST);
 }
 
+/**
+ * @brief Called when the SET button is pressed
+ */
 static void snmpSet(void *args) {
     gotoView(SNMPV1_SETREQUEST);
 }
 
+/**
+ * @brief Called when the GETNEXT button is pressed
+ */
 static void snmpGetNext(void *args) {
     gotoView(SNMPV1_GETNEXTREQUEST);
 }
 
+/**
+ * @brief Called when the GETBULK button is pressed
+ */
 static void snmpGetBulk(void *args) {
     gotoView(SNMPV2_GETBULKREQUEST, "getbulk");
 }
 
+/**
+ * @brief Constructor for a SendSnmpController
+ */
 SendSnmpController::SendSnmpController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goBack", goBack},
@@ -146,6 +178,14 @@ SendSnmpController::SendSnmpController() {
     };
 }
 
+/**
+ * @brief Add icons for a list field
+ * @param oidText       Descriptive OID name
+ * @param typeBox       Box which encapsultes OID type
+ * @param typeText      OID type
+ * @param valueEditText OID value handler
+ * @param cross         Cross icon to delete the field from the PDU
+ */
 void SendSnmpController::addIcons(std::shared_ptr<TextView> oidText, std::shared_ptr<ImageView> typeBox, std::shared_ptr<TextView> typeText, std::shared_ptr<EditTextView> valueEditText, std::shared_ptr<ImageView> cross) {
     SendSnmpIcons icons;
     icons.oidText = oidText;
@@ -156,6 +196,9 @@ void SendSnmpController::addIcons(std::shared_ptr<TextView> oidText, std::shared
     this->sendSnmpIcons.push_back(icons);
 }
 
+/**
+ * @brief Destructor for a SendSnmpController
+ */
 SendSnmpController::~SendSnmpController() { }
 
 }

@@ -18,6 +18,9 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the Send SNMP screen or the SNMP table screen, depending on the context
+ */
 static void goBack(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<SnmpTypeController>(params->controller);
@@ -28,6 +31,9 @@ static void goBack(void *args) {
     }
 }
 
+/**
+ * @brief Fill the list with ASN.1 types used in the SMI
+ */
 static void fillTypes(void *args) {
     ListViewFillParams *params = (ListViewFillParams*)args;
     params->layouts.clear();
@@ -65,6 +71,9 @@ static void fillTypes(void *args) {
     }
 }
 
+/**
+ * @brief Called when an ASN.1 type is selected
+ */
 static void clickType(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<SnmpTypeController>(params->controller);
@@ -81,6 +90,9 @@ static void clickType(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a SnmpTypeController
+ */
 SnmpTypeController::SnmpTypeController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goBack", goBack},
@@ -88,14 +100,16 @@ SnmpTypeController::SnmpTypeController() {
         {"clickType", clickType},
     };
 
-    auto contextData = Application::getInstance().getContextData();
-    if(contextData == nullptr) {
+    // Retrieve context data
+    context = std::static_pointer_cast<SnmpTypeContext>(Application::getInstance().getContextData());
+    if(context == nullptr) {
         throw std::runtime_error("No context specified");
     }
-
-    context = std::static_pointer_cast<SnmpTypeContext>(contextData);
 }
 
+/**
+ * @brief Destructor for a SnmpTypeController
+ */
 SnmpTypeController::~SnmpTypeController() { }
 
 }

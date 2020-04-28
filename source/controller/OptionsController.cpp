@@ -24,19 +24,31 @@
 
 namespace NetMan {
 
+/**
+ * @brief Show a message for next boot changes
+ */
 static void nextBootMessage() {
     Application::getInstance().messageBox("Changes will be applied on next boot");
 }
 
+/**
+ * @brief Go to the main menu
+ */
 static void gotoMenu(void *args) {
     Application::getInstance().requestLayoutChange("menu");
     Config::getInstance().save();
 }
 
+/**
+ * @brief Go to the Add SNMPv3 User screen
+ */
 static void goAddUser(void *args) {
     Application::getInstance().requestLayoutChange("adduser");
 }
 
+/**
+ * @brief Fill the SNMPv3 users list
+ */
 static void fillUsers(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -75,13 +87,18 @@ static void fillUsers(void *args) {
     }
 }
 
+/**
+ * @brief Called when a SNMPv3 user is clicked
+ */
 static void clickUser(void *args) {
+
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<OptionsController>(params->controller);
     u32 down = Application::getInstance().getDown();
     u32 index = params->element - params->startElement;
     touchPosition &touch = Application::getInstance().getTouch();
 
+    // Delete the user or show more information about it
     if(controller->getCrosses().at(index)->touched(down, touch)) {
         auto& store = Snmpv3UserStore::getInstance();
         store.removeUser(controller->getTexts().at(index)->getText());
@@ -94,6 +111,10 @@ static void clickUser(void *args) {
     }
 }
 
+/**
+ * @brief Set a new value for a port field
+ * @note This avoids port collisions between listening services (SNMP and Syslog)
+ */
 static void setPort(EditTextParams *params, u16 *dest) {
 
     u16 port = Utils::handleFormPort(params, *dest);
@@ -113,14 +134,23 @@ static void setPort(EditTextParams *params, u16 *dest) {
     }
 }
 
+/**
+ * @brief Edit the SNMP port
+ */
 static void editSnmpPort(void *args) {
     setPort((EditTextParams*)args, &Config::getInstance().getData().snmpPort);
 }
 
+/**
+ * @brief Edit the SNMPv1 trap port
+ */
 static void editTrapv1(void *args) {
     setPort((EditTextParams*)args, &Config::getInstance().getData().trapv1Port);
 }
 
+/**
+ * @brief Enable/disable the SNMPv1 trap service
+ */
 static void editTrapv1Bool(void *args) {
     CheckboxParams *params = (CheckboxParams*)args;
     if(!params->init) {
@@ -132,10 +162,16 @@ static void editTrapv1Bool(void *args) {
     }
 }
 
+/**
+ * @brief Edit the SNMPv2 trap port
+ */
 static void editTrapv2(void *args) {
     setPort((EditTextParams*)args, &Config::getInstance().getData().trapv2Port);
 }
 
+/**
+ * @brief Enable/disable the SNMPv2 trap service
+ */
 static void editTrapv2Bool(void *args) {
     CheckboxParams *params = (CheckboxParams*)args;
     if(!params->init) {
@@ -147,14 +183,23 @@ static void editTrapv2Bool(void *args) {
     }
 }
 
+/**
+ * @brief Edit the trap limit to be stored
+ */
 static void editTrapLimit(void *args) {
     Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().trapLimit, 999);
 }
 
+/**
+ * @brief Set the SMI MIB file to be used
+ */
 static void setSMI(void *args) {
     Application::getInstance().requestLayoutChange("setsmi");
 }
 
+/**
+ * @brief Edit the SNMPv3 Engine ID
+ */
 static void editEngineID(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -165,6 +210,9 @@ static void editEngineID(void *args) {
     }
 }
 
+/**
+ * @brief Edit the SNMPv3 context name
+ */
 static void editContextName(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -175,10 +223,16 @@ static void editContextName(void *args) {
     }
 }
 
+/**
+ * @brief Edit the SNMPv3 trap port
+ */
 static void editTrapv3(void *args) {
     setPort((EditTextParams*)args, &Config::getInstance().getData().trapv3Port);
 }
 
+/**
+ * @brief Enable/disable the SNMPv3 trap service
+ */
 static void editTrapv3Bool(void *args) {
     CheckboxParams *params = (CheckboxParams*)args;
     if(!params->init) {
@@ -190,10 +244,16 @@ static void editTrapv3Bool(void *args) {
     }
 }
 
+/**
+ * @brief Edit the syslog port
+ */
 static void editSyslogPort(void *args) {
     setPort((EditTextParams*)args, &Config::getInstance().getData().syslogPort);
 }
 
+/**
+ * @brief Edit the used syslog transport (TCP or UDP)
+ */
 static void editSyslogTransport(void *args) {
     BinaryButtonParams *params = (BinaryButtonParams*)args;
     if(!params->init) {
@@ -205,14 +265,23 @@ static void editSyslogTransport(void *args) {
     }
 }
 
+/**
+ * @brief Edit the syslog limit to be stored
+ */
 static void editLogLimit(void *args) {
     Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().syslogLimit, 999);
 }
 
+/**
+ * @brief Edit the RESTCONF timeout
+ */
 static void rcTimeout(void *args) {
     Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().rcTimeout, 999);
 }
 
+/**
+ * @brief Edit the RESTCONF server URL
+ */
 static void rcURL(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -223,6 +292,9 @@ static void rcURL(void *args) {
     }
 }
 
+/**
+ * @brief Edit the user name for RESTCONF server authentication
+ */
 static void rcUsername(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -233,6 +305,9 @@ static void rcUsername(void *args) {
     }
 }
 
+/**
+ * @brief Edit the password for RESTCONF server authentication
+ */
 static void rcPassword(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -243,14 +318,23 @@ static void rcPassword(void *args) {
     }
 }
 
+/**
+ * @brief Edit the sockets TCP timeout (in seconds)
+ */
 static void tcpTimeout(void *args) {
     Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().tcpTimeout, 999);
 }
 
+/**
+ * @brief Edit the sockets UDP timeout (in seconds)
+ */
 static void udpTimeout(void *args) {
     Utils::handleFormInteger((EditTextParams*)args, &Config::getInstance().getData().udpTimeout, 999);
 }
 
+/**
+ * @brief Show the initial options screen, according to context data
+ */
 static void setScreen(void *args) {
     u32 *context = (u32*)Application::getInstance().getContextData().get();
     if(context != NULL) {
@@ -260,6 +344,9 @@ static void setScreen(void *args) {
     }
 }
 
+/**
+ * @brief Set the SNMP community
+ */
 static void editCommunity(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -270,6 +357,9 @@ static void editCommunity(void *args) {
     }
 }
 
+/**
+ * @brief Edit the SNMPv3 trap user
+ */
 static void editTrapUser(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) {
@@ -286,7 +376,11 @@ static void editTrapUser(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for an OptionsController
+ */
 OptionsController::OptionsController() {
+
     this->crosses = std::vector<std::shared_ptr<ImageView>>();
     this->texts = std::vector<std::shared_ptr<TextView>>();
 
@@ -321,6 +415,9 @@ OptionsController::OptionsController() {
     };
 }
 
+/**
+ * @brief Destructor for an OptionsController
+ */
 OptionsController::~OptionsController() { }
 
 }

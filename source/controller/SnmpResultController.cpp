@@ -18,11 +18,17 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the SNMP menu, clearing PDU contents
+ */
 static void goBack(void *args) {
     Application::getInstance().getPduFields().clear();
     Application::getInstance().requestLayoutChange("snmp");
 }
 
+/**
+ * @brief Fill the SNMP response result list
+ */
 static void fillResults(void *args) {
     ListViewFillParams *params = (ListViewFillParams*)args;
     auto controller = std::static_pointer_cast<SnmpResultController>(params->controller);
@@ -57,6 +63,9 @@ static void fillResults(void *args) {
     }
 }
 
+/**
+ * @brief Called when a list entry is clicked
+ */
 static void clickResult(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<SnmpResultController>(params->controller);
@@ -64,6 +73,9 @@ static void clickResult(void *args) {
     Application::getInstance().messageBox(pduFields[params->element].oidText + ": " + pduFields[params->element].value);
 }
 
+/**
+ * @brief Constructor for a SnmpResultController
+ */
 SnmpResultController::SnmpResultController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goBack", goBack},
@@ -72,6 +84,9 @@ SnmpResultController::SnmpResultController() {
     };
 }
 
+/**
+ * @brief Destructor for a SnmpResultController
+ */
 SnmpResultController::~SnmpResultController() { }
 
 }

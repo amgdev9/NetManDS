@@ -20,6 +20,9 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the SNMP screen
+ */
 static void goSnmp(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
@@ -27,11 +30,15 @@ static void goSnmp(void *args) {
     Application::getInstance().requestLayoutChange("snmp");
 }
 
+/**
+ * @brief Edit the IP range field
+ */
 static void editRange(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
     if(controller->getParams().scanning || !params->init) return;
 
+    // Parse IP and number of hosts
     char *colon = strchr(params->text, ':');
     if(colon == NULL) {
         params->init = false;
@@ -53,6 +60,9 @@ static void editRange(void *args) {
     }
 }
 
+/**
+ * @brief Edit the port field
+ */
 static void editPort(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
@@ -63,6 +73,10 @@ static void editPort(void *args) {
     }
 }
 
+/**
+ * @brief Edit the SNMP version field
+ * @note Only SNMPv1 or SNMPv2 are allowed for agent scanning
+ */
 static void editVersion(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
@@ -71,6 +85,9 @@ static void editVersion(void *args) {
     Utils::handleFormInteger(params, version, 2);
 }
 
+/**
+ * @brief Edit the maximum simultaneous requests field
+ */
 static void editMaxRequests(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
@@ -78,6 +95,9 @@ static void editMaxRequests(void *args) {
     Utils::handleFormInteger(params, &controller->getParams().maxRequests, 30);
 }
 
+/**
+ * @brief Edit the timeout field
+ */
 static void editTimeout(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
@@ -85,6 +105,9 @@ static void editTimeout(void *args) {
     Utils::handleFormInteger(params, &controller->getParams().timeout, 100);
 }
 
+/**
+ * @brief Perform an agent scan
+ */
 static void doScan(void *args) {
     AgentDiscoveryParams *params = (AgentDiscoveryParams*)args;
     params->prevProgress = 0xFF;
@@ -103,11 +126,16 @@ static void doScan(void *args) {
     params->scanning = false;
 }
 
+/**
+ * @brief Called when the scan button is pressed
+ */
 static void scan(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<AgentDiscoveryController>(params->controller);
     if(controller->getParams().scanning) return;
     auto &data = controller->getParams();
+
+    // Check form
     if(data.baseIP == 0 || data.nhosts == 0 || data.maxRequests == 0 || data.timeout == 0) {
         Application::getInstance().messageBox("The form was not filled properly");
     } else {
@@ -120,6 +148,9 @@ static void scan(void *args) {
     }
 }
 
+/**
+ * @brief Check the scan status on the main thread
+ */
 static void onUpdateProgress(void *args) {
     
     UpdateParams *params = (UpdateParams*)args;
@@ -143,11 +174,17 @@ static void onUpdateProgress(void *args) {
     }
 }
 
+/**
+ * @brief Initialize the screen view
+ */
 void AgentDiscoveryController::initialize(std::vector<std::shared_ptr<GuiView>> &views) {
     progressText = std::make_shared<TextView>("", PROGRESSTEXT_X, PROGRESSTEXT_Y, PROGRESSTEXT_SCALE, 0xFF000000);
     views.push_back(progressText);
 }
 
+/**
+ * @brief Constructor for an AgentDiscoveryController
+ */
 AgentDiscoveryController::AgentDiscoveryController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goSnmp", goSnmp},
@@ -165,6 +202,9 @@ AgentDiscoveryController::AgentDiscoveryController() {
     params.port = Config::getInstance().getData().snmpPort;
 }
 
+/**
+ * @brief Destructor for an AgentDiscoveryController
+ */
 AgentDiscoveryController::~AgentDiscoveryController() { }
 
 }

@@ -12,10 +12,16 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the main menu
+ */
 static void goMenu(void *args) {
     Application::getInstance().requestLayoutChange("menu");
 }
 
+/**
+ * @brief Edit the SSH server's host name
+ */
 static void editHost(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) return;
@@ -23,6 +29,9 @@ static void editHost(void *args) {
     controller->getSession().host.assign(params->text);
 }
 
+/**
+ * @brief Edit the SSH port
+ */
 static void editPort(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     u16 port = Utils::handleFormPort(params, SSH_PORT);
@@ -32,6 +41,9 @@ static void editPort(void *args) {
     }
 }
 
+/**
+ * @brief Edit the user name to be used for authentication
+ */
 static void editUsername(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) return;
@@ -39,6 +51,9 @@ static void editUsername(void *args) {
     controller->getSession().username.assign(params->text);
 }
 
+/**
+ * @brief Edit the password to be used for authentication
+ */
 static void editPassword(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) return;
@@ -46,6 +61,9 @@ static void editPassword(void *args) {
     controller->getSession().password.assign(params->text);
 }
 
+/**
+ * @brief Connect to the SSH server
+ */
 static void connect(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<SshController>(params->controller);
@@ -60,6 +78,9 @@ static void connect(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a SshController
+ */
 SshController::SshController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goMenu", goMenu},
@@ -71,6 +92,9 @@ SshController::SshController() {
     };
 }
 
+/**
+ * @brief Destructor for a SshController
+ */
 SshController::~SshController() { }
 
 }

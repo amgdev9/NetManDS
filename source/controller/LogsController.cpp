@@ -17,10 +17,16 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the main menu
+ */
 static void gotoMenu(void *args) {
     Application::getInstance().requestLayoutChange("menu");
 }
 
+/**
+ * @brief Fill the logs list
+ */
 static void fillLogs(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -59,11 +65,15 @@ static void fillLogs(void *args) {
     }
 }
 
+/**
+ * @brief Edit the log mode
+ */
 static void editLogMode(void *args) {
     BinaryButtonParams *params = (BinaryButtonParams*)args;
     if(!params->init) return;
     auto controller = std::static_pointer_cast<LogsController>(params->controller);
     
+    // Load the proper log list
     ListViewFillParams *listParams = controller->getFillParams();
     listParams->endElement -= listParams->startElement;
     listParams->startElement = 0;
@@ -76,6 +86,9 @@ static void editLogMode(void *args) {
     fillLogs(listParams);
 }
 
+/**
+ * @brief Called when a log is clicked
+ */
 static void clickLog(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<LogsController>(params->controller);
@@ -90,6 +103,9 @@ static void clickLog(void *args) {
     Application::getInstance().requestLayoutChange("viewlog", context);
 }
 
+/**
+ * @brief Constructor for a LogsController
+ */
 LogsController::LogsController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"gotoMenu", gotoMenu},
@@ -98,13 +114,21 @@ LogsController::LogsController() {
         {"clickLog", clickLog},
     };
 
+    // Load trap list by default
     loadJsonList("snmpTrap.json");
 }
 
+/**
+ * @brief Load a JSON list
+ * @param path  JSON file path
+ */
 void LogsController::loadJsonList(const std::string &path) {
     root = Utils::loadJsonList(path);
 }
 
+/**
+ * @brief Destructor for a LogsController
+ */
 LogsController::~LogsController() { }
 
 }

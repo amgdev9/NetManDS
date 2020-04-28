@@ -31,6 +31,9 @@ namespace NetMan {
 // Static data
 std::shared_ptr<SnmpThreadParams> SnmpTableController::snmpParams = nullptr;
 
+/**
+ * @brief Go to the SNMP menu, clearing PDU contents
+ */
 static void goBack(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<SnmpTableController>(params->controller);
@@ -39,6 +42,9 @@ static void goBack(void *args) {
     Application::getInstance().requestLayoutChange("snmp");
 }
 
+/**
+ * @brief Fill the SNMP table contents for a specific row
+ */
 static void fillTable(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -79,6 +85,9 @@ static void fillTable(void *args) {
     }
 }
 
+/**
+ * @brief Called when a table column is clicked
+ */
 static void clickColumn(void *args) {
 
     ListViewClickParams *params = (ListViewClickParams*)args;
@@ -102,19 +111,25 @@ static void clickColumn(void *args) {
     }
 }
 
+/**
+ * @brief Called when a table column is edited
+ */
 static void onEditColumn(void *args) {
     
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) return;
 
+    // Backup the existing PDU
     auto controller = std::static_pointer_cast<SnmpTableController>(params->controller);
     auto pduFieldsCopy = Application::getInstance().getPduFields();
     auto& pduFields = Application::getInstance().getPduFields();
     pduFields.clear();
 
+    // Add an unique field
     pduFields.push_back(pduFieldsCopy[controller->getCurrentField()]);
     pduFields[0].value = std::string(params->text);
 
+    // Send the SET request
     auto snmpParams = controller->getSnmpParams();
     snmpParams->session->pduType = SNMPV1_SETREQUEST;
     try {
@@ -125,25 +140,34 @@ static void onEditColumn(void *args) {
         return;
     }
 
+    // Restore the previous state
     pduFields = pduFieldsCopy;
     fillTable(controller->getFillParams());
 }
 
+/**
+ * @brief Edit the table index
+ */
 static void editTableIndex(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     auto controller = std::static_pointer_cast<SnmpTableController>(params->controller);
     Utils::handleFormInteger(params, controller->getTableIndex(), 999);
 }
 
+/**
+ * @brief Obtain a row from the SNMP table
+ */
 static void getRow(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<SnmpTableController>(params->controller);
     auto& pduFields = Application::getInstance().getPduFields();
 
+    // Update the row to be used
     for(auto &field : pduFields) {
         field.oid->editLastElement(*controller->getTableIndex());
     }
 
+    // Send the GET request
     auto snmpParams = controller->getSnmpParams();
     snmpParams->session->pduType = SNMPV1_GETREQUEST;
     try {
@@ -154,6 +178,9 @@ static void getRow(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a SnmpTableController
+ */
 SnmpTableController::SnmpTableController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goBack", goBack},
@@ -164,6 +191,7 @@ SnmpTableController::SnmpTableController() {
         {"onEditColumn", onEditColumn},
     };
 
+    // Initialize the table, if needed
     if(snmpParams == nullptr) {
 
         snmpParams = std::static_pointer_cast<SnmpThreadParams>(Application::getInstance().getContextData());
@@ -187,9 +215,17 @@ SnmpTableController::SnmpTableController() {
         }
     }
 
+    // Initialize data
     this->tableIndex = 1;
 }
 
+/**
+ * @brief Add the icons for a table column
+ * @param columnText    Descriptive column name
+ * @param typeBox       Box which encapsulates column type
+ * @param typeText      Column type
+ * @param valueEditText Column value handler
+ */
 void SnmpTableController::addIcons(std::shared_ptr<TextView> columnText, std::shared_ptr<ImageView> typeBox, std::shared_ptr<TextView> typeText, std::shared_ptr<EditTextView> valueEditText) {
     SnmpTableIcons icons;
     icons.columnText = columnText;
@@ -199,6 +235,9 @@ void SnmpTableController::addIcons(std::shared_ptr<TextView> columnText, std::sh
     this->tableIcons.push_back(icons);
 }
 
+/**
+ * @brief Destructor for a SnmpTableController
+ */
 SnmpTableController::~SnmpTableController() { }
 
 }

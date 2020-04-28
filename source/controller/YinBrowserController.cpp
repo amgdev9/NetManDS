@@ -22,10 +22,16 @@ using namespace tinyxml2;
 
 namespace NetMan {
 
+/**
+ * @brief Go back to the Load YIN screen
+ */
 static void goBack(void *args) {
     Application::getInstance().requestLayoutChange("loadyin");
 }
 
+/**
+ * @brief Fill the YIN module list with node entries
+ */
 static void fillEntries(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -82,6 +88,11 @@ static void fillEntries(void *args) {
     }
 }
 
+/**
+ * @brief Refresh the YIN Browser layout
+ * @param controller    This controller
+ * @param node          Current browser node
+ */
 static void refreshLayout(std::shared_ptr<YinBrowserController> controller, XMLElement *node) {
     controller->setCurrentNode(node);
     ListViewFillParams *listParams = controller->getFillParams();
@@ -91,6 +102,9 @@ static void refreshLayout(std::shared_ptr<YinBrowserController> controller, XMLE
     fillEntries(listParams);
 }
 
+/**
+ * @brief Called when a node is clicked
+ */
 static void clickEntry(void *args) {
 
     ListViewClickParams *params = (ListViewClickParams*)args;
@@ -128,6 +142,9 @@ static void clickEntry(void *args) {
     }
 }
 
+/**
+ * @brief Go back to the previous node
+ */
 static void prevEntry(void *args) {
 
     ButtonParams *params = (ButtonParams*)args;
@@ -144,6 +161,9 @@ static void prevEntry(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a YinBrowserController
+ */
 YinBrowserController::YinBrowserController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"fillEntries", fillEntries},
@@ -154,6 +174,7 @@ YinBrowserController::YinBrowserController() {
 
     auto yinPath = std::static_pointer_cast<std::string>(Application::getInstance().getContextData());
 
+    // Load the YIN module
     try {
         yinHelper = std::make_shared<YinHelper>(*yinPath.get());
         currentNode = yinHelper->getRoot();
@@ -162,6 +183,11 @@ YinBrowserController::YinBrowserController() {
     }
 }
 
+/**
+ * @brief Get the number of children of a node
+ * @param node  Node to be queried
+ * @return The number of children of the node
+ */
 u32 YinBrowserController::getNodeNChildren(tinyxml2::XMLElement *node) {
 
     u32 nchildren = 0;
@@ -172,6 +198,9 @@ u32 YinBrowserController::getNodeNChildren(tinyxml2::XMLElement *node) {
     return nchildren;
 }
 
+/**
+ * @brief Destructor for a YinBrowserController
+ */
 YinBrowserController::~YinBrowserController() { }
 
 }

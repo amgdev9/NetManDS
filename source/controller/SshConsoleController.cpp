@@ -11,13 +11,20 @@
 
 namespace NetMan {
 
+// Static data to be shared between controllers
 static std::string text;
 static bool update;
 
+/**
+ * @brief Go to the main menu
+ */
 static void goMenu(void *args) {
     Application::getInstance().requestLayoutChange("menu");
 }
 
+/**
+ * @brief Enter a terminal command
+ */
 static void enterCommand(void *args) {
     EditTextParams *params = (EditTextParams*)args;
     if(!params->init) return;
@@ -27,6 +34,9 @@ static void enterCommand(void *args) {
     params->init = false;
 }
 
+/**
+ * @brief Update the console grid
+ */
 static void updateConsole(void *args) {
     ConsoleUpdateParams *params = (ConsoleUpdateParams*)args;
     auto controller = std::static_pointer_cast<SshConsoleController>(params->controller);
@@ -43,6 +53,9 @@ static void updateConsole(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a SshConsoleController
+ */
 SshConsoleController::SshConsoleController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goMenu", goMenu},
@@ -54,6 +67,9 @@ SshConsoleController::SshConsoleController() {
     this->helper = std::static_pointer_cast<SshHelper>(Application::getInstance().getContextData());
 }
 
+/**
+ * @brief Destructor for a SshConsoleController
+ */
 SshConsoleController::~SshConsoleController() {
     helper->disconnect();
 }

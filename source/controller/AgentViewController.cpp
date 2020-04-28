@@ -20,6 +20,9 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the Agent Discovery screen or the SNMP screen
+ */
 static void goBack(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<AgentViewController>(params->controller);
@@ -30,6 +33,9 @@ static void goBack(void *args) {
     }
 }
 
+/**
+ * @brief Fill the agents list
+ */
 static void fillAgents(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -72,6 +78,9 @@ static void fillAgents(void *args) {
     }
 }
 
+/**
+ * @brief Called when an agent is clicked
+ */
 static void clickAgent(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<AgentViewController>(params->controller);
@@ -79,6 +88,7 @@ static void clickAgent(void *args) {
     json_t *obj = json_array_get(list.get(), params->element);
 
     if(controller->getComesFromAgentDiscovery()) {
+        // Show agent data
         json_t *data = json_object_get(obj, "data");
         const char *dataString = json_string_value(data);
 
@@ -86,6 +96,7 @@ static void clickAgent(void *args) {
             Application::getInstance().messageBox(dataString);
         }
     } else {
+        // Store agent IP
         auto sessionParams = controller->getSnmpSessionParams();
         json_t *ip = json_object_get(obj, "ip");
         sessionParams->agentIP = inet_addr(json_string_value(ip));
@@ -93,6 +104,9 @@ static void clickAgent(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for an AgentViewController
+ */
 AgentViewController::AgentViewController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"goBack", goBack},
@@ -110,6 +124,9 @@ AgentViewController::AgentViewController() {
     }
 }
 
+/**
+ * @brief Destructor for an AgentViewController
+ */
 AgentViewController::~AgentViewController() { }
 
 }

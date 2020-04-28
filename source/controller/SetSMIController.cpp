@@ -26,6 +26,9 @@
 
 namespace NetMan {
 
+/**
+ * @brief Fill the MIBS list
+ */
 static void fillMibs(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -55,6 +58,9 @@ static void fillMibs(void *args) {
     }
 }
 
+/**
+ * @brief Called when a MIB file is selected
+ */
 static void clickMib(void *args) {
 
     ListViewClickParams *params = (ListViewClickParams*)args;
@@ -70,6 +76,9 @@ static void clickMib(void *args) {
     }
 }
 
+/**
+ * @brief Go to the options screen or the SNMP screen, depending on the context data
+ */
 static void goBack(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<SetSMIController>(params->controller);
@@ -80,6 +89,9 @@ static void goBack(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a SetSMIController
+ */
 SetSMIController::SetSMIController() {
 
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
@@ -88,9 +100,11 @@ SetSMIController::SetSMIController() {
         {"goBack", goBack},
     };
 
+    // Read the MIBS folder
     this->dirEntries = std::vector<std::string>();
     Utils::readFolder(MIBS_FOLDER, MIBS_EXT, this->dirEntries);
 
+    // Retrieve context data
     if(Application::getInstance().getContextData() == nullptr) {
         comesFromOptions = true;
     } else {
@@ -98,6 +112,9 @@ SetSMIController::SetSMIController() {
     }
 }
 
+/**
+ * @brief Destructor for a SetSMIController
+ */
 SetSMIController::~SetSMIController() { }
 
 }

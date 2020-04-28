@@ -23,10 +23,16 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the SNMP menu
+ */
 static void goBack(void *args) {
     Application::getInstance().requestLayoutChange("snmp");
 }
 
+/**
+ * @brief Fill the OID list
+ */
 static void fillEntries(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -75,6 +81,11 @@ static void fillEntries(void *args) {
     }
 }
 
+/**
+ * @brief Refresh the OID list
+ * @param controller    This controller
+ * @param oid           MIB node to use from now
+ */
 static void refreshLayout(std::shared_ptr<MibBrowserController> controller, std::shared_ptr<MibOid> oid) {
     controller->setCurrentTree(oid);
     ListViewFillParams *listParams = controller->getFillParams();
@@ -84,6 +95,9 @@ static void refreshLayout(std::shared_ptr<MibBrowserController> controller, std:
     fillEntries(listParams);
 }
 
+/**
+ * @brief Called when a MIB node is clicked
+ */
 static void clickEntry(void *args) {
 
     ListViewClickParams *params = (ListViewClickParams*)args;
@@ -127,6 +141,9 @@ static void clickEntry(void *args) {
     }
 }
 
+/**
+ * @brief Navigate to the previous MIB node
+ */
 static void prevEntry(void *args) {
 
     ButtonParams *params = (ButtonParams*)args;
@@ -148,6 +165,9 @@ static void prevEntry(void *args) {
     Application::getInstance().messageBox("This node has no parent");
 }
 
+/**
+ * @brief Constructor for a MibBrowserController
+ */
 MibBrowserController::MibBrowserController() {
 
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
@@ -159,6 +179,7 @@ MibBrowserController::MibBrowserController() {
 
     auto mibPath = std::static_pointer_cast<std::string>(Application::getInstance().getContextData());
 
+    // Load the MIB file
     try {
         MibLoader &mibLoader = MibLoader::getInstance();
         mibLoader.loadSMI(Config::getInstance().getSmiPath());
@@ -175,6 +196,13 @@ MibBrowserController::MibBrowserController() {
     }
 }
 
+/**
+ * @brief Add icons for a MIB entry
+ * @param text  Descriptive OID name
+ * @param tick  Tick icon used to show OID information
+ * @param add   Add icon used to add the OID to a SNMP PDU
+ * @param table Table icon used to view the OID as a SNMP table
+ */
 void MibBrowserController::addEntryIcons(std::shared_ptr<TextView> text, std::shared_ptr<ImageView> tick, std::shared_ptr<ImageView> add, std::shared_ptr<ImageView> table) {
     MibEntryIcons icons;
     icons.text = text;
@@ -184,6 +212,9 @@ void MibBrowserController::addEntryIcons(std::shared_ptr<TextView> text, std::sh
     this->entryIcons.push_back(icons);
 }
 
+/**
+ * @brief Destructor for a MibBrowserController
+ */
 MibBrowserController::~MibBrowserController() { }
 
 }

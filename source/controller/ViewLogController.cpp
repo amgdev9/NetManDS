@@ -17,10 +17,16 @@
 
 namespace NetMan {
 
+/**
+ * @brief Go to the logs screen
+ */
 static void gotoLogs(void *args) {
     Application::getInstance().requestLayoutChange("logs");
 }
 
+/**
+ * @brief Fill the current log list
+ */
 static void fillLog(void *args) {
 
     ListViewFillParams *params = (ListViewFillParams*)args;
@@ -56,6 +62,9 @@ static void fillLog(void *args) {
     }
 }
 
+/**
+ * @brief Shows more detail about a log element
+ */
 static void clickElement(void *args) {
     ListViewClickParams *params = (ListViewClickParams*)args;
     auto controller = std::static_pointer_cast<ViewLogController>(params->controller);
@@ -68,6 +77,9 @@ static void clickElement(void *args) {
     }
 }
 
+/**
+ * @brief Constructor for a ViewLogController
+ */
 ViewLogController::ViewLogController() {
     this->cbMap = std::unordered_map<std::string, void(*)(void*)> {
         {"gotoLogs", gotoLogs},
@@ -75,9 +87,13 @@ ViewLogController::ViewLogController() {
         {"clickElement", clickElement},
     };
 
+    // Get log's root node
     root = std::static_pointer_cast<json_t>(Application::getInstance().getContextData());
 }
 
+/**
+ * @brief Destructor for a ViewLogController
+ */
 ViewLogController::~ViewLogController() { }
 
 }
