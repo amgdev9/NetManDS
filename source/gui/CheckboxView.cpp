@@ -16,6 +16,23 @@ using namespace tinyxml2;
 namespace NetMan {
 
 /**
+ * @brief Constructor for a CheckboxView
+ * @param name          Resource name
+ * @param x             X position
+ * @param y             Y position
+ * @param sx            X scale
+ * @param sy            Y scale
+ * @param controller    Controller to be used
+ * @param onClick       onClick callback
+ */
+CheckboxView::CheckboxView(const char *name, float x, float y, float sx, float sy, std::shared_ptr<GuiController> controller, const std::string &onClick) : ImageView(name, x, y, sx, sy) {
+
+    this->controller = controller;
+    this->onClick = onClick;
+    this->setup();
+}
+
+/**
  * @brief Load a checkbox view
  * @param node          XML node containing button parameters
  * @param controller    Controller used (can be nullptr)
@@ -26,6 +43,14 @@ CheckboxView::CheckboxView(XMLElement *node, std::shared_ptr<GuiController> cont
     if(onClickStr) {
         onClick = std::string(onClickStr);
     }
+
+    this->setup();
+}
+
+/**
+ * @brief Setup the CheckboxView
+ */
+void CheckboxView::setup() {
 
     // Load image data
     try {

@@ -8,6 +8,10 @@
 #include "Application.h"
 #include "restconf/RestConfClient.h"
 #include "Config.h"
+#include "Utils.h"
+
+// Defines
+#define MAX_JSON_LENGTH     (8 << 10)
 
 namespace NetMan {
 
@@ -24,17 +28,14 @@ static void goBack(void *args) {
 static void getRequest(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<RestConfOpController>(params->controller);
+    auto rcParams = controller->getRestConfParams();
+    rcParams->method = HTTPC_METHOD_GET;
 
-    if(controller->getRestConfParams()->isList) {
-        // TODO List
+    if(rcParams->isList) {
+        Application::getInstance().requestLayoutChange("restconflist", rcParams);
     } else {
-        auto& config = Config::getInstance();
         try {
-            auto restConfClient = std::make_shared<RestConfClient>(config.getRestConfURL(), config.getRestConfUser(), config.getRestConfPassword(), config.getData().rcTimeout);
-            auto jsonData = restConfClient->request(controller->getRestConfParams()->url, HTTPC_METHOD_GET);
-            char *response = json_dumps(jsonData.get(), JSON_INDENT(2));
-            Application::getInstance().messageBox(std::string("Received response:\n") + response);
-            free(response);
+            Utils::sendRestConf(rcParams);
         } catch (const std::runtime_error &e) {
             Application::getInstance().messageBox(e.what());
         }
@@ -45,7 +46,37 @@ static void getRequest(void *args) {
  * @brief Perform a RESTCONF POST request
  */
 static void postRequest(void *args) {
-    // TODO Post
+    ButtonParams *params = (ButtonParams*)args;
+    auto controller = std::static_pointer_cast<RestConfOpController>(params->controller);
+    auto rcParams = controller->getRestConfParams();
+
+    // Allocate data for post request
+    char *postData = new char[MAX_JSON_LENGTH];
+    if(postData == NULL) {
+        Application::getInstance().messageBox("Can't allocate post buffer");
+        return;
+    }
+
+    // Request post data
+    SwkbdState swkbd;
+    swkbdInit(&swkbd, SWKBD_TYPE_WESTERN, 1, -1);
+    swkbdSetValidation(&swkbd, SWKBD_NOTEMPTY_NOTBLANK, 0, 0);
+    swkbdSetFeatures(&swkbd, 0);
+    swkbdSetHintText(&swkbd, "Enter JSON object:");
+    swkbdSetFeatures(&swkbd, SWKBD_MULTILINE);
+    swkbdInputText(&swkbd, postData, MAX_JSON_LENGTH);
+
+    // Configure request
+    rcParams->method = HTTPC_METHOD_POST;
+    rcParams->postData = postData;
+
+    // Send RESTCONF request
+    try {
+        Utils::sendRestConf(rcParams);
+        Application::getInstance().messageBox("Data added successfully");
+    } catch (const std::runtime_error &e) {
+        Application::getInstance().messageBox(e.what());
+    }
 }
 
 /**
@@ -54,9 +85,11 @@ static void postRequest(void *args) {
 static void deleteRequest(void *args) {
     ButtonParams *params = (ButtonParams*)args;
     auto controller = std::static_pointer_cast<RestConfOpController>(params->controller);
+    auto rcParams = controller->getRestConfParams();
 
-    if(controller->getRestConfParams()->isList) {
-        // TODO List
+    if(rcParams->isList) {
+        rcParams->method = HTTPC_METHOD_DELETE;
+        Application::getInstance().requestLayoutChange("restconfkey", rcParams);
     } else {
         Application::getInstance().messageBox("Only list elements can be deleted");
     }

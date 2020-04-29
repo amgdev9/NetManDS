@@ -1,0 +1,12 @@
+<root controller="RestConfListController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <ImageView name="menuButton" x="290" y="115" sx="0.5"/>
+    <ListView x="5" y="50" width="260" height="25" maxElements="5" arrowX="290" arrowY="100" onFill="fillList" onClick="clickElement"/>
+
+    <ButtonView name="menuButton" x="160" y="200" onClick="gotoKey" sx="0.5" sy="0.25"/>
+    <TextView text="OK" x="152" y="192" size="0.5" />
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+

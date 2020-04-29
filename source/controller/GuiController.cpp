@@ -32,6 +32,8 @@
 #include "controller/SnmpTableController.h"
 #include "controller/YinBrowserController.h"
 #include "controller/RestConfOpController.h"
+#include "controller/RestConfListController.h"
+#include "controller/RestConfKeyController.h"
 
 namespace NetMan {
 
@@ -63,6 +65,8 @@ const static std::unordered_map<std::string, GuiController*(*)()> controllerFact
     {"SnmpTableController", &bakeController<SnmpTableController>},
     {"YinBrowserController", &bakeController<YinBrowserController>},
     {"RestConfOpController", &bakeController<RestConfOpController>},
+    {"RestConfListController", &bakeController<RestConfListController>},
+    {"RestConfKeyController", &bakeController<RestConfKeyController>},
 };
 
 /**

@@ -15,6 +15,7 @@
 // Own includes
 #include "gui/EditTextView.h"
 #include "controller/SnmpParamsController.h"
+#include "controller/RestConfOpController.h"
 
 namespace NetMan {
 
@@ -31,6 +32,7 @@ class Utils {
         static std::shared_ptr<json_t> loadJsonList(const std::string &path);
         static bool endsWith(const std::string &mainStr, const std::string &toMatch);
         static void sendSnmpPdu(SnmpThreadParams *params);
+        static void sendRestConf(std::shared_ptr<RestConfParams> params);
 };
 
 }

@@ -122,12 +122,13 @@ static void clickEntry(void *args) {
         try {
             std::shared_ptr<RestConfParams> rcParams = std::make_shared<RestConfParams>();
             rcParams->isList = (strcmp(nodeit->Name(), "list") == 0);
-            auto yinHelper = controller->getYinHelper();
-            if(strcmp(nodeit->Name(), "container") == 0) {
-                rcParams->url = yinHelper->getRestConfContainerURL(nodeit);
-            } else {
-                rcParams->url = yinHelper->getRestConfURL(nodeit);
-            }
+            rcParams->isContainer = (strcmp(nodeit->Name(), "container") == 0);
+            rcParams->yinHelper = controller->getYinHelper();
+            rcParams->node = nodeit;
+            rcParams->content = "all";
+            rcParams->key = "";
+            rcParams->postData = "";
+            rcParams->fields = std::vector<std::string>();
             Application::getInstance().requestLayoutChange("restconfop", rcParams);
         } catch (const std::runtime_error &e) {
             Application::getInstance().messageBox(e.what());

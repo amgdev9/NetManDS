@@ -1,0 +1,17 @@
+<root controller="RestConfKeyController">
+    <ImageView name="bottomScreen" x="160" y="120"/>
+
+    <TextView text="Key and content" x="20" y="10" size="1.0"/>
+
+    <TextView text="Key" x="20" y="50" size="0.75"/>
+    <EditTextView x="170" y="50" width="140" height="20" length="12" onEdit="editKey"/>
+
+    <TextView text="Content" x="20" y="75" size="0.75"/>
+    <EditTextView x="170" y="75" width="140" height="20" length="12" onEdit="editContent"/>
+
+    <ButtonView name="menuButton" x="160" y="200" onClick="sendRestConf" sx="0.5" sy="0.25"/>
+    <TextView text="Send" x="143" y="192" size="0.5" />
+
+    <ButtonView name="backArrow" x="24" y="216" onClick="goBack" sx="-0.75" sy="0.75"/>
+</root>
+

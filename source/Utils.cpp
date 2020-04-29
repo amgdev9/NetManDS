@@ -14,6 +14,7 @@
 #include "snmp/Snmpv3Pdu.h"
 #include "asn1/BerInteger.h"
 #include "Config.h"
+#include "restconf/RestConfClient.h"
 
 namespace NetMan {
 
@@ -310,6 +311,41 @@ void Utils::sendSnmpPdu(SnmpThreadParams *params) {
                 pduFields[i].value = pdu->getVarBind(i)->print();
             }
         }
+    }
+}
+
+/**
+ * @brief Send a RESTCONF request to a remote server
+ * @param   params  Request parameters
+ */
+void Utils::sendRestConf(std::shared_ptr<RestConfParams> params) {
+    auto& config = Config::getInstance();
+    auto restConfClient = std::make_shared<RestConfClient>(config.getRestConfURL(), config.getRestConfUser(), config.getRestConfPassword(), config.getData().rcTimeout);
+    std::string url;
+
+    if(params->isContainer) {
+        url = params->yinHelper->getRestConfContainerURL(params->node);
+    } else {
+        url = params->yinHelper->getRestConfURL(params->node, params->key, params->fields, params->content);
+    }
+
+    std::shared_ptr<json_t> jsonData = nullptr;
+    if(params->method == HTTPC_METHOD_POST) {
+        json_error_t jsonError;
+        json_t *postDataRaw = json_loads(params->postData.c_str(), 0, &jsonError);
+        if(postDataRaw == NULL) {
+            throw std::runtime_error(jsonError.text);
+        }
+        auto postData = std::shared_ptr<json_t>(postDataRaw, [=](json_t* data) { json_decref(data); });
+        jsonData = restConfClient->request(url, params->method, postData);
+    } else {
+        jsonData = restConfClient->request(url, params->method);
+    }
+    
+    if(jsonData != nullptr) {
+        char *response = json_dumps(jsonData.get(), JSON_INDENT(2));
+        Application::getInstance().messageBox(std::string("Received response:\n") + response);
+        free(response);
     }
 }
 

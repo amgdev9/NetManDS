@@ -7,6 +7,8 @@
 
 // Own includes
 #include "GuiController.h"
+#include "restconf/YinHelper.h"
+#include "tinyxml2.h"
 
 namespace NetMan {
 
@@ -14,8 +16,15 @@ namespace NetMan {
  * @struct RestConfParams
  */
 typedef struct {
-    std::string url;
+    tinyxml2::XMLElement *node;
+    std::shared_ptr<YinHelper> yinHelper;
+    std::string key;
+    std::string content;
+    std::vector<std::string> fields;
+    std::string postData;
     bool isList;
+    bool isContainer;
+    HTTPC_RequestMethod method;
 } RestConfParams;
 
 /**

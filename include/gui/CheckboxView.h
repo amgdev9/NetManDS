@@ -29,7 +29,9 @@ class CheckboxView : public ImageView {
         C2D_SpriteSheet tickData;
         C2D_Sprite tickParams;
         bool checked;
+        void setup();
     public:
+        CheckboxView(const char *name, float x, float y, float sx, float sy, std::shared_ptr<GuiController> controller, const std::string &onClick);
         CheckboxView(tinyxml2::XMLElement *node, std::shared_ptr<GuiController> controller);
         void input(u32 held, u32 down, u32 up, touchPosition &touch) override;
         void draw() override;
